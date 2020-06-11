@@ -1,0 +1,28 @@
+{
+    "id": "Replay",
+    "name": "Replay",
+    "author": "Henwill8",
+    "description": [
+        
+    ],
+    "category": "Gameplay",
+    "gameVersion": "1.10.0",
+    "version": "0.1.6",
+    "platform": "Quest",
+    "components": [
+        {
+            "type": "HookMod",
+            "installAction": {
+                "installLibraryFile": "libreplay.so"
+            },
+            "uninstallAction": {
+                "removeLibraryFile": "libreplay.so"
+            }
+        },
+        {
+            "type": "FileCopyMod",
+            "sourceFileName": "libbeatsaber-hook_2019_2_1f1_0_1_3.so",
+            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libbeatsaber-hook_2019_2_1f1_0_1_3.so"
+        }
+    ]
+}
