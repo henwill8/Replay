@@ -36,11 +36,18 @@ LOCAL_SRC_FILES         := ./include/libs/libbeatsaber-hook_2019_2_1f1_0_1_3.so
 LOCAL_EXPORT_C_INCLUDES := ./extern/beatsaber-hook/shared/
 include $(PREBUILT_SHARED_LIBRARY)
 
+# Build the CustomUI shared library
+include $(CLEAR_VARS)
+LOCAL_MODULE	        := CustomUI
+LOCAL_SRC_FILES         := ./extern/BeatSaberQuestCustomUI/libs/arm64-v8a/libcustomui.so
+LOCAL_EXPORT_C_INCLUDES := ./extern/BeatSaberQuestCustomUI/shared
+include $(PREBUILT_SHARED_LIBRARY)
+
 include $(CLEAR_VARS)
 # Include the two libraries
-LOCAL_SHARED_LIBRARIES := replay
+LOCAL_SHARED_LIBRARIES := modloader
 LOCAL_SHARED_LIBRARIES += beatsaber-hook_2019_2_1f1_0_1_3
-LOCAL_SHARED_LIBRARIES += modloader
+LOCAL_SHARED_LIBRARIES += CustomUI
 LOCAL_LDLIBS     := -llog
 LOCAL_CFLAGS     := -D"MOD_ID=\"replay\"" -D"VERSION=\"0.1.0\"" -I"c:/Program Files/Unity/Hub/Editor/2019.3.2f1/Editor/Data/il2cpp/libil2cpp"
 LOCAL_MODULE     := replay

@@ -7,6 +7,7 @@
 #include "../extern/beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "../extern/beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "../extern/beatsaber-hook/shared/config/config-utils.hpp"
+#include "../extern/BeatSaberQuestCustomUI/shared/customui.hpp"
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
@@ -125,6 +126,8 @@ class CustomButton {
 
 static CustomButton replayButton;
 
+CustomUI::TextObject replayText;
+
 static ModInfo modInfo;
 
 Configuration& getConfig() {
@@ -140,7 +143,9 @@ std::string ssEnabled = "0";
 bool firstTime = true;
 
 void replayButtonOnClick() {
-    setenv("disable_ss_upload", "1", true);
+    if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
+        setenv("disable_ss_upload", "1", true);
+    }
     if(playButton != nullptr) {
         recording = false;
         RunMethod(playButton, "Press");
@@ -195,9 +200,15 @@ bool ghostNotes = false;
 bool fasterSong = false;
 bool leftHanded = false;
 
-Il2CppObject* ScoreControllerInstance = nullptr;
+int triggerNode;
+float rTriggerVal;
+float lTriggerVal;
 
 int amountPerLine = 20;
+
+float replaySpeed = 1.0f;
+
+std::string songName = "";
 
 int offset = getConfig().config["Offset"].GetInt();
 
@@ -412,6 +423,21 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
     
     // log("SongUpdate");
 
+    if(!recording) {
+        replaySpeed+=rTriggerVal/1000;
+        replaySpeed-=lTriggerVal/1000;
+
+        if(replaySpeed < 0.0001f) {
+            replaySpeed = 0.0001f;
+        }
+
+        log("Replay speed is "+std::to_string(replaySpeed));
+
+        SetFieldValue(self, "_timeScale", replaySpeed);
+        Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
+        RunMethod(audioSource, "set_pitch", replaySpeed);
+    }
+
     SongUpdate(self);
 
     songTime = *il2cpp_utils::GetFieldValue<float>(self, "_songTime");
@@ -424,6 +450,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
     energy = 0.5f;
     inSong = true;
     indexNum = 0;
+    replaySpeed = 1.0f;
     
     if(recording) {
         stringToSave = "";
@@ -487,14 +514,17 @@ MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompl
     
     log("SongEnd");
 
-    if(!recording) {
+    if(!recording && fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
         setenv("disable_ss_upload", "1", true);
     }
 
     inSong = false;
 
-    ScoreControllerInstance = nullptr;
+    replayText.destroy();
+
     int levelEndState = *GetFieldValue<int>(levelCompleteionResults, "levelEndStateType");
+
+    log("Level end state is "+std::to_string(levelEndState));
 
     if(recording && levelEndState == 1 && !inPracticeMode) {
         if(score > highScore || !fileexists(replayDirectory+songHash+".txt")) {
@@ -533,18 +563,20 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
 
     recording = true;
 
-    // if(firstTime) {
-    //     log("Getting ss");
-    //     char* temp = getenv("disable_ss_upload");
-    //     std::string tempString(temp);
-    //     // ssEnabled = std::string(getenv("disable_ss_upload"));
-    //     log(std::string(tempString));
-    //     firstTime = false;
-    // } else if(ssEnabled == "0") {
-        setenv("disable_ss_upload", "0", true);
-    // } else {
-    //     setenv("disable_ss_upload", "1", true);
-    // }
+    if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
+        // if(firstTime) {
+        //     log("Getting ss");
+        //     char* temp = getenv("disable_ss_upload");
+        //     std::string tempString(temp);
+        //     // ssEnabled = std::string(getenv("disable_ss_upload"));
+        //     log(std::string(tempString));
+        //     firstTime = false;
+        // } else if(ssEnabled == "0") {
+            setenv("disable_ss_upload", "0", true);
+        // } else {
+        //     setenv("disable_ss_upload", "1", true);
+        // }
+    }
 
     Il2CppObject* Level = CRASH_UNLESS(*GetFieldValue(self, "_level"));
     Il2CppString* LevelID = CRASH_UNLESS(*GetPropertyValue<Il2CppString*>(Level, "levelID"));
@@ -578,6 +610,10 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
     } else {
         log("Not making Replay button");
     }
+
+    Il2CppObject* songNameText = *GetFieldValue(self, "_songNameText");
+    songName = to_utf8(csstrtostr(*RunMethod<Il2CppString*>(songNameText, "get_text")));
+    log("Song name is "+songName);
 }
 
 MAKE_HOOK_OFFSETLESS(LevelSelectionFlowCoordinator_StartLevel, void, Il2CppObject* self, Il2CppObject* difficultyBeatmap, Il2CppObject* beforeSceneSwitchCallback, bool practice) {
@@ -613,8 +649,6 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
 
     // log("ScoreControllerLateUpdate");
 
-    ScoreControllerInstance = self;
-
     ScoreControllerLateUpdate(self);
 
     scoreMultiplier = *GetFieldValue<float>(self, "_gameplayModifiersScoreMultiplier");
@@ -645,6 +679,52 @@ MAKE_HOOK_OFFSETLESS(RefreshRank, void, Il2CppObject* self) {
     }
 }
 
+MAKE_HOOK_OFFSETLESS(Triggers, void, Il2CppObject* self, int node) {
+
+    triggerNode = node;
+
+    Triggers(self, node);
+}
+
+MAKE_HOOK_OFFSETLESS(ControllerUpdate, void, Il2CppObject* self) {
+
+    float trigger = *RunMethod<float>(self, "get_triggerValue");
+
+    if (triggerNode == 4) {
+        lTriggerVal = trigger;
+    }
+    if (triggerNode == 5) {
+        rTriggerVal = trigger;
+    }
+
+    ControllerUpdate(self);
+}
+
+MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, Il2CppObject* self) {
+    
+    log("Progress update");
+
+    if(!recording) {
+        if(replayText.gameObj == nullptr && inSong) {
+            log("Making replayText");
+            Il2CppObject* slider = *il2cpp_utils::GetFieldValue(self, "_slider");
+            Il2CppObject* sliderTransform = *il2cpp_utils::RunMethod(slider, "get_transform");
+            Il2CppObject* sliderParent = *il2cpp_utils::RunMethod(sliderTransform, "GetParent");
+    
+            replayText.text = "Watching "+songName+" at "+std::to_string(float(int(replaySpeed*100))/100)+"x speed";
+            replayText.fontSize = 12.0F;
+            replayText.parentTransform = sliderParent;
+            replayText.sizeDelta = {-400, 100};
+            replayText.anchoredPosition = {-400, 100};
+            replayText.create();
+        } else {
+            replayText.set("Watching "+songName+" at "+std::to_string(float(int(replaySpeed*100))/100)+"x speed");
+        }
+    }
+ 
+    ProgressUpdate(self);
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
     info.version = "0.1.2";
@@ -668,6 +748,9 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(EnergyBarUpdate, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "AddEnergy", 1));
     INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
+    INSTALL_HOOK_OFFSETLESS(Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
+    INSTALL_HOOK_OFFSETLESS(ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
 
