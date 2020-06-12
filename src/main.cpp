@@ -424,18 +424,18 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
     // log("SongUpdate");
 
     if(!recording) {
-        replaySpeed+=rTriggerVal/1000;
-        replaySpeed-=lTriggerVal/1000;
+        replaySpeed+=rTriggerVal/500;
+        replaySpeed-=lTriggerVal/500;
 
-        if(replaySpeed < 0.0001f) {
-            replaySpeed = 0.0001f;
+        if(replaySpeed < 0.01f) {
+            replaySpeed = 0.01f;
         }
 
         log("Replay speed is "+std::to_string(replaySpeed));
 
         SetFieldValue(self, "_timeScale", replaySpeed);
         Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
-        RunMethod(audioSource, "set_pitch", replaySpeed);
+        RunMethod(audioSource, "set_pitch", (float(int(replaySpeed*100)))/100);
     }
 
     SongUpdate(self);
@@ -520,7 +520,10 @@ MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompl
 
     inSong = false;
 
-    replayText.destroy();
+    if(replayText.gameObj != nullptr) {
+        log("Destroying replay text");
+        replayText.destroy();
+    }
 
     int levelEndState = *GetFieldValue<int>(levelCompleteionResults, "levelEndStateType");
 
@@ -539,6 +542,8 @@ MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompl
     }
     
     SongEnd(self, levelCompleteionResults);
+
+    log("Song has successfully ended");
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreChanged, void, Il2CppObject* self, int rawScore, int modifiedScore) {
@@ -558,12 +563,14 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
     log("Refreshing Content");
 
     RefreshContent(self);
+    log("Refreshing Content");
 
     playButton = *GetFieldValue(self, "_playButton");
 
     recording = true;
 
     if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
+        log("Score saber is loaded");
         // if(firstTime) {
         //     log("Getting ss");
         //     char* temp = getenv("disable_ss_upload");
@@ -586,13 +593,15 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
     Il2CppObject* beatMapData = CRASH_UNLESS(*GetPropertyValue(SelectedBeatmapDifficulty, "beatmapData"));
     Il2CppObject* parentDifficultyBeatmapSet = CRASH_UNLESS(*GetPropertyValue(SelectedBeatmapDifficulty, "parentDifficultyBeatmapSet"));
     Il2CppObject* beatmapCharacteristic = CRASH_UNLESS(*GetPropertyValue(parentDifficultyBeatmapSet, "beatmapCharacteristic"));
+    std::string modeName = to_utf8(csstrtostr(*GetFieldValue<Il2CppString*>(beatmapCharacteristic, "_compoundIdPartName")));
+    log("Mode name is "+modeName);
 
     Il2CppObject* PlayerData = CRASH_UNLESS(*GetFieldValue(self, "_playerData"));
     Il2CppObject* playerLevelStatsData = CRASH_UNLESS(*RunMethod(PlayerData, "GetPlayerLevelStatsData", LevelID, Difficulty, beatmapCharacteristic));
     highScore = *GetPropertyValue<int>(playerLevelStatsData, "highScore");
     log("Highscore is "+std::to_string(highScore));
 
-    songHash = to_utf8(csstrtostr(LevelID))+std::to_string(Difficulty);
+    songHash = to_utf8(csstrtostr(LevelID))+std::to_string(Difficulty)+modeName;
 
     replayButton.destroy();
 
