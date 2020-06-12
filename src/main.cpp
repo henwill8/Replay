@@ -727,7 +727,9 @@ MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, Il2CppObject* self) {
             replayText.anchoredPosition = {-400, 100};
             replayText.create();
         } else {
-            replayText.set("Watching "+songName+" at "+std::to_string(float(int(replaySpeed*100))/100)+"x speed");
+            if(inSong) {
+                replayText.set("Watching "+songName+" at "+std::to_string(float(int(replaySpeed*100))/100)+"x speed");
+            }
         }
     }
  
