@@ -16,6 +16,7 @@
 #include <list>
 #include <stdlib.h>
 #include <stdio.h>
+#include <cmath>
 using namespace il2cpp_utils;
 
 void log(std::string str) {
@@ -35,6 +36,7 @@ class CustomButton {
         Vector3 scale = {1.0f, 1.0f, 1.0f};
         Vector3 rotation = {0, 0, 0};
         float fontSize = 10.0f;
+        bool toggle = true;//Use this when creating toggles
         std::string text = "Custom Button UI";
         function_ptr_t<void> onPress;
  
@@ -75,34 +77,59 @@ class CustomButton {
         }
  
         void create() {
-            if(!isCreated) {
-                Il2CppObject* button = *il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", parent);
-                Il2CppObject* buttonTransform = *il2cpp_utils::RunMethod(button, "get_transform");
-                il2cpp_utils::RunMethod(buttonTransform, "SetParent", parentTransform);
-                il2cpp_utils::RunMethod(buttonTransform, "set_localScale", scale);
-                il2cpp_utils::RunMethod(buttonTransform, "set_localPosition", sizeDelta);
-                il2cpp_utils::RunMethod(buttonTransform, "set_eulerAngles", rotation);
-                gameObject = *il2cpp_utils::RunMethod(button, "get_gameObject");
-                TMP = *il2cpp_utils::RunMethod(gameObject, "GetComponentInChildren", il2cpp_utils::GetSystemType("TMPro", "TextMeshProUGUI"));
+            if(!isCreated && parent != nullptr && parentTransform != nullptr) {
+                log("Custom Button: Creating an instance of the parent");
+                Il2CppObject* button = CRASH_UNLESS(*il2cpp_utils::RunMethod("UnityEngine", "Object", "Instantiate", parent));
+                log("Custom Button: Getting the transform");
+                Il2CppObject* buttonTransform = CRASH_UNLESS(*il2cpp_utils::RunMethod(button, "get_transform"));
+                log("Custom Button: Setting the parent transform");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(buttonTransform, "SetParent", parentTransform));
+                log("Custom Button: Setting the local scale");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(buttonTransform, "set_localScale", scale));
+                log("Custom Button: Setting the local position");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(buttonTransform, "set_localPosition", sizeDelta));
+                log("Custom Button: Setting the euler angles");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(buttonTransform, "set_eulerAngles", rotation));
+                log("Custom Button: Getting the game object");
+                gameObject = CRASH_UNLESS(*il2cpp_utils::RunMethod(button, "get_gameObject"));
+                log("Custom Button: Getting the TMProUGUI");
+                TMP = CRASH_UNLESS(*il2cpp_utils::RunMethod(gameObject, "GetComponentInChildren", il2cpp_utils::GetSystemType("TMPro", "TextMeshProUGUI")));
+                log("Custom Button: Getting the TMP Localizer");
                 TMPLocalizer = *RunMethod<Il2CppObject*>(gameObject, "GetComponentInChildren", GetSystemType("Polyglot", "LocalizedTextMeshProUGUI"));
-                auto* rectTransform = *RunMethod(TMP, "get_rectTransform");
-                il2cpp_utils::RunMethod(TMP, "set_text", il2cpp_utils::createcsstr(text));
-                il2cpp_utils::RunMethod(TMP, "set_fontSize", fontSize);
-                Il2CppObject* onClick = *il2cpp_utils::GetPropertyValue(button, "onClick");
+                log("Custom Button: Getting the rect transform");
+                auto* rectTransform = CRASH_UNLESS(*RunMethod(TMP, "get_rectTransform"));
+                log("Custom Button: Setting the text");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(TMP, "set_text", il2cpp_utils::createcsstr(text)));
+                log("Custom Button: Setting the font size");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(TMP, "set_fontSize", fontSize));
+                log("Custom Button: Getting the onClick property");
+                Il2CppObject* onClick = CRASH_UNLESS(*il2cpp_utils::GetPropertyValue(button, "onClick"));
+                log("Custom Button: Creating the action");
                 auto actionToRun = il2cpp_utils::MakeAction(il2cpp_functions::class_get_type(il2cpp_utils::GetClassFromName("UnityEngine.Events", "UnityAction")), (Il2CppObject*)nullptr, onPress);
-                il2cpp_utils::RunMethod(onClick, "AddListener", actionToRun);
+                log("Custom Button: Setting the action to onClick");
+                CRASH_UNLESS(il2cpp_utils::RunMethod(onClick, "AddListener", actionToRun));
                 isCreated = true;
             } else {
-                log("Button was already created");
+                log("Button was already created or parent/parentTransform was null");
             }
         }
  
-        void setText(std::string newText) {
-            RunMethod(TMP, "SetText", createcsstr(newText));
+        bool setText(std::string newText) {
+            if(gameObject != nullptr) {
+                RET_0_UNLESS(RunMethod(TMP, "SetText", createcsstr(newText)));
+                return true;
+            }
+            log("Game object is null, not setting text");
+            return false;
         }
  
-        void setActive(bool isActive) {
-            RunMethod(gameObject, "SetActive", isActive);
+        bool setActive(bool isActive) {
+            if(gameObject != nullptr) {
+                RET_0_UNLESS(RunMethod(gameObject, "SetActive", isActive));
+                return true;
+            }
+            log("Game object is null, not setting active");
+            return false;
         }
  
         void setPos(Vector3 pos) {//Doesnt work yet, work on it more later
@@ -125,6 +152,8 @@ class CustomButton {
 };
 
 static CustomButton replayButton;
+
+static CustomButton speedToggle;
 
 CustomUI::TextObject replayText;
 
@@ -149,6 +178,16 @@ void replayButtonOnClick() {
     if(playButton != nullptr) {
         recording = false;
         RunMethod(playButton, "Press");
+    }
+}
+
+void speedToggleOnClick() {
+    speedToggle.toggle = !speedToggle.toggle;
+    
+    if(speedToggle.toggle) {
+        speedToggle.setText("Lock Speed  -  ON");
+    } else {
+        speedToggle.setText("Lock Speed  -  OFF");
     }
 }
 
@@ -331,29 +370,18 @@ void getReplayValues(std::string str) {
     }
 }
 
-void extractFloat(std::string str) {
+float lerp(float a, float b, float t) {
+    float newFloat = a + (t * (b - a));
+    return newFloat;
+}
 
-    std::stringstream ss;
- 
-    /* Storing the whole string into string stream */
-    ss << str;
- 
-    /* Running loop till the end of the stream */
-    std::string temp;
-    float found;
-    while (!ss.eof()) {
- 
-        /* extracting word by word from stream */
-        ss >> temp;
- 
-        /* Checking the given word is integer or not */
-        if(std::stringstream(temp) >> found) {
-            rankFloat = found;
-        }
- 
-        /* To save from space at the end of string */
-        temp = "";
-    }
+Vector3 lerpVectors(Vector3 smallerVector3, Vector3 biggerVector3, float lerpAmount) {
+    Vector3 newVector = {0, 0, 0};
+    newVector.x = lerp(smallerVector3.x, biggerVector3.x, lerpAmount);
+    newVector.y = lerp(smallerVector3.y, biggerVector3.y, lerpAmount);
+    newVector.z = lerp(smallerVector3.z, biggerVector3.z, lerpAmount);
+
+    return newVector;
 }
 
 MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
@@ -396,6 +424,14 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
                 foundCorrectIndex = true;
             }
         }
+        
+        float lerpAmount = 1 - (((times[indexNum+1] - songTime) / (times[indexNum+1] - times[indexNum])) - 1);
+        if(lerpAmount > 1) {
+            lerpAmount = 1;
+        } else if(lerpAmount < 0) {
+            lerpAmount = 0;
+        }
+        log("Lerp amount is "+std::to_string(lerpAmount));
 
         Il2CppObject* leftSaber = *il2cpp_utils::GetFieldValue(self, "_leftSaber");
         Il2CppObject* rightSaber = *il2cpp_utils::GetFieldValue(self, "_rightSaber");
@@ -409,11 +445,11 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
             rightSaberTransform = *il2cpp_utils::RunMethod(rightSaber, il2cpp_functions::class_get_method_from_name(componentsClass, "get_transform", 0));
 
             if(leftSaberTransform != nullptr && rightSaberTransform != nullptr) {
-                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_position", rightPositions[indexNum]));
-                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_eulerAngles", rightRotations[indexNum]));
-                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_position", leftPositions[indexNum]));
-                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_eulerAngles", leftRotations[indexNum]));
-                CRASH_UNLESS(SetFieldValue(self, "_headPos", headPositions[indexNum]));
+                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_position", lerpVectors(rightPositions[indexNum], rightPositions[indexNum+1], lerpAmount)));
+                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_eulerAngles", lerpVectors(rightRotations[indexNum], rightRotations[indexNum+1], lerpAmount)));
+                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_position", lerpVectors(leftPositions[indexNum], leftPositions[indexNum+1], lerpAmount)));
+                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_eulerAngles", lerpVectors(leftRotations[indexNum], leftRotations[indexNum+1], lerpAmount)));
+                CRASH_UNLESS(SetFieldValue(self, "_headPos", lerpVectors(headPositions[indexNum], headPositions[indexNum+1], lerpAmount)));
             }
         }
     }
@@ -423,17 +459,19 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
     
     // log("SongUpdate");
 
-    if(!recording) {
+    if(!recording && !speedToggle.toggle) {
         replaySpeed+=rTriggerVal/500;
         replaySpeed-=lTriggerVal/500;
 
         if(replaySpeed < 0.01f) {
             replaySpeed = 0.01f;
         }
+        
+        float roundedReplaySpeed = (float(int(replaySpeed*100)))/100;
 
-        log("Replay speed is "+std::to_string(replaySpeed));
+        // log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
 
-        SetFieldValue(self, "_timeScale", replaySpeed);
+        SetFieldValue(self, "_timeScale", (float(int(replaySpeed*100)))/100);
         Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
         RunMethod(audioSource, "set_pitch", (float(int(replaySpeed*100)))/100);
     }
@@ -451,6 +489,8 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
     inSong = true;
     indexNum = 0;
     replaySpeed = 1.0f;
+    
+    SongStart(self, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
     
     if(recording) {
         stringToSave = "";
@@ -506,8 +546,6 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         RunMethod(gameplayModifiers, "set_noObstacles", noObstacles);
         RunMethod(playerSpecificSettings, "set_leftHanded", leftHanded);
     }
-
-    SongStart(self, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
 }
 
 MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompleteionResults) {
@@ -711,29 +749,68 @@ MAKE_HOOK_OFFSETLESS(ControllerUpdate, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, Il2CppObject* self) {
     
-    log("Progress update");
+    // log("Progress update");
 
     if(!recording) {
+        std::string tempString = std::to_string(replaySpeed);
+        std::string textToSetTo = "Watching "+songName+" at "+tempString.erase(4, tempString.length()-1)+"x speed";
+        if(speedToggle.toggle && tempString != "1.00") {
+            textToSetTo = "Watching a Replay of "+songName;
+        }
+
         if(replayText.gameObj == nullptr && inSong) {
             log("Making replayText");
             Il2CppObject* slider = *il2cpp_utils::GetFieldValue(self, "_slider");
             Il2CppObject* sliderTransform = *il2cpp_utils::RunMethod(slider, "get_transform");
             Il2CppObject* sliderParent = *il2cpp_utils::RunMethod(sliderTransform, "GetParent");
     
-            replayText.text = "Watching "+songName+" at "+std::to_string(float(int(replaySpeed*100))/100)+"x speed";
-            replayText.fontSize = 12.0F;
+            replayText.text = textToSetTo;
+            replayText.fontSize = 12.0f;
             replayText.parentTransform = sliderParent;
             replayText.sizeDelta = {-400, 100};
             replayText.anchoredPosition = {-400, 100};
             replayText.create();
         } else {
             if(inSong) {
-                replayText.set("Watching "+songName+" at "+std::to_string(float(int(replaySpeed*100))/100)+"x speed");
+                replayText.set(textToSetTo);
             }
         }
     }
  
     ProgressUpdate(self);
+}
+
+MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
+
+    PauseStart(self);
+
+    if(!recording) {
+        Il2CppObject* backButton = CRASH_UNLESS(*GetFieldValue(self, "_backButton"));
+
+        speedToggle.setParentAndTransform(backButton, 2);
+        if(speedToggle.toggle) {
+            speedToggle.text = "Lock Speed  -  ON";
+        } else {
+            speedToggle.text = "Lock Speed  -  OFF";
+        }
+        speedToggle.fontSize = 5.0f;
+        speedToggle.scale = {1, 1, 2};
+        speedToggle.sizeDelta = {0, -23, 0};
+        speedToggle.onPress = speedToggleOnClick;
+        speedToggle.create();
+        if(speedToggle.TMPLocalizer != nullptr) {
+            RunMethod("UnityEngine", "Object", "Destroy", speedToggle.TMPLocalizer);
+        }
+    }
+}
+
+MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
+
+    if(!recording) {
+        speedToggle.destroy();
+    }
+
+    PauseFinish(self);
 }
 
 extern "C" void setup(ModInfo& info) {
@@ -762,6 +839,8 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
     INSTALL_HOOK_OFFSETLESS(ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "Start", 0));
+    INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "OnDestroy", 0));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
 

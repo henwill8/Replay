@@ -23,6 +23,11 @@
             "type": "FileCopyMod",
             "sourceFileName": "libbeatsaber-hook_2019_2_1f1_0_1_3.so",
             "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libbeatsaber-hook_2019_2_1f1_0_1_3.so"
+        },
+        {
+            "type": "FileCopyMod",
+            "sourceFileName": "libcustomui_2019_2_1f1_0_1_3.so",
+            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libcustomui_2019_2_1f1_0_1_3.so"
         }
     ]
 }
