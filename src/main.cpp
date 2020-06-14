@@ -488,6 +488,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
 
     energy = 0.5f;
     inSong = true;
+    inSongOrResults = true;
     indexNum = 0;
     replaySpeed = 1.0f;
     
@@ -605,22 +606,24 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
 
     playButton = *GetFieldValue(self, "_playButton");
 
-    recording = true;
+    if(!inSongOrResults) {
+        recording = true;
 
-    if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
-        log("Score saber is loaded");
-        // if(firstTime) {
-        //     log("Getting ss");
-        //     char* temp = getenv("disable_ss_upload");
-        //     std::string tempString(temp);
-        //     // ssEnabled = std::string(getenv("disable_ss_upload"));
-        //     log(std::string(tempString));
-        //     firstTime = false;
-        // } else if(ssEnabled == "0") {
-            setenv("disable_ss_upload", "0", true);
-        // } else {
-        //     setenv("disable_ss_upload", "1", true);
-        // }
+        if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
+            log("Score saber is loaded");
+            // if(firstTime) {
+            //     log("Getting ss");
+            //     char* temp = getenv("disable_ss_upload");
+            //     std::string tempString(temp);
+            //     // ssEnabled = std::string(getenv("disable_ss_upload"));
+            //     log(std::string(tempString));
+            //     firstTime = false;
+            // } else if(ssEnabled == "0") {
+                setenv("disable_ss_upload", "0", true);
+            // } else {
+            //     setenv("disable_ss_upload", "1", true);
+            // }
+        }
     }
 
     Il2CppObject* Level = CRASH_UNLESS(*GetFieldValue(self, "_level"));
@@ -812,6 +815,15 @@ MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
     }
 
     PauseFinish(self);
+}
+
+MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, int deactivationType) {
+
+    inSongOrResults = false;
+
+    log(INFO, "Results screen has Ended");
+
+    ResultsScreenEnd(self, deactivationType);
 }
 
 extern "C" void setup(ModInfo& info) {
