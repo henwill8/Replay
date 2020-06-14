@@ -376,12 +376,10 @@ float lerp(float a, float b, float t) {
 }
 
 Vector3 lerpVectors(Vector3 smallerVector3, Vector3 biggerVector3, float lerpAmount) {
-    Vector3 newVector = {0, 0, 0};
-    newVector.x = lerp(smallerVector3.x, biggerVector3.x, lerpAmount);
-    newVector.y = lerp(smallerVector3.y, biggerVector3.y, lerpAmount);
-    newVector.z = lerp(smallerVector3.z, biggerVector3.z, lerpAmount);
+    
+    // Vector3 newVector = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smallerVector3, biggerVector3, lerpAmount);
 
-    return newVector;
+    return smallerVector3;
 }
 
 MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
