@@ -185,9 +185,9 @@ void speedToggleOnClick() {
     speedToggle.toggle = !speedToggle.toggle;
     
     if(speedToggle.toggle) {
-        speedToggle.setText("Lock Speed  -  ON");
+        speedToggle.setText("Lock Speed - ON");
     } else {
-        speedToggle.setText("Lock Speed  -  OFF");
+        speedToggle.setText("Lock Speed - OFF");
     }
 }
 
@@ -488,8 +488,6 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
     indexNum = 0;
     replaySpeed = 1.0f;
     
-    SongStart(self, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
-    
     if(recording) {
         stringToSave = "";
 
@@ -544,6 +542,8 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         RunMethod(gameplayModifiers, "set_noObstacles", noObstacles);
         RunMethod(playerSpecificSettings, "set_leftHanded", leftHanded);
     }
+    
+    SongStart(self, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
 }
 
 MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompleteionResults) {
@@ -783,17 +783,17 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
     PauseStart(self);
 
     if(!recording) {
-        Il2CppObject* backButton = CRASH_UNLESS(*GetFieldValue(self, "_backButton"));
+        Il2CppObject* continueButton = CRASH_UNLESS(*GetFieldValue(self, "_continueButton"));
 
-        speedToggle.setParentAndTransform(backButton, 2);
+        speedToggle.setParentAndTransform(continueButton, 2);
         if(speedToggle.toggle) {
-            speedToggle.text = "Lock Speed  -  ON";
+            speedToggle.text = "Lock Speed - ON";
         } else {
-            speedToggle.text = "Lock Speed  -  OFF";
+            speedToggle.text = "Lock Speed - OFF";
         }
-        speedToggle.fontSize = 5.0f;
-        speedToggle.scale = {1, 1, 2};
-        speedToggle.sizeDelta = {0, -23, 0};
+        speedToggle.fontSize = 3.0f;
+        speedToggle.scale = {1, 1, 1};
+        speedToggle.sizeDelta = {0, -25, 0};
         speedToggle.onPress = speedToggleOnClick;
         speedToggle.create();
         if(speedToggle.TMPLocalizer != nullptr) {
