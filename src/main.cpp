@@ -542,7 +542,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         RunMethod(gameplayModifiers, "set_noObstacles", noObstacles);
         RunMethod(playerSpecificSettings, "set_leftHanded", leftHanded);
     }
-    
+
     SongStart(self, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
 }
 
@@ -651,7 +651,7 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
         if(replayButton.TMPLocalizer != nullptr) {
             RunMethod("UnityEngine", "Object", "Destroy", replayButton.TMPLocalizer);
         }
-        replayButton.setText("Replay");
+        replayButton.setText("Replay");//
     } else {
         log("Not making Replay button");
     }
