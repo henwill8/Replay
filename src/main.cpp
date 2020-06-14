@@ -466,13 +466,15 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
             replaySpeed = 0.01f;
         }
         
-        float roundedReplaySpeed = (float(int(replaySpeed*100)))/100;
+        if(speedToggle.gameObject == nullptr) {
+            float roundedReplaySpeed = (float(int(replaySpeed*100)))/100;
 
-        // log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
+            // log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
 
-        SetFieldValue(self, "_timeScale", (float(int(replaySpeed*100)))/100);
-        Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
-        RunMethod(audioSource, "set_pitch", (float(int(replaySpeed*100)))/100);
+            SetFieldValue(self, "_timeScale", (float(int(replaySpeed*100)))/100);
+            Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
+            RunMethod(audioSource, "set_pitch", (float(int(replaySpeed*100)))/100);
+        }
     }
 
     SongUpdate(self);
