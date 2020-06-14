@@ -32,6 +32,7 @@ class CustomButton {
         Il2CppObject* parent = nullptr;
         Il2CppObject* parentTransform = nullptr;
         Il2CppObject* TMPLocalizer = nullptr;
+        Il2CppObject* rectTransform = nullptr;
         Vector3 sizeDelta = {0, 0, 0};
         Vector3 scale = {1.0f, 1.0f, 1.0f};
         Vector3 rotation = {0, 0, 0};
@@ -97,7 +98,7 @@ class CustomButton {
                 log("Custom Button: Getting the TMP Localizer");
                 TMPLocalizer = *RunMethod<Il2CppObject*>(gameObject, "GetComponentInChildren", GetSystemType("Polyglot", "LocalizedTextMeshProUGUI"));
                 log("Custom Button: Getting the rect transform");
-                auto* rectTransform = CRASH_UNLESS(*RunMethod(TMP, "get_rectTransform"));
+                rectTransform = CRASH_UNLESS(*RunMethod(TMP, "get_rectTransform"));
                 log("Custom Button: Setting the text");
                 CRASH_UNLESS(il2cpp_utils::RunMethod(TMP, "set_text", il2cpp_utils::createcsstr(text)));
                 log("Custom Button: Setting the font size");
@@ -599,7 +600,6 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
     log("Refreshing Content");
 
     RefreshContent(self);
-    log("Refreshing Content");
 
     playButton = *GetFieldValue(self, "_playButton");
 
@@ -651,7 +651,7 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
         if(replayButton.TMPLocalizer != nullptr) {
             RunMethod("UnityEngine", "Object", "Destroy", replayButton.TMPLocalizer);
         }
-        replayButton.setText("Replay");//
+        replayButton.setText("Replay");
     } else {
         log("Not making Replay button");
     }
@@ -791,14 +791,15 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
         } else {
             speedToggle.text = "Lock Speed - OFF";
         }
-        speedToggle.fontSize = 3.0f;
+        speedToggle.fontSize = 4.3f;
         speedToggle.scale = {1, 1, 1};
-        speedToggle.sizeDelta = {0, -25, 0};
+        speedToggle.sizeDelta = {0, -28, 0};
         speedToggle.onPress = speedToggleOnClick;
         speedToggle.create();
         if(speedToggle.TMPLocalizer != nullptr) {
             RunMethod("UnityEngine", "Object", "Destroy", speedToggle.TMPLocalizer);
         }
+        RunMethod(speedToggle.TMP, "set_enableWordWrapping", false);
     }
 }
 
