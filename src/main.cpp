@@ -245,6 +245,8 @@ int triggerNode;
 float rTriggerVal;
 float lTriggerVal;
 
+bool inPauseMenu = false;
+
 int amountPerLine = 20;
 
 float replaySpeed = 1.0f;
@@ -431,7 +433,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
         } else if(lerpAmount < 0) {
             lerpAmount = 0;
         }
-        log("Lerp amount is "+std::to_string(lerpAmount));
+        // log("Lerp amount is "+std::to_string(lerpAmount));
 
         Il2CppObject* leftSaber = *il2cpp_utils::GetFieldValue(self, "_leftSaber");
         Il2CppObject* rightSaber = *il2cpp_utils::GetFieldValue(self, "_rightSaber");
@@ -467,10 +469,10 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
             replaySpeed = 0.01f;
         }
         
-        if(speedToggle.gameObject == nullptr) {
+        if(!inPauseMenu) {
             float roundedReplaySpeed = (float(int(replaySpeed*100)))/100;
 
-            // log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
+            log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
 
             SetFieldValue(self, "_timeScale", (float(int(replaySpeed*100)))/100);
             Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
@@ -547,6 +549,10 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         RunMethod(gameplayModifiers, "set_noObstacles", noObstacles);
         RunMethod(playerSpecificSettings, "set_leftHanded", leftHanded);
     }
+
+    inPauseMenu = false;
+
+    speedToggle.destroy();
 
     SongStart(self, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
 }
@@ -717,8 +723,6 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(RefreshRank, void, Il2CppObject* self) {
 
-    log("RefreshRank");
-
     RefreshRank(self);
 
     Il2CppObject* percentText = *GetFieldValue(self, "_relativeScoreText");
@@ -789,6 +793,8 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
 
     PauseStart(self);
 
+    inPauseMenu = true;
+
     if(!recording) {
         Il2CppObject* continueButton = CRASH_UNLESS(*GetFieldValue(self, "_continueButton"));
 
@@ -812,11 +818,11 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
 
-    if(!recording) {
-        speedToggle.destroy();
-    }
-
     PauseFinish(self);
+
+    inPauseMenu = false;
+
+    log("PauseFinish");
 }
 
 MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, int deactivationType) {
@@ -855,7 +861,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "Start", 0));
-    INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "OnDestroy", 0));
+    INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "StartResumeAnimation", 0));
     INSTALL_HOOK_OFFSETLESS(ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 1));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
