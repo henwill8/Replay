@@ -194,6 +194,7 @@ void speedToggleOnClick() {
 
 float songTime = 0.0f;
 bool inSong = false;
+bool inSongOrResults = false;
 
 int score;
 int highScore;
