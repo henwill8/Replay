@@ -757,8 +757,9 @@ MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, Il2CppObject* self) {
 
     if(!recording) {
         std::string tempString = std::to_string(replaySpeed);
-        std::string textToSetTo = "Watching "+songName+" at "+tempString.erase(4, tempString.length()-1)+"x speed";
-        if(speedToggle.toggle && tempString != "1.00") {
+        tempString.erase(4, tempString.length()-1);
+        std::string textToSetTo = "Watching "+songName+" at "+tempString+"x speed";
+        if(speedToggle.toggle && tempString == "1.00") {
             textToSetTo = "Watching a Replay of "+songName;
         }
 
@@ -822,7 +823,7 @@ MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, int deactivatio
 
     inSongOrResults = false;
 
-    log(INFO, "Results screen has Ended");
+    log("Results screen has Ended");
 
     ResultsScreenEnd(self, deactivationType);
 }
@@ -855,6 +856,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "Start", 0));
     INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "OnDestroy", 0));
+    INSTALL_HOOK_OFFSETLESS(ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 1));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
 
