@@ -7,4 +7,4 @@ if (-not ($PSVersionTable.PSEdition -eq "Core")) {
 }
 
 & $buildScript NDK_PROJECT_PATH=$PSScriptRoot APP_BUILD_SCRIPT=$PSScriptRoot/Android.mk NDK_APPLICATION_MK=$PSScriptRoot/Application.mk
-Compress-Archive -Path "./libs/arm64-v8a/libreplay.so","./bmbfmod.json","./libs/arm64-v8a/libbeatsaber-hook_2019_2_1f1_0_1_3.so" -DestinationPath "./replay_v0.1.6.zip" -Update
+Compress-Archive -Path "./libs/arm64-v8a/libreplay.so","./bmbfmod.json","./libs/arm64-v8a/libbeatsaber-hook_TESTHOOK.so","./extern/BeatSaberQuestCustomUI/libs/arm64-v8a/libcustomui_2019_2_1f1_0_1_3.so" -DestinationPath "./replay_v0.1.8.zip" -Update
