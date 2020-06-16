@@ -7,7 +7,11 @@
     ],
     "category": "Gameplay",
     "gameVersion": "1.10.0",
+<<<<<<< Updated upstream
     "version": "0.1.8",
+=======
+    "version": "0.2.0",
+>>>>>>> Stashed changes
     "platform": "Quest",
     "components": [
         {

@@ -374,6 +374,19 @@ void getReplayValues(std::string str) {
 
 float lerp(float a, float b, float t) {
     float newFloat = a + (t * (b - a));
+    if(a > b) {
+        if(newFloat > a) {
+            newFloat = a;
+        } else if(newFloat < b) {
+            newFloat = b;
+        }
+    } else {
+        if(newFloat < a) {
+            newFloat = a;
+        } else if(newFloat > b) {
+            newFloat = b;
+        }
+    }
     return newFloat;
 }
 
@@ -382,6 +395,26 @@ Vector3 lerpVectors(Vector3 smallerVector3, Vector3 biggerVector3, float lerpAmo
     // Vector3 newVector = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smallerVector3, biggerVector3, lerpAmount);
 
     return smallerVector3;
+}
+
+bool hasFakeMiss() {
+    int amountCheckingEachSide = 10;
+
+    if(indexNum < amountCheckingEachSide) {
+        for(int i = 0; i < (indexNum+1)+amountCheckingEachSide; i++) {
+            if(combos[i] == 0) {
+                return false;
+            }
+        }
+    } else {
+        for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
+            if(combos[indexNum+i] == 0) {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }
 
 MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
@@ -828,6 +861,26 @@ MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, int deactivatio
     ResultsScreenEnd(self, deactivationType);
 }
 
+MAKE_HOOK_OFFSETLESS(NoteWasMissed, void, Il2CppObject* self) {
+
+    if(!recording && hasFakeMiss()) {
+        return;
+    }
+
+    NoteWasMissed(self);
+}
+
+MAKE_HOOK_OFFSETLESS(NoteWasCut, void, Il2CppObject* self, Il2CppObject* noteCutInfo) {
+
+    bool allIsOk = *RunMethod<bool>(noteCutInfo, "get_allIsOK");
+
+    if(!recording && !allIsOk && hasFakeMiss()) {
+        return;
+    }
+
+    NoteWasCut(self, noteCutInfo);
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
     info.version = "0.1.2";
@@ -857,6 +910,8 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "Start", 0));
     INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "OnDestroy", 0));
     INSTALL_HOOK_OFFSETLESS(ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 1));
+    INSTALL_HOOK_OFFSETLESS(NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
+    INSTALL_HOOK_OFFSETLESS(NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent",1));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
 
