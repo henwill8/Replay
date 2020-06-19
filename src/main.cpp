@@ -392,29 +392,39 @@ float lerp(float a, float b, float t) {
     return newFloat;
 }
 
-Vector3 lerpVectors(Vector3 smallerVector3, Vector3 biggerVector3, float lerpAmount) {
+Vector3 lerpVectors(Vector3 a, Vector3 b, float t) {
     
-    // Vector3 newVector = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smallerVector3, biggerVector3, lerpAmount);
+    // Vector3 newVector = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", a, b, t);
+    Vector3 newVector = {0, 0, 0};
+    newVector.x = lerp(a.x, b.x, t);
+    newVector.y = lerp(a.y, b.y, t);
+    newVector.z = lerp(a.z, b.z, t);
 
-    return smallerVector3;
+    log("A vector is: "+std::to_string(a.x)+", "+std::to_string(a.y)+", "+std::to_string(a.z)+". B vector is: "+std::to_string(b.x)+", "+std::to_string(b.y)+", "+std::to_string(b.z)+". New vector is: "+std::to_string(newVector.x)+", "+std::to_string(newVector.y)+", "+std::to_string(newVector.z)+", lerp amount is "+std::to_string(t));
+
+    return a;
 }
 
 bool hasFakeMiss() {
-    int amountCheckingEachSide = 10;
+    int amountCheckingEachSide = 2;
 
-    if(indexNum < amountCheckingEachSide) {
-        for(int i = 0; i < (indexNum+1)+amountCheckingEachSide; i++) {
-            if(combos[i] == 0) {
-                return false;
-            }
-        }
-    } else {
+    int biggestCombo = 0;
+
+    // if(indexNum < amountCheckingEachSide) {
+    //     for(int i = 0; i < (indexNum+1)+amountCheckingEachSide; i++) {
+    //         if(combos[i] > biggestCombo) {
+    //             biggestCombo = combos[i];
+    //         } else if(combos[i] < biggestCombo) {
+    //             return false;
+    //         }
+    //     }
+    // } else {
         for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
-            if(combos[indexNum+i] == 0) {
+            if(combos[indexNum+i] <= 1) {
                 return false;
             }
         }
-    }
+    // }
 
     return true;
 }
@@ -480,8 +490,8 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
             rightSaberTransform = *il2cpp_utils::RunMethod(rightSaber, il2cpp_functions::class_get_method_from_name(componentsClass, "get_transform", 0));
 
             if(leftSaberTransform != nullptr && rightSaberTransform != nullptr) {
-                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_position", lerpVectors(rightPositions[indexNum], rightPositions[indexNum+1], lerpAmount)));
-                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_eulerAngles", lerpVectors(rightRotations[indexNum], rightRotations[indexNum+1], lerpAmount)));
+                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_position", lerpVectors(rightPositions[indexNum], rightPositions[indexNum], lerpAmount)));
+                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_eulerAngles", lerpVectors(rightRotations[indexNum], rightRotations[indexNum], lerpAmount)));
                 CRASH_UNLESS(RunMethod(leftSaberTransform, "set_position", lerpVectors(leftPositions[indexNum], leftPositions[indexNum+1], lerpAmount)));
                 CRASH_UNLESS(RunMethod(leftSaberTransform, "set_eulerAngles", lerpVectors(leftRotations[indexNum], leftRotations[indexNum+1], lerpAmount)));
                 CRASH_UNLESS(SetFieldValue(self, "_headPos", lerpVectors(headPositions[indexNum], headPositions[indexNum+1], lerpAmount)));
@@ -505,7 +515,7 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
         if(!inPauseMenu) {
             float roundedReplaySpeed = (float(int(replaySpeed*100)))/100;
 
-            log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
+            // log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
 
             SetFieldValue(self, "_timeScale", (float(int(replaySpeed*100)))/100);
             Il2CppObject* audioSource = *GetFieldValue(self, "_audioSource");
