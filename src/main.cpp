@@ -253,7 +253,8 @@ float replaySpeed = 1.0f;
 
 std::string songName = "";
 
-int offset = getConfig().config["Offset"].GetInt();
+// int offset = getConfig().config["Offset"].GetInt();
+int offset = -1;
 
 void SaveConfig() {
     if(!getConfig().config.HasMember("Offset")) {
@@ -462,7 +463,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
             if(indexNum < times.size()-1) {
                 if(times[indexNum+offset] > songTime) {
                     foundCorrectIndex = true;
-                } else if(indexNum < times.size()) {
+                } else if(indexNum+offset < times.size()) {
                     indexNum++;
                 }
             } else {
