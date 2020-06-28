@@ -3,10 +3,10 @@
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
 #include "../extern/beatsaber-hook/include/modloader.hpp"
 #include "../extern/beatsaber-hook/shared/utils/typedefs.h"
-#include "../extern/beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "../extern/beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "../extern/beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "../extern/beatsaber-hook/shared/config/config-utils.hpp"
+#include "../extern/beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "../extern/BeatSaberQuestCustomUI/shared/customui.hpp"
 #include <sstream>
 #include <iostream>
@@ -219,7 +219,12 @@ std::vector<float> times;
 std::vector<float> energies;
 std::vector<std::string> ranks;
 
+std::vector<float> misses;
+
 std::string stringToSave;
+std::string missesToAdd;
+
+bool isOldReplay;
 
 Il2CppObject* scoreUI;
 
@@ -284,6 +289,7 @@ void getReplayValues(std::string str) {
     energies.clear();
     combos.clear();
     ranks.clear();
+    misses.clear();
 
     batteryEnergy = false;
     disappearingArrows = false;
@@ -296,6 +302,8 @@ void getReplayValues(std::string str) {
     ghostNotes = false;
     fasterSong = false;
     leftHanded = false;
+
+    bool missesStarted = false;
 
     score = 0;
     combo = 0;
@@ -320,58 +328,66 @@ void getReplayValues(std::string str) {
         ss >> temp;
  
         /* Checking the given word is integer or not */
-        if (std::stringstream(temp) >> floatFound) {
-            if(timesThrough%amountPerLine == 0 || timesThrough%amountPerLine == 3 || timesThrough%amountPerLine == 6 || timesThrough%amountPerLine == 9 || timesThrough%amountPerLine == 15) {
-                tempVector.x = floatFound;
-            } else if(timesThrough%amountPerLine == 1 || timesThrough%amountPerLine == 4 || timesThrough%amountPerLine == 7 || timesThrough%amountPerLine == 10 || timesThrough%amountPerLine == 16) {
-                tempVector.y = floatFound;
-            } else if(timesThrough%amountPerLine == 2 || timesThrough%amountPerLine == 5 || timesThrough%amountPerLine == 8 || timesThrough%amountPerLine == 11 || timesThrough%amountPerLine == 17) {
-                tempVector.z = floatFound;
-                if(timesThrough%amountPerLine == 2) {
-                    rightPositions.push_back(tempVector);
-                } else if(timesThrough%amountPerLine == 5) {
-                    rightRotations.push_back(tempVector);
-                } else if(timesThrough%amountPerLine == 8) {
-                    leftPositions.push_back(tempVector);
-                } else if(timesThrough%amountPerLine == 11) {
-                    leftRotations.push_back(tempVector);
-                } else if(timesThrough%amountPerLine == 17) {
-                    headPositions.push_back(tempVector);
+        if(!missesStarted) {
+            if (std::stringstream(temp) >> floatFound) {
+                if(timesThrough%amountPerLine == 0 || timesThrough%amountPerLine == 3 || timesThrough%amountPerLine == 6 || timesThrough%amountPerLine == 9 || timesThrough%amountPerLine == 15) {
+                    tempVector.x = floatFound;
+                } else if(timesThrough%amountPerLine == 1 || timesThrough%amountPerLine == 4 || timesThrough%amountPerLine == 7 || timesThrough%amountPerLine == 10 || timesThrough%amountPerLine == 16) {
+                    tempVector.y = floatFound;
+                } else if(timesThrough%amountPerLine == 2 || timesThrough%amountPerLine == 5 || timesThrough%amountPerLine == 8 || timesThrough%amountPerLine == 11 || timesThrough%amountPerLine == 17) {
+                    tempVector.z = floatFound;
+                    if(timesThrough%amountPerLine == 2) {
+                        rightPositions.push_back(tempVector);
+                    } else if(timesThrough%amountPerLine == 5) {
+                        rightRotations.push_back(tempVector);
+                    } else if(timesThrough%amountPerLine == 8) {
+                        leftPositions.push_back(tempVector);
+                    } else if(timesThrough%amountPerLine == 11) {
+                        leftRotations.push_back(tempVector);
+                    } else if(timesThrough%amountPerLine == 17) {
+                        headPositions.push_back(tempVector);
+                    }
+                } else if(timesThrough%amountPerLine == 13) {
+                    times.push_back(floatFound);
+                } else if(timesThrough%amountPerLine == 14) {
+                    energies.push_back(floatFound);
                 }
-            } else if(timesThrough%amountPerLine == 13) {
-                times.push_back(floatFound);
-            } else if(timesThrough%amountPerLine == 14) {
-                energies.push_back(floatFound);
             }
-        }
-        if(timesThrough%amountPerLine == 19) {
-            log(temp);
-            ranks.push_back(temp);
-            // timesThrough++;
-        }
-        if(std::stringstream(temp) >> intFound) {
-            if(timesThrough%amountPerLine == 12) {
-                scores.push_back(intFound);
-            } else if(timesThrough%amountPerLine == 18) {
-                combos.push_back(intFound);
+            if(timesThrough%amountPerLine == 19) {
+                log(temp);
+                ranks.push_back(temp);
+                // timesThrough++;
             }
-            timesThrough++;
+            if(std::stringstream(temp) >> intFound) {
+                if(timesThrough%amountPerLine == 12) {
+                    scores.push_back(intFound);
+                } else if(timesThrough%amountPerLine == 18) {
+                    combos.push_back(intFound);
+                }
+                timesThrough++;
+            }
+            if(temp == "batteryEnergy") batteryEnergy = true;
+            if(temp == "disappearingArrows") disappearingArrows = true;
+            if(temp == "noObstacles") noObstacles = true;
+            if(temp == "noBombs") noBombs = true;
+            if(temp == "noArrows") noArrows = true;
+            if(temp == "slowerSong") slowerSong = true;
+            if(temp == "noFail") noFail = true;
+            if(temp == "instafail") instafail = true;
+            if(temp == "ghostNotes") ghostNotes = true;
+            if(temp == "fasterSong") fasterSong = true;
+            if(temp == "slowerSong") slowerSong = true;
+            if(temp == "leftHanded") leftHanded = true;
+            if(temp == "Misses:") missesStarted = true;
+        } else if(std::stringstream(temp) >> floatFound) {
+            misses.push_back(floatFound);
         }
-        if(temp == "batteryEnergy") batteryEnergy = true;
-        if(temp == "disappearingArrows") disappearingArrows = true;
-        if(temp == "noObstacles") noObstacles = true;
-        if(temp == "noBombs") noBombs = true;
-        if(temp == "noArrows") noArrows = true;
-        if(temp == "slowerSong") slowerSong = true;
-        if(temp == "noFail") noFail = true;
-        if(temp == "instafail") instafail = true;
-        if(temp == "ghostNotes") ghostNotes = true;
-        if(temp == "fasterSong") fasterSong = true;
-        if(temp == "slowerSong") slowerSong = true;
-        if(temp == "leftHanded") leftHanded = true;
  
         /* To save from space at the end of string */
         temp = "";
+    }
+    if(!missesStarted) {
+        isOldReplay = true;
     }
 }
 
@@ -407,7 +423,7 @@ Vector3 lerpVectors(Vector3 a, Vector3 b, float t) {
 }
 
 bool hasFakeMiss() {
-    int amountCheckingEachSide = 2;
+    float amountCheckingEachSide = 0.1f;
 
     int biggestCombo = 0;
 
@@ -420,8 +436,8 @@ bool hasFakeMiss() {
     //         }
     //     }
     // } else {
-        for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
-            if(combos[indexNum+i] <= 1) {
+        for(int i = 0; i < misses.size(); i++) {
+            if(songTime >= misses[i]-amountCheckingEachSide && songTime <= misses[i]+amountCheckingEachSide) {
                 return false;
             }
         }
@@ -541,6 +557,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
     
     if(recording) {
         stringToSave = "";
+        missesToAdd = "Misses: ";
 
         batteryEnergy = *RunMethod<bool>(gameplayModifiers, "get_batteryEnergy");
         if(batteryEnergy) stringToSave = stringToSave+"batteryEnergy ";
@@ -581,6 +598,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         if(leftHanded) stringToSave = stringToSave+"leftHanded ";
     } else {
         stringToSave = readfile(replayDirectory+songHash+".txt");
+        isOldReplay = false;
         getReplayValues(stringToSave);
 
         RunMethod(gameplayModifiers, "set_batteryEnergy", batteryEnergy);
@@ -622,12 +640,12 @@ MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompl
 
     if(recording && levelEndState == 1 && !inPracticeMode) {
         if(score > highScore || !fileexists(replayDirectory+songHash+".txt")) {
-            writefile(replayDirectory+songHash+".txt", stringToSave);
-        } else {
+            writefile(replayDirectory+songHash+".txt", stringToSave+missesToAdd);
+        } else {//
             stringToSave = readfile(replayDirectory+songHash+".txt");
             getReplayValues(stringToSave);
             if(score > scores[scores.size()-1]) {
-                writefile(replayDirectory+songHash+".txt", stringToSave);
+                writefile(replayDirectory+songHash+".txt", stringToSave+missesToAdd);
             }
         }
     }
@@ -887,8 +905,11 @@ MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, int deactivatio
 
 MAKE_HOOK_OFFSETLESS(NoteWasMissed, void, Il2CppObject* self) {
 
-    if(!recording && hasFakeMiss()) {
+    if(!recording && hasFakeMiss() && !isOldReplay) {
         return;
+    }
+    if(recording) {
+        missesToAdd = missesToAdd + std::to_string(songTime) + " ";
     }
 
     NoteWasMissed(self);
@@ -898,8 +919,11 @@ MAKE_HOOK_OFFSETLESS(NoteWasCut, void, Il2CppObject* self, Il2CppObject* noteCut
 
     bool allIsOk = *RunMethod<bool>(noteCutInfo, "get_allIsOK");
 
-    if(!recording && !allIsOk && hasFakeMiss()) {
+    if(!recording && !allIsOk && hasFakeMiss() && !isOldReplay) {
         return;
+    }
+    if(recording && !allIsOk) {
+        missesToAdd = missesToAdd + std::to_string(songTime) + " ";
     }
 
     NoteWasCut(self, noteCutInfo);
