@@ -1,33 +1,45 @@
 {
-    "id": "Replay",
-    "name": "Replay",
-    "author": "Henwill8",
-    "description": [
-        
-    ],
-    "category": "Gameplay",
-    "gameVersion": "1.10.0",
-    "version": "0.2.0",
-    "platform": "Quest",
-    "components": [
-        {
-            "type": "HookMod",
-            "installAction": {
-                "installLibraryFile": "libreplay.so"
-            },
-            "uninstallAction": {
-                "removeLibraryFile": "libreplay.so"
-            }
-        },
-        {
-            "type": "FileCopyMod",
-            "sourceFileName": "libbeatsaber-hook_TESTHOOK.so",
-            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libbeatsaber-hook_2019_TESTHOOK.so"
-        },
-        {
-            "type": "FileCopyMod",
-            "sourceFileName": "libcustomui_2019_2_1f1_0_1_3.so",
-            "targetRootedPathAndFileName": "/sdcard/Android/data/com.beatgames.beatsaber/files/libs/libcustomui_2019_2_1f1_0_1_3.so"
-        }
-    ]
+  "id": "replay",
+  "name": "Replay",
+  "version": "0.3.0",
+  "author": "Henwill8",
+  "description": [],
+  "category": "Gameplay",
+  "gameVersion": "1.11.1",
+  "platform": "Quest",
+  "components": [
+    {
+      "type": "HookMod",
+      "installAction": {
+        "installLibraryFile": "libreplay_0_3_0.so"
+      },
+      "uninstallAction": {
+        "removeLibraryFile": "libreplay_0_3_0.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libbeatsaber-hook_0_7_1.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libcustomui_2019_2_1f1_0_1_3.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libbs-utils_0_3_4.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libcodegen_0_2_6.so"
+      }
+    }
+  ]
 }

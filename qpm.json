@@ -1,0 +1,28 @@
+{
+  "sharedDir": "shared",
+  "dependenciesDir": "extern",
+  "info": {
+    "name": "replay",
+    "id": "replay",
+    "version": "0.3.0",
+    "url": null,
+    "additionalData": {}
+  },
+  "dependencies": [
+    {
+      "id": "codegen",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "beatsaber-hook",
+      "versionRange": "*",
+      "additionalData": {
+        "extraFiles": [
+          "src/inline-hook"
+        ]
+      }
+    }
+  ],
+  "additionalData": {}
+}

@@ -1,13 +1,15 @@
 #include <dlfcn.h>
 #include "../extern/beatsaber-hook/shared/utils/utils.h"
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
-#include "../extern/beatsaber-hook/include/modloader.hpp"
+#include "../extern/modloader/shared/modloader.hpp"
 #include "../extern/beatsaber-hook/shared/utils/typedefs.h"
 #include "../extern/beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "../extern/beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "../extern/beatsaber-hook/shared/config/rapidjson-utils.hpp"
 #include "../extern/beatsaber-hook/shared/config/config-utils.hpp"
 #include "../extern/BeatSaberQuestCustomUI/shared/customui.hpp"
+#include "../extern/bs-utils/shared/utils.hpp"
+
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
@@ -17,10 +19,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
+
+#include "../extern/codegen/include/GlobalNamespace/OVRInput.hpp"
+#include "../extern/codegen/include/GlobalNamespace/OVRInput_Button.hpp"
+
 using namespace il2cpp_utils;
 
 void log(std::string str) {
-    Logger::get().info(str);
+    Logger::get().info("Replay: " + str);
 }
 
 class CustomButton {
@@ -38,6 +44,7 @@ class CustomButton {
         Vector3 rotation = {0, 0, 0};
         float fontSize = 10.0f;
         bool toggle = true;//Use this when creating toggles
+        std::string stringToggle;
         std::string text = "Custom Button UI";
         function_ptr_t<void> onPress;
  
@@ -138,7 +145,7 @@ class CustomButton {
         }
  
         void destroy() {
-            if(gameObject != nullptr) {
+            if(isCreated) {
                 RunMethod("UnityEngine", "Object", "Destroy", gameObject);
                 gameObject = nullptr;
                 TMP = nullptr;
@@ -154,6 +161,10 @@ class CustomButton {
 
 static CustomButton replayButton;
 
+static CustomButton replayFailedButton;
+
+static CustomButton cameraToggle;//Toggle types are "hmd", "smooth", and "thirdPerson"
+
 static CustomButton speedToggle;
 
 CustomUI::TextObject replayText;
@@ -166,19 +177,47 @@ Configuration& getConfig() {
 }
 
 Il2CppObject* playButton = nullptr;
+Il2CppObject* restartButton = nullptr;
 
 bool recording = true;
+
+bool inSong = false;
+bool inSongOrResults = false;
+
+bool failedReplay;
 
 std::string ssEnabled = "0";
 bool firstTime = true;
 
 void replayButtonOnClick() {
-    if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
-        setenv("disable_ss_upload", "1", true);
-    }
+    bs_utils::Submission::disable(modInfo);
     if(playButton != nullptr) {
         recording = false;
-        RunMethod(playButton, "Press");
+        if(inSongOrResults && !inSong) {
+            log("Pressed failed replay button");
+            failedReplay = true;
+            RunMethod(restartButton, "Press");
+        } else {
+            log("Pressed replay button");
+            failedReplay = false;
+            RunMethod(playButton, "Press");
+        }
+    }
+}
+
+void cameraToggleOnClick() {
+    if(cameraToggle.stringToggle == "hmd") {
+        cameraToggle.stringToggle = "smooth";
+        cameraToggle.setText("Smooth Camera");
+        RunMethod(cameraToggle.TMP, "set_fontSize", 3.3f);
+    } else if(cameraToggle.stringToggle == "smooth") {
+        cameraToggle.stringToggle = "thirdPerson";
+        cameraToggle.setText("Third Person");
+        RunMethod(cameraToggle.TMP, "set_fontSize", 3.8f);
+    } else if(cameraToggle.stringToggle == "thirdPerson") {
+        cameraToggle.stringToggle = "hmd";
+        cameraToggle.setText("Normal");
+        RunMethod(cameraToggle.TMP, "set_fontSize", 5);
     }
 }
 
@@ -193,31 +232,28 @@ void speedToggleOnClick() {
 }
 
 float songTime = 0.0f;
-bool inSong = false;
-bool inSongOrResults = false;
 
 int score;
 int highScore;
-std::string rank;
-float rankFloat;
+float percent;
+int rank;
 float scoreMultiplier = 1.0f;
 
 int combo = 0;
 
 bool inPracticeMode;
 
-float energy;
-
 std::vector<Vector3> rightPositions;
 std::vector<Vector3> rightRotations;
 std::vector<Vector3> leftPositions;
 std::vector<Vector3> leftRotations;
 std::vector<Vector3> headPositions;
+std::vector<Vector3> headRotations;
 std::vector<int> scores;
 std::vector<int> combos;
 std::vector<float> times;
-std::vector<float> energies;
-std::vector<std::string> ranks;
+std::vector<float> percents;
+std::vector<int> ranks;
 
 std::string stringToSave;
 
@@ -247,26 +283,59 @@ float lTriggerVal;
 
 bool inPauseMenu = false;
 
-int amountPerLine = 20;
+int amountPerLine = 23;
 
 float replaySpeed = 1.0f;
 
 std::string songName = "";
 
+Vector3 smoothCameraRotation;
+Vector3 smoothCameraPosition;
+
+float positionSmooth;
+float rotationSmooth;
+
+Vector3 smoothPositionOffset;
+
+Vector3 thirdPersonCameraPosition;
+Vector3 thirdPersonCameraRotation;
+
+int maxRawScore;
+
 // int offset = getConfig().config["Offset"].GetInt();
-int offset = -1;
+int offset = 0;
 
 void SaveConfig() {
-    if(!getConfig().config.HasMember("Offset")) {
+    if(!fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mod_cfgs/Replay.json")) {
         log("Creating config");
         getConfig().config.RemoveAllMembers();
         getConfig().config.SetObject();
         rapidjson::Document::AllocatorType& allocator = getConfig().config.GetAllocator();
-        getConfig().config.AddMember("Offset", 0, allocator);
+        getConfig().config.AddMember("PositionSmooth", 90, allocator);
+        getConfig().config.AddMember("RotationSmooth", 97, allocator);
+
+        rapidjson::Value SmoothCameraObject(rapidjson::kObjectType);
+        SmoothCameraObject.AddMember("x", 0, allocator);
+        SmoothCameraObject.AddMember("y", 0, allocator);
+        SmoothCameraObject.AddMember("z", -1, allocator);
+        getConfig().config.AddMember("SmoothCameraOffset", SmoothCameraObject, allocator);
+        
+        rapidjson::Value ThirdPersonPosObject(rapidjson::kObjectType);
+        ThirdPersonPosObject.AddMember("x", -3, allocator);
+        ThirdPersonPosObject.AddMember("y", 1.6f, allocator);
+        ThirdPersonPosObject.AddMember("z", -5, allocator);
+        getConfig().config.AddMember("ThirdPersonCameraPos", ThirdPersonPosObject, allocator);
+
+        rapidjson::Value ThirdPersonRotObject(rapidjson::kObjectType);
+        ThirdPersonRotObject.AddMember("x", 0, allocator);
+        ThirdPersonRotObject.AddMember("y", 45, allocator);
+        ThirdPersonRotObject.AddMember("z", 0, allocator);
+        getConfig().config.AddMember("ThirdPersonCameraRot", ThirdPersonRotObject, allocator);
+
+        getConfig().config.AddMember("FullComboOverwrites", false, allocator);
+        getConfig().config.AddMember("DisableVibration", true, allocator);
+
         getConfig().Write();
-        if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mod_cfgs/Replay.json")) {
-            log("Config was successfully created");
-        }
     } else {
         getConfig().Load();
         log("Not creating config");
@@ -279,10 +348,11 @@ void getReplayValues(std::string str) {
     leftPositions.clear();
     leftRotations.clear();
     headPositions.clear();
+    headRotations.clear();
     scores.clear();
     times.clear();
-    energies.clear();
     combos.clear();
+    percents.clear();
     ranks.clear();
 
     batteryEnergy = false;
@@ -299,7 +369,6 @@ void getReplayValues(std::string str) {
 
     score = 0;
     combo = 0;
-    energy = 0.5f;
     
     int timesThrough = 0;
  
@@ -321,11 +390,11 @@ void getReplayValues(std::string str) {
  
         /* Checking the given word is integer or not */
         if (std::stringstream(temp) >> floatFound) {
-            if(timesThrough%amountPerLine == 0 || timesThrough%amountPerLine == 3 || timesThrough%amountPerLine == 6 || timesThrough%amountPerLine == 9 || timesThrough%amountPerLine == 15) {
+            if(timesThrough%amountPerLine == 0 || timesThrough%amountPerLine == 3 || timesThrough%amountPerLine == 6 || timesThrough%amountPerLine == 9 || timesThrough%amountPerLine == 14 || timesThrough%amountPerLine == 19) {
                 tempVector.x = floatFound;
-            } else if(timesThrough%amountPerLine == 1 || timesThrough%amountPerLine == 4 || timesThrough%amountPerLine == 7 || timesThrough%amountPerLine == 10 || timesThrough%amountPerLine == 16) {
+            } else if(timesThrough%amountPerLine == 1 || timesThrough%amountPerLine == 4 || timesThrough%amountPerLine == 7 || timesThrough%amountPerLine == 10 || timesThrough%amountPerLine == 15 || timesThrough%amountPerLine == 20) {
                 tempVector.y = floatFound;
-            } else if(timesThrough%amountPerLine == 2 || timesThrough%amountPerLine == 5 || timesThrough%amountPerLine == 8 || timesThrough%amountPerLine == 11 || timesThrough%amountPerLine == 17) {
+            } else if(timesThrough%amountPerLine == 2 || timesThrough%amountPerLine == 5 || timesThrough%amountPerLine == 8 || timesThrough%amountPerLine == 11 || timesThrough%amountPerLine == 16 || timesThrough%amountPerLine == 21) {
                 tempVector.z = floatFound;
                 if(timesThrough%amountPerLine == 2) {
                     rightPositions.push_back(tempVector);
@@ -335,25 +404,25 @@ void getReplayValues(std::string str) {
                     leftPositions.push_back(tempVector);
                 } else if(timesThrough%amountPerLine == 11) {
                     leftRotations.push_back(tempVector);
-                } else if(timesThrough%amountPerLine == 17) {
+                } else if(timesThrough%amountPerLine == 16) {
                     headPositions.push_back(tempVector);
+                } else if(timesThrough%amountPerLine == 21) {
+                    headRotations.push_back(tempVector);
                 }
             } else if(timesThrough%amountPerLine == 13) {
                 times.push_back(floatFound);
-            } else if(timesThrough%amountPerLine == 14) {
-                energies.push_back(floatFound);
             }
         }
-        if(timesThrough%amountPerLine == 19) {
-            log(temp);
-            ranks.push_back(temp);
-            // timesThrough++;
+        if(timesThrough%amountPerLine == 18) {
+            percents.push_back(floatFound);
         }
         if(std::stringstream(temp) >> intFound) {
             if(timesThrough%amountPerLine == 12) {
                 scores.push_back(intFound);
-            } else if(timesThrough%amountPerLine == 18) {
+            } else if(timesThrough%amountPerLine == 17) {
                 combos.push_back(intFound);
+            } else if(timesThrough%amountPerLine == 22) {
+                ranks.push_back(intFound);
             }
             timesThrough++;
         }
@@ -375,63 +444,55 @@ void getReplayValues(std::string str) {
     }
 }
 
-float lerp(float a, float b, float t) {
-    float newFloat = a + (t * (b - a));
-    if(a > b) {
-        if(newFloat > a) {
-            newFloat = a;
-        } else if(newFloat < b) {
-            newFloat = b;
-        }
-    } else {
-        if(newFloat < a) {
-            newFloat = a;
-        } else if(newFloat > b) {
-            newFloat = b;
-        }
-    }
-    return newFloat;
-}
-
-Vector3 lerpVectors(Vector3 a, Vector3 b, float t) {
-    
-    // Vector3 newVector = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", a, b, t);
-    Vector3 newVector = {0, 0, 0};
-    newVector.x = lerp(a.x, b.x, t);
-    newVector.y = lerp(a.y, b.y, t);
-    newVector.z = lerp(a.z, b.z, t);
-
-    log("A vector is: "+std::to_string(a.x)+", "+std::to_string(a.y)+", "+std::to_string(a.z)+". B vector is: "+std::to_string(b.x)+", "+std::to_string(b.y)+", "+std::to_string(b.z)+". New vector is: "+std::to_string(newVector.x)+", "+std::to_string(newVector.y)+", "+std::to_string(newVector.z)+", lerp amount is "+std::to_string(t));
-
-    return a;
-}
-
 bool hasFakeMiss() {
     int amountCheckingEachSide = 2;
 
-    int biggestCombo = 0;
-
-    // if(indexNum < amountCheckingEachSide) {
-    //     for(int i = 0; i < (indexNum+1)+amountCheckingEachSide; i++) {
-    //         if(combos[i] > biggestCombo) {
-    //             biggestCombo = combos[i];
-    //         } else if(combos[i] < biggestCombo) {
-    //             return false;
-    //         }
-    //     }
-    // } else {
-        for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
-            if(combos[indexNum+i] <= 1) {
-                return false;
-            }
+    for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
+        if(combos[indexNum+i] <= 1) {
+            return false;
         }
-    // }
+    }
 
     return true;
 }
 
+Vector3 addVector3(Vector3 a, Vector3 b) {
+    return Vector3{a.x + b.x, a.y + b.y, a.z + b.z};
+}
+
+Quaternion addQuaternion(Quaternion a, Quaternion b) {
+    return Quaternion{a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w};
+}
+
+Quaternion eulerToQuaternion(Vector3 euler) {
+    Quaternion tempQuaternion = {0, 0, 0, 0};
+    tempQuaternion.x = sin(euler.x/2) * cos(euler.y/2) * cos(euler.z/2) - cos(euler.x/2) * sin(euler.y/2) * sin(euler.z/2);
+    tempQuaternion.y = cos(euler.x/2) * sin(euler.y/2) * cos(euler.z/2) + sin(euler.x/2) * cos(euler.y/2) * sin(euler.z/2);
+    tempQuaternion.z = cos(euler.x/2) * cos(euler.y/2) * sin(euler.z/2) - sin(euler.x/2) * sin(euler.y/2) * cos(euler.z/2);
+    tempQuaternion.w = cos(euler.x/2) * cos(euler.y/2) * cos(euler.z/2) + sin(euler.x/2) * sin(euler.y/2) * sin(euler.z/2);
+    return tempQuaternion;
+}
+
+int calculateMaxScore(int blockCount) {
+    int maxScore;
+    if (blockCount < 14) {
+        if (blockCount == 1) {
+            maxScore = 115;
+        } else if (blockCount < 5) {
+            maxScore = (blockCount - 1) * 230 + 115;
+        } else {
+            maxScore = (blockCount - 5) * 460 + 1035;
+        }
+    } else {
+        maxScore = (blockCount - 13) * 920 + 4715;
+    }
+    return maxScore;
+}
+
 MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
+
     // log("PlayerControllerUpdate");
+    
     if(recording) {
         Il2CppObject* leftSaber = *il2cpp_utils::GetFieldValue(self, "_leftSaber");
         Il2CppObject* rightSaber = *il2cpp_utils::GetFieldValue(self, "_rightSaber");
@@ -450,7 +511,8 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
                 Vector3 leftPos = *RunMethod<Vector3>(leftSaberTransform, "get_position");
                 Vector3 leftRot = *RunMethod<Vector3>(leftSaberTransform, "get_eulerAngles");
                 Vector3 headPos = *GetFieldValue<Vector3>(self, "_headPos");
-                stringToSave = stringToSave+std::to_string(rightPos.x)+" "+std::to_string(rightPos.y)+" "+std::to_string(rightPos.z)+" "+std::to_string(rightRot.x)+" "+std::to_string(rightRot.y)+" "+std::to_string(rightRot.z)+" "+std::to_string(leftPos.x)+" "+std::to_string(leftPos.y)+" "+std::to_string(leftPos.z)+" "+std::to_string(leftRot.x)+" "+std::to_string(leftRot.y)+" "+std::to_string(leftRot.z)+" "+std::to_string(score)+" "+std::to_string(songTime)+" "+std::to_string(energy)+" "+std::to_string(headPos.x)+" "+std::to_string(headPos.y)+" "+std::to_string(headPos.z)+" "+std::to_string(combo)+" "+rank+" ";
+                Vector3 headRot = *GetFieldValue<Vector3>(self, "_headRot");
+                stringToSave = stringToSave+std::to_string(rightPos.x)+" "+std::to_string(rightPos.y)+" "+std::to_string(rightPos.z)+" "+std::to_string(rightRot.x)+" "+std::to_string(rightRot.y)+" "+std::to_string(rightRot.z)+" "+std::to_string(leftPos.x)+" "+std::to_string(leftPos.y)+" "+std::to_string(leftPos.z)+" "+std::to_string(leftRot.x)+" "+std::to_string(leftRot.y)+" "+std::to_string(leftRot.z)+" "+std::to_string(score)+" "+std::to_string(songTime)+" "+std::to_string(headPos.x)+" "+std::to_string(headPos.y)+" "+std::to_string(headPos.z)+" "+std::to_string(combo)+" "+std::to_string(percent)+" "+std::to_string(headRot.x)+" "+std::to_string(headRot.y)+" "+std::to_string(headRot.z)+" "+std::to_string(rank)+" ";
             }
         }
     }
@@ -471,14 +533,6 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
             }
         }
         
-        float lerpAmount = 1 - (((times[indexNum+1] - songTime) / (times[indexNum+1] - times[indexNum])) - 1);
-        if(lerpAmount > 1) {
-            lerpAmount = 1;
-        } else if(lerpAmount < 0) {
-            lerpAmount = 0;
-        }
-        // log("Lerp amount is "+std::to_string(lerpAmount));
-
         Il2CppObject* leftSaber = *il2cpp_utils::GetFieldValue(self, "_leftSaber");
         Il2CppObject* rightSaber = *il2cpp_utils::GetFieldValue(self, "_rightSaber");
 
@@ -491,11 +545,11 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, Il2CppObject* self) {
             rightSaberTransform = *il2cpp_utils::RunMethod(rightSaber, il2cpp_functions::class_get_method_from_name(componentsClass, "get_transform", 0));
 
             if(leftSaberTransform != nullptr && rightSaberTransform != nullptr) {
-                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_position", lerpVectors(rightPositions[indexNum], rightPositions[indexNum], lerpAmount)));
-                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_eulerAngles", lerpVectors(rightRotations[indexNum], rightRotations[indexNum], lerpAmount)));
-                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_position", lerpVectors(leftPositions[indexNum], leftPositions[indexNum+1], lerpAmount)));
-                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_eulerAngles", lerpVectors(leftRotations[indexNum], leftRotations[indexNum+1], lerpAmount)));
-                CRASH_UNLESS(SetFieldValue(self, "_headPos", lerpVectors(headPositions[indexNum], headPositions[indexNum+1], lerpAmount)));
+                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_position", rightPositions[indexNum]));
+                CRASH_UNLESS(RunMethod(rightSaberTransform, "set_eulerAngles",rightRotations[indexNum]));
+                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_position", leftPositions[indexNum]));
+                CRASH_UNLESS(RunMethod(leftSaberTransform, "set_eulerAngles", leftRotations[indexNum]));
+                CRASH_UNLESS(SetFieldValue(self, "_headPos", headPositions[indexNum]));
             }
         }
     }
@@ -533,11 +587,11 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
 
     log("Song Start");
 
-    energy = 0.5f;
     inSong = true;
     inSongOrResults = true;
     indexNum = 0;
     replaySpeed = 1.0f;
+    score = 0;
     
     if(recording) {
         stringToSave = "";
@@ -580,8 +634,14 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         leftHanded = *RunMethod<bool>(playerSpecificSettings, "get_leftHanded");
         if(leftHanded) stringToSave = stringToSave+"leftHanded ";
     } else {
-        stringToSave = readfile(replayDirectory+songHash+".txt");
+        log(std::to_string(failedReplay));
+        if(!failedReplay) {
+            stringToSave = readfile(replayDirectory+songHash+".txt");
+        }
         getReplayValues(stringToSave);
+
+        smoothCameraPosition = {0, 1.8, 0};
+        smoothCameraRotation = headRotations[0];
 
         RunMethod(gameplayModifiers, "set_batteryEnergy", batteryEnergy);
         RunMethod(gameplayModifiers, "set_disappearingArrows", disappearingArrows);
@@ -592,6 +652,8 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppObject* difficul
         RunMethod(gameplayModifiers, "set_noFail", noFail);
         RunMethod(gameplayModifiers, "set_noObstacles", noObstacles);
         RunMethod(playerSpecificSettings, "set_leftHanded", leftHanded);
+        if(fasterSong) RunMethod(gameplayModifiers, "set_songSpeed", 1);
+        if(slowerSong) RunMethod(gameplayModifiers, "set_songSpeed", 2);
     }
 
     inPauseMenu = false;
@@ -605,10 +667,6 @@ MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompl
     
     log("SongEnd");
 
-    if(!recording && fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
-        setenv("disable_ss_upload", "1", true);
-    }
-
     inSong = false;
 
     if(replayText.gameObj != nullptr) {
@@ -621,7 +679,7 @@ MAKE_HOOK_OFFSETLESS(SongEnd, void, Il2CppObject* self, Il2CppObject* levelCompl
     log("Level end state is "+std::to_string(levelEndState));
 
     if(recording && levelEndState == 1 && !inPracticeMode) {
-        if(score > highScore || !fileexists(replayDirectory+songHash+".txt")) {
+        if(score > highScore || !fileexists(replayDirectory+songHash+".txt") || (*RunMethod<bool>(levelCompleteionResults, "get_fullCombo") && getConfig().config["FullComboOverwrites"].GetBool())) {
             writefile(replayDirectory+songHash+".txt", stringToSave);
         } else {
             stringToSave = readfile(replayDirectory+songHash+".txt");
@@ -641,7 +699,7 @@ MAKE_HOOK_OFFSETLESS(ScoreChanged, void, Il2CppObject* self, int rawScore, int m
 
     // log("Score Changed");
     
-    if(!recording) {
+    if(!recording && maxRawScore != 0) {
         rawScore = scores[indexNum];
         modifiedScore = rawScore * scoreMultiplier;
     }
@@ -659,22 +717,7 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
 
     if(!inSongOrResults) {
         recording = true;
-
-        if(fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mods/libScoreSaber.so")) {
-            log("Score saber is loaded");
-            // if(firstTime) {
-            //     log("Getting ss");
-            //     char* temp = getenv("disable_ss_upload");
-            //     std::string tempString(temp);
-            //     // ssEnabled = std::string(getenv("disable_ss_upload"));
-            //     log(std::string(tempString));
-            //     firstTime = false;
-            // } else if(ssEnabled == "0") {
-                setenv("disable_ss_upload", "0", true);
-            // } else {
-            //     setenv("disable_ss_upload", "1", true);
-            // }
-        }
+        bs_utils::Submission::enable(modInfo);
     }
 
     Il2CppObject* Level = CRASH_UNLESS(*GetFieldValue(self, "_level"));
@@ -696,18 +739,34 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
     songHash = to_utf8(csstrtostr(LevelID))+std::to_string(Difficulty)+modeName;
 
     replayButton.destroy();
+    cameraToggle.destroy();
 
     if(fileexists(replayDirectory+songHash+".txt")) {
         log("Making Replay button");
-        replayButton.setParentAndTransform(playButton, 1);
+        replayButton.setParentAndTransform(playButton, 5);
         replayButton.onPress = replayButtonOnClick;
         replayButton.scale = {1, 1, 1};
+        replayButton.sizeDelta = {-12, -35, 0};
         replayButton.fontSize = 5;
         replayButton.create();
         if(replayButton.TMPLocalizer != nullptr) {
             RunMethod("UnityEngine", "Object", "Destroy", replayButton.TMPLocalizer);
         }
         replayButton.setText("Replay");
+        RunMethod(replayButton.TMP, "set_enableWordWrapping", false);
+        
+        cameraToggle.setParentAndTransform(playButton, 5);
+        cameraToggle.onPress = cameraToggleOnClick;
+        cameraToggle.scale = {1, 1, 1};
+        cameraToggle.sizeDelta = {12, -35, 0};
+        cameraToggle.fontSize = 5;
+        cameraToggle.create();
+        if(cameraToggle.TMPLocalizer != nullptr) {
+            RunMethod("UnityEngine", "Object", "Destroy", cameraToggle.TMPLocalizer);
+        }
+        cameraToggle.setText("Normal");//TO DO: Set to config value
+        cameraToggle.stringToggle = "hmd";
+        RunMethod(cameraToggle.TMP, "set_enableWordWrapping", false);
     } else {
         log("Not making Replay button");
     }
@@ -719,31 +778,21 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(LevelSelectionFlowCoordinator_StartLevel, void, Il2CppObject* self, Il2CppObject* difficultyBeatmap, Il2CppObject* beforeSceneSwitchCallback, bool practice) {
     
-    // log("StartLevel");
+    log("StartLevel");
 
     inPracticeMode = practice;
     LevelSelectionFlowCoordinator_StartLevel(self, difficultyBeatmap, beforeSceneSwitchCallback, practice);
 }
 
-MAKE_HOOK_OFFSETLESS(EnergyBarUpdate, void, Il2CppObject* self, int value) {
+MAKE_HOOK_OFFSETLESS(HandleLevelFailed, void, Il2CppObject* self) {
     
-    // log("EnergyBarUpdate");
+    log("HandleLevelFailed");
 
-    if(!recording) {
-        value = 0;
+    if(!recording && !failedReplay) {
+        return;
     }
 
-    EnergyBarUpdate(self, value);
-
-    if(recording) {
-        energy = *RunMethod<float>(self, "get_energy");
-    } else {
-        if(energies[indexNum] < 0.1f) {
-            CRASH_UNLESS(RunMethod(self, "set_energy", 0.1f));
-        } else {
-            CRASH_UNLESS(RunMethod(self, "set_energy", energies[indexNum]));
-        }
-    }
+    HandleLevelFailed(self);
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
@@ -758,6 +807,7 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
         SetFieldValue(self, "_baseRawScore", scores[indexNum]);
         SetFieldValue(self, "_prevFrameRawScore", scores[indexNum-1]);
         SetFieldValue(self, "_combo", combos[indexNum]);
+        maxRawScore = *GetFieldValue<int>(self, "_immediateMaxPossibleRawScore");
     }
     if(recording) {
         score = *GetFieldValue<int>(self, "_baseRawScore");
@@ -767,18 +817,24 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(RefreshRank, void, Il2CppObject* self) {
 
-    RefreshRank(self);
+    // log("RefreshRank");
 
-    Il2CppObject* percentText = *GetFieldValue(self, "_relativeScoreText");
+    Il2CppObject* percentAndRankCounter = *GetFieldValue(self, "_relativeScoreAndImmediateRankCounter");
 
     if(!recording) {
-        RunMethod(percentText, "SetText", createcsstr(ranks[indexNum+1]));
+        RunMethod(percentAndRankCounter, "set_immediateRank", ranks[indexNum]);
+        RunMethod(percentAndRankCounter, "set_relativeScore", percents[indexNum]);
     } else {
-        rank = to_utf8(csstrtostr(*RunMethod<Il2CppString*>(percentText, "get_text")));
+        percent = *RunMethod<float>(percentAndRankCounter, "get_relativeScore");
+        rank = *RunMethod<int>(percentAndRankCounter, "get_immediateRank");
     }
+    
+    RefreshRank(self);
 }
 
 MAKE_HOOK_OFFSETLESS(Triggers, void, Il2CppObject* self, int node) {
+
+    // log("Triggers");
 
     triggerNode = node;
 
@@ -786,6 +842,8 @@ MAKE_HOOK_OFFSETLESS(Triggers, void, Il2CppObject* self, int node) {
 }
 
 MAKE_HOOK_OFFSETLESS(ControllerUpdate, void, Il2CppObject* self) {
+
+    // log("ControllerUpdate");
 
     float trigger = *RunMethod<float>(self, "get_triggerValue");
 
@@ -835,6 +893,8 @@ MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
 
+    log("PauseStart");
+
     PauseStart(self);
 
     inPauseMenu = true;
@@ -862,14 +922,16 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
 
 MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
 
+    log("PauseFinish");
+
     PauseFinish(self);
 
     inPauseMenu = false;
-
-    log("PauseFinish");
 }
 
 MAKE_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, void, Il2CppObject* self) {
+
+    log("MenuButtonPressed");
 
     PauseMenuManager_MenuButtonPressed(self);
 
@@ -878,11 +940,90 @@ MAKE_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, void, Il2CppObject* sel
 
 MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, int deactivationType) {
 
+    log("ResultsScreenEnd");
+
     inSongOrResults = false;
 
-    log("Results screen has Ended");
-
     ResultsScreenEnd(self, deactivationType);
+
+    replayFailedButton.destroy();
+}
+
+MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) {
+
+    // log("LightManager_OnWillRenderObject");
+
+    Il2CppObject* mainCamera = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Camera", "get_main"));
+
+    // GlobalNamespace::OVRInput::Button button = 1;
+    // GlobalNamespace::OVRInput::Controller controller = 2;
+
+    bool buttonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
+
+    log("Button: "+std::to_string(buttonValue));
+
+    if(inSong && !recording && !inPauseMenu) {
+
+        Il2CppObject* mainCameraTransform = CRASH_UNLESS(RunMethod(mainCamera, "get_transform"));
+
+        Vector3 previousPosition = *RunMethod<Vector3>(mainCameraTransform, "get_position");
+        Quaternion previousRotation = *RunMethod<Quaternion>(mainCameraTransform, "get_rotation");
+
+        if(cameraToggle.stringToggle == "smooth") {
+            // float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
+            float deltaTime = 1.0f;
+
+            smoothCameraPosition = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraPosition, headPositions[indexNum], deltaTime * (1 - (positionSmooth / 100)));
+            smoothCameraRotation = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraRotation, headRotations[indexNum], deltaTime * (1 - (rotationSmooth / 100)));
+
+            RunMethod(mainCameraTransform, "SetPositionAndRotation", Vector3{smoothCameraPosition.x + smoothPositionOffset.x, smoothCameraPosition.y + smoothPositionOffset.y, smoothCameraPosition.z + smoothPositionOffset.z}, eulerToQuaternion(smoothCameraRotation));
+        } else if(cameraToggle.stringToggle == "thirdPerson") {
+            RunMethod(mainCameraTransform, "SetPositionAndRotation", addVector3(previousPosition, thirdPersonCameraPosition), *RunMethod<Quaternion>("UnityEngine", "Quaternion", "op_Multiply", previousRotation, eulerToQuaternion(thirdPersonCameraRotation)));
+        }
+    }
+
+    LightManager_OnWillRenderObject(self);
+}
+
+MAKE_HOOK_OFFSETLESS(HapticFeedbackController_Rumble, void, Il2CppObject* self) {
+
+    // log("HapticFeedbackController_Rumble");
+
+    if(!recording && inSong && getConfig().config["DisableVibration"].GetBool()) {
+        log(std::to_string(recording));
+        return;
+    }
+
+    HapticFeedbackController_Rumble(self);
+}
+
+MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, Il2CppObject* self) {
+    
+    ResultsViewController_Init(self);
+
+    int levelEndState = *GetFieldValue<int>(*GetFieldValue(self, "_levelCompletionResults"), "levelEndStateType");
+
+    if(levelEndState == 2 && recording) {
+        restartButton = *GetFieldValue(self, "_restartButton");
+        Il2CppObject* failedPanel = *GetFieldValue(self, "_clearedDifficultyText");
+
+        replayFailedButton.destroy();
+
+        log("Making Failed Replay button");
+        replayFailedButton.parent = restartButton;
+        replayFailedButton.setParentTransform(restartButton, 1);
+        replayFailedButton.onPress = replayButtonOnClick;
+        replayFailedButton.scale = {1, 1, 1};
+        replayFailedButton.sizeDelta = {0, 0, 0};
+        replayFailedButton.fontSize = 5;
+        replayFailedButton.create();
+        if(replayFailedButton.TMPLocalizer != nullptr) {
+            RunMethod("UnityEngine", "Object", "Destroy", replayFailedButton.TMPLocalizer);
+        }
+        replayFailedButton.setText("Replay");
+        RunMethod(replayFailedButton.TMP, "set_enableWordWrapping", false);
+        RunMethod(replayFailedButton.gameObject, "SetActive", true);
+    }
 }
 
 MAKE_HOOK_OFFSETLESS(NoteWasMissed, void, Il2CppObject* self) {
@@ -907,13 +1048,15 @@ MAKE_HOOK_OFFSETLESS(NoteWasCut, void, Il2CppObject* self, Il2CppObject* noteCut
 
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
-    info.version = "0.1.2";
+    info.version = "0.3.0";
     modInfo = info;
     // Create logger
     static std::unique_ptr<const Logger> ptr(new Logger(info));
     Logger::get().info("Completed setup!");
     // We can even check information specific to the modloader!
     Logger::get().info("Modloader name: %s", Modloader::getInfo().name.c_str());
+    
+    SaveConfig();
 }
 
 extern "C" void load() {
@@ -925,7 +1068,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
     INSTALL_HOOK_OFFSETLESS(RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
     INSTALL_HOOK_OFFSETLESS(LevelSelectionFlowCoordinator_StartLevel, il2cpp_utils::FindMethodUnsafe("", "LevelSelectionFlowCoordinator", "StartLevel", 3));
-    INSTALL_HOOK_OFFSETLESS(EnergyBarUpdate, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "AddEnergy", 1));
+    INSTALL_HOOK_OFFSETLESS(HandleLevelFailed, il2cpp_utils::FindMethodUnsafe("", "StandardLevelFailedController", "HandleLevelFailed", 0));
     INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
     INSTALL_HOOK_OFFSETLESS(Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
@@ -935,13 +1078,22 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "StartResumeAnimation", 0));
     INSTALL_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "MenuButtonPressed", 0));
     INSTALL_HOOK_OFFSETLESS(ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 1));
+    INSTALL_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, il2cpp_utils::FindMethodUnsafe("", "LightManager", "OnWillRenderObject", 0));
+    INSTALL_HOOK_OFFSETLESS(HapticFeedbackController_Rumble, il2cpp_utils::FindMethodUnsafe("", "HapticFeedbackController", "Rumble", 4));
+    INSTALL_HOOK_OFFSETLESS(ResultsViewController_Init, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "SetDataToUI", 0));
     INSTALL_HOOK_OFFSETLESS(NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
-    INSTALL_HOOK_OFFSETLESS(NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent",1));
+    INSTALL_HOOK_OFFSETLESS(NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent", 1));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
 
-    // SaveConfig();
+    positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
+    rotationSmooth = getConfig().config["RotationSmooth"].GetFloat();
+
+    smoothPositionOffset = {getConfig().config["SmoothCameraOffset"]["x"].GetFloat(), getConfig().config["SmoothCameraOffset"]["y"].GetFloat(), getConfig().config["SmoothCameraOffset"]["z"].GetFloat()};
+
+    thirdPersonCameraPosition = {getConfig().config["ThirdPersonCameraPos"]["x"].GetFloat(), getConfig().config["ThirdPersonCameraPos"]["y"].GetFloat(), getConfig().config["ThirdPersonCameraPos"]["z"].GetFloat()};
+    thirdPersonCameraRotation = {getConfig().config["ThirdPersonCameraRot"]["x"].GetFloat(), getConfig().config["ThirdPersonCameraRot"]["y"].GetFloat(), getConfig().config["ThirdPersonCameraRot"]["z"].GetFloat()};
 
     std::string path = replayDirectory+"test.txt";
-    mkpath(const_cast<char*>(path.c_str()), 0700);
+    mkpath(const_cast<char*>(path.c_str()));
 }
