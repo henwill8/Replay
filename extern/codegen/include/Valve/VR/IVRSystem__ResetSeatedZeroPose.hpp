@@ -26,16 +26,16 @@ namespace Valve::VR {
   class IVRSystem::_ResetSeatedZeroPose : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0x16DBD84
+    // Offset: 0x1930968
     static IVRSystem::_ResetSeatedZeroPose* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Void Invoke()
-    // Offset: 0x16DBD98
+    // Offset: 0x193097C
     void Invoke();
     // public System.IAsyncResult BeginInvoke(System.AsyncCallback callback, System.Object object)
-    // Offset: 0x16DBFA4
+    // Offset: 0x1930B88
     System::IAsyncResult* BeginInvoke(System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Void EndInvoke(System.IAsyncResult result)
-    // Offset: 0x16DBFD0
+    // Offset: 0x1930BB4
     void EndInvoke(System::IAsyncResult* result);
   }; // Valve.VR.IVRSystem/_ResetSeatedZeroPose
 }

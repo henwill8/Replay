@@ -21,10 +21,10 @@ namespace UnityEngine::TestTools::Utils {
       return line;
     }
     // System.Boolean <Filter>b__0(System.String s)
-    // Offset: 0x197845C
+    // Offset: 0x1A03FC8
     bool $Filter$b__0(::Il2CppString* s);
     // public System.Void .ctor()
-    // Offset: 0x1978208
+    // Offset: 0x1A03D74
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static StackTraceFilter::$$c__DisplayClass2_0* New_ctor();

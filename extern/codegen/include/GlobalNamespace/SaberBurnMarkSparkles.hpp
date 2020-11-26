@@ -23,10 +23,10 @@ namespace UnityEngine {
 }
 // Forward declaring namespace: GlobalNamespace
 namespace GlobalNamespace {
-  // Forward declaring type: PlayerController
-  class PlayerController;
   // Forward declaring type: ColorManager
   class ColorManager;
+  // Forward declaring type: SaberManager
+  class SaberManager;
   // Forward declaring type: Saber
   class Saber;
 }
@@ -45,12 +45,12 @@ namespace GlobalNamespace {
     // private UnityEngine.BoxCollider _boxCollider
     // Offset: 0x28
     UnityEngine::BoxCollider* boxCollider;
-    // private PlayerController _playerController
+    // private readonly ColorManager _colorManager
     // Offset: 0x30
-    GlobalNamespace::PlayerController* playerController;
-    // private ColorManager _colorManager
-    // Offset: 0x38
     GlobalNamespace::ColorManager* colorManager;
+    // private readonly SaberManager _saberManager
+    // Offset: 0x38
+    GlobalNamespace::SaberManager* saberManager;
     // private Saber[] _sabers
     // Offset: 0x40
     ::Array<GlobalNamespace::Saber*>* sabers;
@@ -66,28 +66,34 @@ namespace GlobalNamespace {
     // private UnityEngine.ParticleSystem[] _burnMarksPS
     // Offset: 0x68
     ::Array<UnityEngine::ParticleSystem*>* burnMarksPS;
-    // private UnityEngine.ParticleSystem/EmissionModule[] _burnMarksEmmisionModules
+    // private UnityEngine.ParticleSystem/EmissionModule[] _burnMarksEmissionModules
     // Offset: 0x70
-    ::Array<UnityEngine::ParticleSystem::EmissionModule>* burnMarksEmmisionModules;
+    ::Array<UnityEngine::ParticleSystem::EmissionModule>* burnMarksEmissionModules;
     // private UnityEngine.ParticleSystem/EmitParams _sparklesEmitParams
     // Offset: 0x78
     UnityEngine::ParticleSystem::EmitParams sparklesEmitParams;
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // protected System.Void Start()
-    // Offset: 0xC2729C
+    // Offset: 0xFBEF48
     void Start();
     // protected System.Void OnDestroy()
-    // Offset: 0xC27758
+    // Offset: 0xFBF454
     void OnDestroy();
+    // protected System.Void OnEnable()
+    // Offset: 0xFBF560
+    void OnEnable();
+    // protected System.Void OnDisable()
+    // Offset: 0xFBF650
+    void OnDisable();
     // private System.Boolean GetBurnMarkPos(UnityEngine.Vector3 bladeBottomPos, UnityEngine.Vector3 bladeTopPos, out UnityEngine.Vector3 burnMarkPos)
-    // Offset: 0xC27864
+    // Offset: 0xFBF740
     bool GetBurnMarkPos(UnityEngine::Vector3 bladeBottomPos, UnityEngine::Vector3 bladeTopPos, UnityEngine::Vector3& burnMarkPos);
     // protected System.Void LateUpdate()
-    // Offset: 0xC27AFC
+    // Offset: 0xFBF9D8
     void LateUpdate();
     // public System.Void .ctor()
-    // Offset: 0xC27FE4
+    // Offset: 0xFBFE6C
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

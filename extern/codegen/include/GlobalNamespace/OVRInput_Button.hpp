@@ -6,9 +6,9 @@
 // Begin includes
 #include "extern/beatsaber-hook/shared/utils/typedefs.h"
 // Including type: OVRInput
-#include "./OVRInput.hpp"
+#include "GlobalNamespace/OVRInput.hpp"
 // Including type: System.Enum
-#include "../System/Enum.hpp"
+#include "System/Enum.hpp"
 // Completed includes
 // Type namespace: 
 namespace GlobalNamespace {

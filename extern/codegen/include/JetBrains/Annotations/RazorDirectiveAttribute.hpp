@@ -21,13 +21,13 @@ namespace JetBrains::Annotations {
       return Directive;
     }
     // public System.Void .ctor(System.String directive)
-    // Offset: 0x1961618
+    // Offset: 0x19EE894
     static RazorDirectiveAttribute* New_ctor(::Il2CppString* directive);
     // public System.String get_Directive()
-    // Offset: 0x196164C
+    // Offset: 0x19EE8C8
     ::Il2CppString* get_Directive();
     // private System.Void set_Directive(System.String value)
-    // Offset: 0x1961654
+    // Offset: 0x19EE8D0
     void set_Directive(::Il2CppString* value);
   }; // JetBrains.Annotations.RazorDirectiveAttribute
 }

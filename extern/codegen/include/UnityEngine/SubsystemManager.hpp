@@ -27,19 +27,19 @@ namespace UnityEngine {
     // Set static field: static private System.Action reloadSubsytemsCompleted
     static void _set_reloadSubsytemsCompleted(System::Action* value);
     // static private System.Void .cctor()
-    // Offset: 0x197DCA8
+    // Offset: 0x1A0819C
     static void _cctor();
     // static System.Void ReportSingleSubsystemAnalytics(System.String id)
-    // Offset: 0x197D25C
+    // Offset: 0x1A07750
     static void ReportSingleSubsystemAnalytics(::Il2CppString* id);
     // static System.Void StaticConstructScriptingClassMap()
-    // Offset: 0x197DCDC
+    // Offset: 0x1A081D0
     static void StaticConstructScriptingClassMap();
     // static private System.Void Internal_ReloadSubsystemsStarted()
-    // Offset: 0x197DD10
+    // Offset: 0x1A08204
     static void Internal_ReloadSubsystemsStarted();
     // static private System.Void Internal_ReloadSubsystemsCompleted()
-    // Offset: 0x197DDB8
+    // Offset: 0x1A082AC
     static void Internal_ReloadSubsystemsCompleted();
   }; // UnityEngine.SubsystemManager
 }

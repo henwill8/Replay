@@ -21,16 +21,16 @@ namespace System::Runtime::Serialization::Formatters::Binary {
     // Offset: 0x20
     bool hasTypeForwardedFrom;
     // System.String get_FullTypeName()
-    // Offset: 0xFF3650
+    // Offset: 0x12FF69C
     ::Il2CppString* get_FullTypeName();
     // System.String get_AssemblyString()
-    // Offset: 0xFF3658
+    // Offset: 0x12FF6A4
     ::Il2CppString* get_AssemblyString();
     // System.Boolean get_HasTypeForwardedFrom()
-    // Offset: 0xFF3660
+    // Offset: 0x12FF6AC
     bool get_HasTypeForwardedFrom();
     // System.Void .ctor(System.String fullTypeName, System.String assemblyString, System.Boolean hasTypeForwardedFrom)
-    // Offset: 0xFF3668
+    // Offset: 0x12FF6B4
     static TypeInformation* New_ctor(::Il2CppString* fullTypeName, ::Il2CppString* assemblyString, bool hasTypeForwardedFrom);
   }; // System.Runtime.Serialization.Formatters.Binary.TypeInformation
 }

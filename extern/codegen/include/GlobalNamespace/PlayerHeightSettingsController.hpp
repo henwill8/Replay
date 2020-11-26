@@ -23,15 +23,14 @@ namespace UnityEngine::UI {
 namespace GlobalNamespace {
   // Forward declaring type: Vector3SO
   class Vector3SO;
-  // Forward declaring type: VRPlatformHelper
-  class VRPlatformHelper;
-  // Forward declaring type: PlayerSpecificSettings
-  class PlayerSpecificSettings;
+  // Forward declaring type: IVRPlatformHelper
+  class IVRPlatformHelper;
 }
-// Forward declaring namespace: UnityEngine
-namespace UnityEngine {
-  // Forward declaring type: CanvasGroup
-  class CanvasGroup;
+// Forward declaring namespace: System
+namespace System {
+  // Forward declaring type: Action`1<T>
+  template<typename T>
+  class Action_1;
 }
 // Forward declaring namespace: HMUI
 namespace HMUI {
@@ -53,37 +52,43 @@ namespace GlobalNamespace {
     // private Vector3SO _roomCenter
     // Offset: 0x28
     GlobalNamespace::Vector3SO* roomCenter;
-    // private UnityEngine.CanvasGroup _canvasGroup
+    // private readonly IVRPlatformHelper _vrPlatformHelper
     // Offset: 0x30
-    UnityEngine::CanvasGroup* canvasGroup;
-    // private VRPlatformHelper _vrPlatformHelper
+    GlobalNamespace::IVRPlatformHelper* vrPlatformHelper;
+    // private System.Action`1<System.Single> valueDidChangeEvent
     // Offset: 0x38
-    GlobalNamespace::VRPlatformHelper* vrPlatformHelper;
-    // private PlayerSpecificSettings _playerSettings
-    // Offset: 0x40
-    GlobalNamespace::PlayerSpecificSettings* playerSettings;
+    System::Action_1<float>* valueDidChangeEvent;
     // private HMUI.ButtonBinder _buttonBinder
-    // Offset: 0x48
+    // Offset: 0x40
     HMUI::ButtonBinder* buttonBinder;
+    // private System.Single _value
+    // Offset: 0x48
+    float value;
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
-    // public System.Void set_interactable(System.Boolean value)
-    // Offset: 0xBDED84
-    void set_interactable(bool value);
+    // public System.Void add_valueDidChangeEvent(System.Action`1<System.Single> value)
+    // Offset: 0xF284FC
+    void add_valueDidChangeEvent(System::Action_1<float>* value);
+    // public System.Void remove_valueDidChangeEvent(System.Action`1<System.Single> value)
+    // Offset: 0xF285A0
+    void remove_valueDidChangeEvent(System::Action_1<float>* value);
+    // public System.Single get_value()
+    // Offset: 0xF28644
+    float get_value();
     // protected System.Void Awake()
-    // Offset: 0xBDEE1C
+    // Offset: 0xF2864C
     void Awake();
-    // public System.Void Init(PlayerSpecificSettings playerSettings)
-    // Offset: 0xBDEEE0
-    void Init(GlobalNamespace::PlayerSpecificSettings* playerSettings);
+    // public System.Void Init(System.Single playerHeight)
+    // Offset: 0xF28710
+    void Init(float playerHeight);
     // private System.Void AutoSetHeight()
-    // Offset: 0xBDEFAC
+    // Offset: 0xF287B4
     void AutoSetHeight();
     // private System.Void RefreshUI()
-    // Offset: 0xBDEF08
+    // Offset: 0xF28718
     void RefreshUI();
     // public System.Void .ctor()
-    // Offset: 0xBDF058
+    // Offset: 0xF288D8
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

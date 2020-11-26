@@ -26,16 +26,16 @@ namespace OVR::OpenVR {
   class IVRSystem::_GetD3D9AdapterIndex : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0x16BD0DC
+    // Offset: 0x1911CC0
     static IVRSystem::_GetD3D9AdapterIndex* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Int32 Invoke()
-    // Offset: 0x16BD0F0
+    // Offset: 0x1911CD4
     int Invoke();
     // public System.IAsyncResult BeginInvoke(System.AsyncCallback callback, System.Object object)
-    // Offset: 0x16BD304
+    // Offset: 0x1911EE8
     System::IAsyncResult* BeginInvoke(System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Int32 EndInvoke(System.IAsyncResult result)
-    // Offset: 0x16BD330
+    // Offset: 0x1911F14
     int EndInvoke(System::IAsyncResult* result);
   }; // OVR.OpenVR.IVRSystem/_GetD3D9AdapterIndex
 }

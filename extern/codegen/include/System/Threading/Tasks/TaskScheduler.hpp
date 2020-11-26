@@ -68,43 +68,43 @@ namespace System::Threading::Tasks {
     // Offset: 0xFFFFFFFF
     bool TryExecuteTaskInline(System::Threading::Tasks::Task* task, bool taskWasPreviouslyQueued);
     // System.Boolean TryRunInline(System.Threading.Tasks.Task task, System.Boolean taskWasPreviouslyQueued)
-    // Offset: 0xCE5198
+    // Offset: 0x1D14464
     bool TryRunInline(System::Threading::Tasks::Task* task, bool taskWasPreviouslyQueued);
     // protected internal System.Boolean TryDequeue(System.Threading.Tasks.Task task)
-    // Offset: 0xCE8CC8
+    // Offset: 0x1D18FB0
     bool TryDequeue(System::Threading::Tasks::Task* task);
     // System.Void NotifyWorkItemProgress()
-    // Offset: 0xCE8CD0
+    // Offset: 0x1D18FB8
     void NotifyWorkItemProgress();
     // System.Boolean get_RequiresAtomicStartTransition()
-    // Offset: 0xCE8CD4
+    // Offset: 0x1D18FBC
     bool get_RequiresAtomicStartTransition();
     // System.Void InternalQueueTask(System.Threading.Tasks.Task task)
-    // Offset: 0xCE2AE8
+    // Offset: 0x1D119B8
     void InternalQueueTask(System::Threading::Tasks::Task* task);
     // private System.Void AddToActiveTaskSchedulers()
-    // Offset: 0xCE8D64
+    // Offset: 0x1D1904C
     void AddToActiveTaskSchedulers();
     // static public System.Threading.Tasks.TaskScheduler get_Default()
-    // Offset: 0xCE8E54
+    // Offset: 0x1D1913C
     static System::Threading::Tasks::TaskScheduler* get_Default();
     // static public System.Threading.Tasks.TaskScheduler get_Current()
-    // Offset: 0xCE5BD4
+    // Offset: 0x1D14C20
     static System::Threading::Tasks::TaskScheduler* get_Current();
     // static System.Threading.Tasks.TaskScheduler get_InternalCurrent()
-    // Offset: 0xCDF1C4
+    // Offset: 0x1D0DFE8
     static System::Threading::Tasks::TaskScheduler* get_InternalCurrent();
     // public System.Int32 get_Id()
-    // Offset: 0xCE8EBC
+    // Offset: 0x1D191A4
     int get_Id();
     // static System.Void PublishUnobservedTaskException(System.Object sender, System.Threading.Tasks.UnobservedTaskExceptionEventArgs ueea)
-    // Offset: 0xCE7EDC
+    // Offset: 0x1D180C0
     static void PublishUnobservedTaskException(::Il2CppObject* sender, System::Threading::Tasks::UnobservedTaskExceptionEventArgs* ueea);
     // static private System.Void .cctor()
-    // Offset: 0xCE8F70
+    // Offset: 0x1D19258
     static void _cctor();
     // protected System.Void .ctor()
-    // Offset: 0xCE8CDC
+    // Offset: 0x1D18FC4
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static TaskScheduler* New_ctor();

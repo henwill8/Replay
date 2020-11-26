@@ -19,13 +19,13 @@ namespace Microsoft::Win32 {
     // Nested type: Microsoft::Win32::Win32Native::WIN32_FIND_DATA
     class WIN32_FIND_DATA;
     // static public System.String GetMessage(System.Int32 hr)
-    // Offset: 0x10AF470
+    // Offset: 0x1517A3C
     static ::Il2CppString* GetMessage(int hr);
     // static public System.Int32 MakeHRFromErrorCode(System.Int32 errorCode)
-    // Offset: 0x10AF4EC
+    // Offset: 0x1517AB8
     static int MakeHRFromErrorCode(int errorCode);
     // static System.UInt32 GetCurrentProcessId()
-    // Offset: 0x10AF4F8
+    // Offset: 0x1517AC4
     static uint GetCurrentProcessId();
   }; // Microsoft.Win32.Win32Native
 }

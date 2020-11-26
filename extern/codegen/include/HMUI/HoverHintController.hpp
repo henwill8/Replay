@@ -60,34 +60,34 @@ namespace HMUI {
     // Set static field: static private System.Single kHideHintDelay
     static void _set_kHideHintDelay(float value);
     // protected System.Void Awake()
-    // Offset: 0xEE2A20
+    // Offset: 0x10B5564
     void Awake();
     // protected System.Void OnApplicationFocus(System.Boolean hasFocus)
-    // Offset: 0xEE2B00
+    // Offset: 0x10B5644
     void OnApplicationFocus(bool hasFocus);
     // public System.Void ShowHint(HMUI.HoverHint hoverHint)
-    // Offset: 0xEE2884
+    // Offset: 0x10B5268
     void ShowHint(HMUI::HoverHint* hoverHint);
     // public System.Void HideHint()
-    // Offset: 0xEE2934
+    // Offset: 0x10B541C
     void HideHint();
     // public System.Void HideHintInstant()
-    // Offset: 0xEE2990
+    // Offset: 0x10B53D8
     void HideHintInstant();
     // private System.Collections.IEnumerator ShowHintAfterDelay(HMUI.HoverHint hoverHint, System.Single delay)
-    // Offset: 0xEE2CDC
+    // Offset: 0x10B5820
     System::Collections::IEnumerator* ShowHintAfterDelay(HMUI::HoverHint* hoverHint, float delay);
     // private System.Collections.IEnumerator HideHintAfterDelay(System.Single delay)
-    // Offset: 0xEE2D84
+    // Offset: 0x10B58C8
     System::Collections::IEnumerator* HideHintAfterDelay(float delay);
     // private System.Void SetupAndShowHintPanel(HMUI.HoverHint hoverHint)
-    // Offset: 0xEE2B28
+    // Offset: 0x10B566C
     void SetupAndShowHintPanel(HMUI::HoverHint* hoverHint);
-    // private UnityEngine.Transform GetScreenTransformForHoverHint(HMUI.HoverHint hoverHint)
-    // Offset: 0xEE2E68
-    UnityEngine::Transform* GetScreenTransformForHoverHint(HMUI::HoverHint* hoverHint);
+    // static private UnityEngine.Transform GetScreenTransformForHoverHint(HMUI.HoverHint hoverHint)
+    // Offset: 0x10B59AC
+    static UnityEngine::Transform* GetScreenTransformForHoverHint(HMUI::HoverHint* hoverHint);
     // public System.Void .ctor()
-    // Offset: 0xEE31FC
+    // Offset: 0x10B5D98
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

@@ -4,13 +4,18 @@
   "info": {
     "name": "replay",
     "id": "replay",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "url": null,
     "additionalData": {}
   },
   "dependencies": [
     {
-      "id": "codegen",
+      "id": "questui",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "bs-utils",
       "versionRange": "*",
       "additionalData": {}
     },
@@ -22,6 +27,11 @@
           "src/inline-hook"
         ]
       }
+    },
+    {
+      "id": "codegen",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

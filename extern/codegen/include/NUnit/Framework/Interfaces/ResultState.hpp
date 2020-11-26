@@ -77,50 +77,50 @@ namespace NUnit::Framework::Interfaces {
     // Set static field: static public readonly NUnit.Framework.Interfaces.ResultState TearDownError
     static void _set_TearDownError(NUnit::Framework::Interfaces::ResultState* value);
     // public System.Void .ctor(NUnit.Framework.Interfaces.TestStatus status)
-    // Offset: 0x10809BC
+    // Offset: 0x13E6BF4
     static ResultState* New_ctor(NUnit::Framework::Interfaces::TestStatus status);
     // public System.Void .ctor(NUnit.Framework.Interfaces.TestStatus status, System.String label)
-    // Offset: 0x1080AC0
+    // Offset: 0x13E6CF8
     static ResultState* New_ctor(NUnit::Framework::Interfaces::TestStatus status, ::Il2CppString* label);
     // public System.Void .ctor(NUnit.Framework.Interfaces.TestStatus status, System.String label, NUnit.Framework.Interfaces.FailureSite site)
-    // Offset: 0x1080A28
+    // Offset: 0x13E6C60
     static ResultState* New_ctor(NUnit::Framework::Interfaces::TestStatus status, ::Il2CppString* label, NUnit::Framework::Interfaces::FailureSite site);
     // public NUnit.Framework.Interfaces.TestStatus get_Status()
-    // Offset: 0x1080AC8
+    // Offset: 0x13E6D00
     NUnit::Framework::Interfaces::TestStatus get_Status();
     // private System.Void set_Status(NUnit.Framework.Interfaces.TestStatus value)
-    // Offset: 0x1080AD0
+    // Offset: 0x13E6D08
     void set_Status(NUnit::Framework::Interfaces::TestStatus value);
     // public System.String get_Label()
-    // Offset: 0x1080AD8
+    // Offset: 0x13E6D10
     ::Il2CppString* get_Label();
     // private System.Void set_Label(System.String value)
-    // Offset: 0x1080AE0
+    // Offset: 0x13E6D18
     void set_Label(::Il2CppString* value);
     // public NUnit.Framework.Interfaces.FailureSite get_Site()
-    // Offset: 0x1080AE8
+    // Offset: 0x13E6D20
     NUnit::Framework::Interfaces::FailureSite get_Site();
     // private System.Void set_Site(NUnit.Framework.Interfaces.FailureSite value)
-    // Offset: 0x1080AF0
+    // Offset: 0x13E6D28
     void set_Site(NUnit::Framework::Interfaces::FailureSite value);
     // public NUnit.Framework.Interfaces.ResultState WithSite(NUnit.Framework.Interfaces.FailureSite site)
-    // Offset: 0x1080AF8
+    // Offset: 0x13E6D30
     NUnit::Framework::Interfaces::ResultState* WithSite(NUnit::Framework::Interfaces::FailureSite site);
     // static private System.Void .cctor()
-    // Offset: 0x1080E4C
+    // Offset: 0x13E7084
     static void _cctor();
     // public override System.Boolean Equals(System.Object obj)
-    // Offset: 0x1080B74
+    // Offset: 0x13E6DAC
     // Implemented from: System.Object
     // Base method: System.Boolean Object::Equals(System.Object obj)
     bool Equals(::Il2CppObject* obj);
     // public override System.Int32 GetHashCode()
-    // Offset: 0x1080CCC
+    // Offset: 0x13E6F04
     // Implemented from: System.Object
     // Base method: System.Int32 Object::GetHashCode()
     int GetHashCode();
     // public override System.String ToString()
-    // Offset: 0x1080D14
+    // Offset: 0x13E6F4C
     // Implemented from: System.Object
     // Base method: System.String Object::ToString()
     ::Il2CppString* ToString();

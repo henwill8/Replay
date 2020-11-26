@@ -27,16 +27,16 @@ namespace System::Reflection {
   class EventInfo::AddEventAdapter : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0x136EDB0
+    // Offset: 0x15C6A48
     static EventInfo::AddEventAdapter* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Void Invoke(System.Object _this, System.Delegate dele)
-    // Offset: 0x136EDC4
+    // Offset: 0x15C6A5C
     void Invoke(::Il2CppObject* _this, System::Delegate* dele);
     // public System.IAsyncResult BeginInvoke(System.Object _this, System.Delegate dele, System.AsyncCallback callback, System.Object object)
-    // Offset: 0x136F1C8
+    // Offset: 0x15C6E60
     System::IAsyncResult* BeginInvoke(::Il2CppObject* _this, System::Delegate* dele, System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Void EndInvoke(System.IAsyncResult result)
-    // Offset: 0x136F1F8
+    // Offset: 0x15C6E90
     void EndInvoke(System::IAsyncResult* result);
   }; // System.Reflection.EventInfo/AddEventAdapter
 }

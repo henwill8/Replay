@@ -16,58 +16,67 @@ namespace System {
     // Set static field: static public readonly System.Boolean IsLittleEndian
     static void _set_IsLittleEndian(bool value);
     // static private System.Boolean AmILittleEndian()
-    // Offset: 0x1332F48
+    // Offset: 0x1CAB35C
     static bool AmILittleEndian();
     // static public System.Byte[] GetBytes(System.Int16 value)
-    // Offset: 0x1332F50
+    // Offset: 0x1CAB364
     static ::Array<uint8_t>* GetBytes(int16_t value);
     // static public System.Byte[] GetBytes(System.Int32 value)
-    // Offset: 0x1332FC4
+    // Offset: 0x1CAB3D8
     static ::Array<uint8_t>* GetBytes(int value);
     // static public System.Byte[] GetBytes(System.Int64 value)
-    // Offset: 0x1333038
+    // Offset: 0x1CAB44C
     static ::Array<uint8_t>* GetBytes(int64_t value);
     // static public System.Byte[] GetBytes(System.UInt16 value)
-    // Offset: 0x13330AC
+    // Offset: 0x1CAB4C0
     static ::Array<uint8_t>* GetBytes(uint16_t value);
     // static public System.Byte[] GetBytes(System.UInt32 value)
-    // Offset: 0x1333110
+    // Offset: 0x1CAB524
     static ::Array<uint8_t>* GetBytes(uint value);
+    // static public System.Char ToChar(System.Byte[] value, System.Int32 startIndex)
+    // Offset: 0x1CAB588
+    static ::Il2CppChar ToChar(::Array<uint8_t>* value, int startIndex);
     // static public System.Int16 ToInt16(System.Byte[] value, System.Int32 startIndex)
-    // Offset: 0x1333174
+    // Offset: 0x1CAB64C
     static int16_t ToInt16(::Array<uint8_t>* value, int startIndex);
     // static public System.Int32 ToInt32(System.Byte[] value, System.Int32 startIndex)
-    // Offset: 0x1333284
+    // Offset: 0x1CAB75C
     static int ToInt32(::Array<uint8_t>* value, int startIndex);
     // static public System.Int64 ToInt64(System.Byte[] value, System.Int32 startIndex)
-    // Offset: 0x13333B0
+    // Offset: 0x1CAB888
     static int64_t ToInt64(::Array<uint8_t>* value, int startIndex);
     // static public System.UInt16 ToUInt16(System.Byte[] value, System.Int32 startIndex)
-    // Offset: 0x1333508
+    // Offset: 0x1CAB9E0
     static uint16_t ToUInt16(::Array<uint8_t>* value, int startIndex);
     // static public System.UInt32 ToUInt32(System.Byte[] value, System.Int32 startIndex)
-    // Offset: 0x13335CC
+    // Offset: 0x1CABAA4
     static uint ToUInt32(::Array<uint8_t>* value, int startIndex);
     // static public System.UInt64 ToUInt64(System.Byte[] value, System.Int32 startIndex)
-    // Offset: 0x1333690
+    // Offset: 0x1CABB68
     static uint64_t ToUInt64(::Array<uint8_t>* value, int startIndex);
+    // static public System.Single ToSingle(System.Byte[] value, System.Int32 startIndex)
+    // Offset: 0x1CABC2C
+    static float ToSingle(::Array<uint8_t>* value, int startIndex);
+    // static public System.Double ToDouble(System.Byte[] value, System.Int32 startIndex)
+    // Offset: 0x1CABCF8
+    static double ToDouble(::Array<uint8_t>* value, int startIndex);
     // static private System.Char GetHexValue(System.Int32 i)
-    // Offset: 0x1333754
+    // Offset: 0x1CABDC4
     static ::Il2CppChar GetHexValue(int i);
     // static public System.String ToString(System.Byte[] value, System.Int32 startIndex, System.Int32 length)
-    // Offset: 0x133376C
+    // Offset: 0x1CABDDC
     static ::Il2CppString* ToString(::Array<uint8_t>* value, int startIndex, int length);
     // static public System.String ToString(System.Byte[] value)
-    // Offset: 0x1333AE4
+    // Offset: 0x1CAC148
     static ::Il2CppString* ToString(::Array<uint8_t>* value);
     // static public System.Int64 DoubleToInt64Bits(System.Double value)
-    // Offset: 0x1333B90
+    // Offset: 0x1CAC1F0
     static int64_t DoubleToInt64Bits(double value);
     // static public System.Double Int64BitsToDouble(System.Int64 value)
-    // Offset: 0x1333B98
+    // Offset: 0x1CAC1F8
     static double Int64BitsToDouble(int64_t value);
     // static private System.Void .cctor()
-    // Offset: 0x1333BA0
+    // Offset: 0x1CAC200
     static void _cctor();
   }; // System.BitConverter
 }

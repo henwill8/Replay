@@ -61,7 +61,7 @@ namespace GlobalNamespace {
     // private UnityEngine.Transform _transformR
     // Offset: 0x48
     UnityEngine::Transform* transformR;
-    // private BeatmapObjectCallbackController _beatmapObjectCallbackController
+    // private readonly BeatmapObjectCallbackController _beatmapObjectCallbackController
     // Offset: 0x50
     GlobalNamespace::BeatmapObjectCallbackController* beatmapObjectCallbackController;
     // private LightPairRotationEventEffect/RotationData _rotationDataL
@@ -88,22 +88,22 @@ namespace GlobalNamespace {
     // Set static field: static private System.Single kSpeedMultiplier
     static void _set_kSpeedMultiplier(float value);
     // protected System.Void Start()
-    // Offset: 0xBF9760
+    // Offset: 0x1AC699C
     void Start();
     // protected System.Void Update()
-    // Offset: 0xBF9A34
+    // Offset: 0x1AC6C70
     void Update();
     // private System.Void OnDestroy()
-    // Offset: 0xBF9CB8
+    // Offset: 0x1AC6EF4
     void OnDestroy();
     // private System.Void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(BeatmapEventData beatmapEventData)
-    // Offset: 0xBF9D90
+    // Offset: 0x1AC6FD0
     void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(GlobalNamespace::BeatmapEventData* beatmapEventData);
     // private System.Void UpdateRotationData(System.Int32 beatmapEventDataValue, LightPairRotationEventEffect/RotationData rotationData, System.Single startRotationOffset, System.Single direction)
-    // Offset: 0xBFA010
+    // Offset: 0x1AC7258
     void UpdateRotationData(int beatmapEventDataValue, GlobalNamespace::LightPairRotationEventEffect::RotationData* rotationData, float startRotationOffset, float direction);
     // public System.Void .ctor()
-    // Offset: 0xBFA284
+    // Offset: 0x1AC74CC
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

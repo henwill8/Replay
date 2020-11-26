@@ -19,16 +19,16 @@ namespace System::Configuration {
   class ConfigurationElement : public ::Il2CppObject {
     public:
     // protected internal System.Configuration.ConfigurationPropertyCollection get_Properties()
-    // Offset: 0x1981238
+    // Offset: 0x1A0B41C
     System::Configuration::ConfigurationPropertyCollection* get_Properties();
     // protected internal System.Boolean IsModified()
-    // Offset: 0x1981278
+    // Offset: 0x1A0B45C
     bool IsModified();
     // protected internal System.Void Reset(System.Configuration.ConfigurationElement parentElement)
-    // Offset: 0x19812B8
+    // Offset: 0x1A0B49C
     void Reset(System::Configuration::ConfigurationElement* parentElement);
     // protected internal System.Void ResetModified()
-    // Offset: 0x19812F8
+    // Offset: 0x1A0B4DC
     void ResetModified();
   }; // System.Configuration.ConfigurationElement
 }

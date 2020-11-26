@@ -89,40 +89,40 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public UnityEngine.RenderTexture get_texture()
-    // Offset: 0xD8A8CC
+    // Offset: 0x110D0E8
     UnityEngine::RenderTexture* get_texture();
     // public System.Single get_scale()
-    // Offset: 0xD8A998
+    // Offset: 0x110D1B4
     float get_scale();
     // private System.Void set_scale(System.Single value)
-    // Offset: 0xD8A9A0
+    // Offset: 0x110D1BC
     void set_scale(float value);
     // private System.Void Awake()
-    // Offset: 0xD8A9A8
+    // Offset: 0x110D1C4
     void Awake();
     // private System.Void OnGUI()
-    // Offset: 0xD8AB34
+    // Offset: 0x110D350
     void OnGUI();
     // public System.Void ShowMenu()
-    // Offset: 0xD8C714
+    // Offset: 0x110EF30
     void ShowMenu();
     // public System.Void HideMenu()
-    // Offset: 0xD8C5F4
+    // Offset: 0x110EE10
     void HideMenu();
     // private System.Void Update()
-    // Offset: 0xD8CAF0
+    // Offset: 0x110F30C
     void Update();
     // private System.Void SetScale(System.Single scale)
-    // Offset: 0xD8C508
+    // Offset: 0x110ED24
     void SetScale(float scale);
     // private System.Void SaveCursorState()
-    // Offset: 0xD8CA88
+    // Offset: 0x110F2A4
     void SaveCursorState();
     // private System.Void RestoreCursorState()
-    // Offset: 0xD8CAC0
+    // Offset: 0x110F2DC
     void RestoreCursorState();
     // public System.Void .ctor()
-    // Offset: 0xD8CCC0
+    // Offset: 0x110F4DC
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

@@ -21,16 +21,16 @@ namespace System::Threading {
   class EventWaitHandle : public System::Threading::WaitHandle {
     public:
     // public System.Void .ctor(System.Boolean initialState, System.Threading.EventResetMode mode)
-    // Offset: 0x13DCB44
+    // Offset: 0x16B1BC8
     static EventWaitHandle* New_ctor(bool initialState, System::Threading::EventResetMode mode);
     // public System.Void .ctor(System.Boolean initialState, System.Threading.EventResetMode mode, System.String name)
-    // Offset: 0x13DCB50
+    // Offset: 0x16B483C
     static EventWaitHandle* New_ctor(bool initialState, System::Threading::EventResetMode mode, ::Il2CppString* name);
     // public System.Boolean Reset()
-    // Offset: 0x13DCE18
+    // Offset: 0x16B4B04
     bool Reset();
     // public System.Boolean Set()
-    // Offset: 0x13DBD74
+    // Offset: 0x16B3A70
     bool Set();
   }; // System.Threading.EventWaitHandle
 }

@@ -28,13 +28,13 @@ namespace JetBrains::Annotations {
       return BaseType;
     }
     // public System.Void .ctor(System.Type baseType)
-    // Offset: 0x196113C
+    // Offset: 0x19EE3B8
     static BaseTypeRequiredAttribute* New_ctor(System::Type* baseType);
     // public System.Type get_BaseType()
-    // Offset: 0x1961170
+    // Offset: 0x19EE3EC
     System::Type* get_BaseType();
     // private System.Void set_BaseType(System.Type value)
-    // Offset: 0x1961178
+    // Offset: 0x19EE3F4
     void set_BaseType(System::Type* value);
   }; // JetBrains.Annotations.BaseTypeRequiredAttribute
 }

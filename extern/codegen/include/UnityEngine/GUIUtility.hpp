@@ -83,130 +83,139 @@ namespace UnityEngine {
     // Set static field: static System.Func`1<System.Boolean> s_HasCurrentWindowKeyFocusFunc
     static void _set_s_HasCurrentWindowKeyFocusFunc(System::Func_1<bool>* value);
     // static System.Single get_pixelsPerPoint()
-    // Offset: 0x1272AEC
+    // Offset: 0x160A6D0
     static float get_pixelsPerPoint();
     // static System.Int32 get_guiDepth()
-    // Offset: 0x1277B14
+    // Offset: 0x160F704
     static int get_guiDepth();
     // static System.Void set_mouseUsed(System.Boolean value)
-    // Offset: 0x1269710
+    // Offset: 0x16012FC
     static void set_mouseUsed(bool value);
     // static System.Void set_textFieldInput(System.Boolean value)
-    // Offset: 0x12675BC
+    // Offset: 0x15FF1A8
     static void set_textFieldInput(bool value);
     // static public System.String get_systemCopyBuffer()
-    // Offset: 0x1277B48
+    // Offset: 0x160F738
     static ::Il2CppString* get_systemCopyBuffer();
     // static public System.Void set_systemCopyBuffer(System.String value)
-    // Offset: 0x1277B7C
+    // Offset: 0x160F76C
     static void set_systemCopyBuffer(::Il2CppString* value);
     // static public System.Int32 GetControlID(System.Int32 hint, UnityEngine.FocusType focusType, UnityEngine.Rect rect)
-    // Offset: 0x1264E3C
+    // Offset: 0x15FCA10
     static int GetControlID(int hint, UnityEngine::FocusType focusType, UnityEngine::Rect rect);
+    // static public UnityEngine.Rect AlignRectToDevice(UnityEngine.Rect rect, out System.Int32 widthInPixels, out System.Int32 heightInPixels)
+    // Offset: 0x160F804
+    static UnityEngine::Rect AlignRectToDevice(UnityEngine::Rect rect, int& widthInPixels, int& heightInPixels);
     // static System.String get_compositionString()
-    // Offset: 0x12670B4
+    // Offset: 0x15FECA0
     static ::Il2CppString* get_compositionString();
     // static System.Void set_compositionCursorPos(UnityEngine.Vector2 value)
-    // Offset: 0x1277C14
+    // Offset: 0x160F8E4
     static void set_compositionCursorPos(UnityEngine::Vector2 value);
     // static private System.Int32 Internal_GetHotControl()
-    // Offset: 0x1277C98
+    // Offset: 0x160F968
     static int Internal_GetHotControl();
     // static private System.Int32 Internal_GetKeyboardControl()
-    // Offset: 0x1277CCC
+    // Offset: 0x160F99C
     static int Internal_GetKeyboardControl();
     // static private System.Void Internal_SetHotControl(System.Int32 value)
-    // Offset: 0x1277D00
+    // Offset: 0x160F9D0
     static void Internal_SetHotControl(int value);
     // static private System.Void Internal_SetKeyboardControl(System.Int32 value)
-    // Offset: 0x1277D40
+    // Offset: 0x160FA10
     static void Internal_SetKeyboardControl(int value);
     // static private System.Object Internal_GetDefaultSkin(System.Int32 skinMode)
-    // Offset: 0x1277D80
+    // Offset: 0x160FA50
     static ::Il2CppObject* Internal_GetDefaultSkin(int skinMode);
     // static private System.Void Internal_ExitGUI()
-    // Offset: 0x1277DC0
+    // Offset: 0x160FA90
     static void Internal_ExitGUI();
     // static private System.Void MarkGUIChanged()
-    // Offset: 0x1277DF4
+    // Offset: 0x160FAC4
     static void MarkGUIChanged();
     // static public System.Int32 GetControlID(UnityEngine.FocusType focus)
-    // Offset: 0x126CB10
+    // Offset: 0x16046FC
     static int GetControlID(UnityEngine::FocusType focus);
     // static public System.Int32 GetControlID(System.Int32 hint, UnityEngine.FocusType focus)
-    // Offset: 0x1264C88
+    // Offset: 0x15FC85C
     static int GetControlID(int hint, UnityEngine::FocusType focus);
     // static public System.Object GetStateObject(System.Type t, System.Int32 controlID)
-    // Offset: 0x1265A2C
+    // Offset: 0x15FD600
     static ::Il2CppObject* GetStateObject(System::Type* t, int controlID);
     // static System.Void set_guiIsExiting(System.Boolean value)
-    // Offset: 0x1277E58
+    // Offset: 0x160FB28
     static void set_guiIsExiting(bool value);
     // static public System.Int32 get_hotControl()
-    // Offset: 0x1265428
+    // Offset: 0x15FCFFC
     static int get_hotControl();
     // static public System.Void set_hotControl(System.Int32 value)
-    // Offset: 0x12653E8
+    // Offset: 0x15FCFBC
     static void set_hotControl(int value);
     // static System.Void TakeCapture()
-    // Offset: 0x1277EB0
+    // Offset: 0x160FB80
     static void TakeCapture();
     // static System.Void RemoveCapture()
-    // Offset: 0x1277F14
+    // Offset: 0x160FBE4
     static void RemoveCapture();
     // static public System.Int32 get_keyboardControl()
-    // Offset: 0x12669F0
+    // Offset: 0x15FE5DC
     static int get_keyboardControl();
     // static public System.Void set_keyboardControl(System.Int32 value)
-    // Offset: 0x1266A24
+    // Offset: 0x15FE610
     static void set_keyboardControl(int value);
     // static System.Boolean HasKeyFocus(System.Int32 controlID)
-    // Offset: 0x1276DF0
+    // Offset: 0x160E9E0
     static bool HasKeyFocus(int controlID);
     // static UnityEngine.GUISkin GetDefaultSkin()
-    // Offset: 0x12632A8
+    // Offset: 0x15FAE7C
     static UnityEngine::GUISkin* GetDefaultSkin();
     // static System.Boolean ProcessEvent(System.Int32 instanceID, System.IntPtr nativeEventPtr)
-    // Offset: 0x1277F78
+    // Offset: 0x160FC48
     static bool ProcessEvent(int instanceID, System::IntPtr nativeEventPtr);
     // static System.Void BeginGUI(System.Int32 skinMode, System.Int32 instanceID, System.Int32 useGUILayout)
-    // Offset: 0x1278000
+    // Offset: 0x160FCD0
     static void BeginGUI(int skinMode, int instanceID, int useGUILayout);
     // static System.Void EndGUI(System.Int32 layoutType)
-    // Offset: 0x12781C8
+    // Offset: 0x160FE98
     static void EndGUI(int layoutType);
     // static System.Boolean EndGUIFromException(System.Exception exception)
-    // Offset: 0x12783AC
+    // Offset: 0x161007C
     static bool EndGUIFromException(System::Exception* exception);
     // static System.Boolean EndContainerGUIFromException(System.Exception exception)
-    // Offset: 0x12783F4
+    // Offset: 0x16100C4
     static bool EndContainerGUIFromException(System::Exception* exception);
     // static System.Void ResetGlobalState()
-    // Offset: 0x12780AC
+    // Offset: 0x160FD7C
     static void ResetGlobalState();
     // static System.Boolean IsExitGUIException(System.Exception exception)
-    // Offset: 0x1278468
+    // Offset: 0x1610138
     static bool IsExitGUIException(System::Exception* exception);
     // static System.Boolean ShouldRethrowException(System.Exception exception)
-    // Offset: 0x12783F0
+    // Offset: 0x16100C0
     static bool ShouldRethrowException(System::Exception* exception);
     // static System.Void CheckOnGUI()
-    // Offset: 0x12630E0
+    // Offset: 0x15FACB4
     static void CheckOnGUI();
+    // static public UnityEngine.Rect AlignRectToDevice(UnityEngine.Rect rect)
+    // Offset: 0x16101B8
+    static UnityEngine::Rect AlignRectToDevice(UnityEngine::Rect rect);
     // static System.Boolean HitTest(UnityEngine.Rect rect, UnityEngine.Vector2 point, System.Int32 offset)
-    // Offset: 0x12784E8
+    // Offset: 0x16101E4
     static bool HitTest(UnityEngine::Rect rect, UnityEngine::Vector2 point, int offset);
     // static System.Boolean HitTest(UnityEngine.Rect rect, UnityEngine.Vector2 point, System.Boolean isDirectManipulationDevice)
-    // Offset: 0x1278598
+    // Offset: 0x1610294
     static bool HitTest(UnityEngine::Rect rect, UnityEngine::Vector2 point, bool isDirectManipulationDevice);
     // static System.Boolean HitTest(UnityEngine.Rect rect, UnityEngine.Event evt)
-    // Offset: 0x1267C78
+    // Offset: 0x15FF864
     static bool HitTest(UnityEngine::Rect rect, UnityEngine::Event* evt);
     // static private System.Int32 GetControlID_Injected(System.Int32 hint, UnityEngine.FocusType focusType, ref UnityEngine.Rect rect)
-    // Offset: 0x1277BBC
+    // Offset: 0x160F7AC
     static int GetControlID_Injected(int hint, UnityEngine::FocusType focusType, UnityEngine::Rect& rect);
+    // static private System.Void AlignRectToDevice_Injected(ref UnityEngine.Rect rect, out System.Int32 widthInPixels, out System.Int32 heightInPixels, out UnityEngine.Rect ret)
+    // Offset: 0x160F87C
+    static void AlignRectToDevice_Injected(UnityEngine::Rect& rect, int& widthInPixels, int& heightInPixels, UnityEngine::Rect& ret);
     // static private System.Void set_compositionCursorPos_Injected(ref UnityEngine.Vector2 value)
-    // Offset: 0x1277C58
+    // Offset: 0x160F928
     static void set_compositionCursorPos_Injected(UnityEngine::Vector2& value);
   }; // UnityEngine.GUIUtility
 }

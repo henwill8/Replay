@@ -14,13 +14,13 @@ namespace GlobalNamespace {
   class OVRAutoDestroyInMRC : public UnityEngine::MonoBehaviour {
     public:
     // private System.Void Start()
-    // Offset: 0xCC8648
+    // Offset: 0x1068CB0
     void Start();
     // private System.Void Update()
-    // Offset: 0xCC876C
+    // Offset: 0x1068DD4
     void Update();
     // public System.Void .ctor()
-    // Offset: 0xCC8770
+    // Offset: 0x1068DD8
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

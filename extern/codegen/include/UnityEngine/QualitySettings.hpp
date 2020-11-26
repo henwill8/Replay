@@ -21,19 +21,19 @@ namespace UnityEngine {
   class QualitySettings : public UnityEngine::Object {
     public:
     // static public System.Void set_vSyncCount(System.Int32 value)
-    // Offset: 0x141EED8
+    // Offset: 0x173631C
     static void set_vSyncCount(int value);
     // static public System.Int32 get_antiAliasing()
-    // Offset: 0x141EF18
+    // Offset: 0x173635C
     static int get_antiAliasing();
     // static public System.Void set_antiAliasing(System.Int32 value)
-    // Offset: 0x141EF4C
+    // Offset: 0x1736390
     static void set_antiAliasing(int value);
     // static public System.Void set_maxQueuedFrames(System.Int32 value)
-    // Offset: 0x141EF8C
+    // Offset: 0x17363D0
     static void set_maxQueuedFrames(int value);
     // static public UnityEngine.ColorSpace get_activeColorSpace()
-    // Offset: 0x141EFCC
+    // Offset: 0x1736410
     static UnityEngine::ColorSpace get_activeColorSpace();
   }; // UnityEngine.QualitySettings
 }

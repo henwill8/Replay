@@ -64,16 +64,16 @@ namespace RootMotion::FinalIK {
     // Offset: 0x58
     ::Array<RootMotion::FinalIK::IKSolver*>* ikSolvers;
     // public RootMotion.FinalIK.IKSolverLimb[] get_limbs()
-    // Offset: 0x13AD8A8
+    // Offset: 0x174BD38
     ::Array<RootMotion::FinalIK::IKSolverLimb*>* get_limbs();
     // public RootMotion.FinalIK.IKSolver[] get_ikSolvers()
-    // Offset: 0x13AE57C
+    // Offset: 0x174CA0C
     ::Array<RootMotion::FinalIK::IKSolver*>* get_ikSolvers();
     // public System.Void AssignReferences(RootMotion.BipedReferences references)
-    // Offset: 0x13ADCA4
+    // Offset: 0x174C134
     void AssignReferences(RootMotion::BipedReferences* references);
     // public System.Void .ctor()
-    // Offset: 0x13AE3D4
+    // Offset: 0x174C864
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static BipedIKSolvers* New_ctor();

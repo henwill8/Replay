@@ -32,36 +32,36 @@ namespace UnityEngine::AI {
     // Offset: 0x18
     ::Array<UnityEngine::Vector3>* m_Corners;
     // static private System.IntPtr InitializeNavMeshPath()
-    // Offset: 0x1980790
+    // Offset: 0x1A0A974
     static System::IntPtr InitializeNavMeshPath();
     // static private System.Void DestroyNavMeshPath(System.IntPtr ptr)
-    // Offset: 0x1980888
+    // Offset: 0x1A0AA6C
     static void DestroyNavMeshPath(System::IntPtr ptr);
     // private UnityEngine.Vector3[] CalculateCornersInternal()
-    // Offset: 0x19808C8
+    // Offset: 0x1A0AAAC
     ::Array<UnityEngine::Vector3>* CalculateCornersInternal();
     // private System.Void ClearCornersInternal()
-    // Offset: 0x1980908
+    // Offset: 0x1A0AAEC
     void ClearCornersInternal();
     // public System.Void ClearCorners()
-    // Offset: 0x19804D8
+    // Offset: 0x1A0A6BC
     void ClearCorners();
     // private System.Void CalculateCorners()
-    // Offset: 0x1980948
+    // Offset: 0x1A0AB2C
     void CalculateCorners();
     // public UnityEngine.Vector3[] get_corners()
-    // Offset: 0x19809BC
+    // Offset: 0x1A0ABA0
     ::Array<UnityEngine::Vector3>* get_corners();
     // public UnityEngine.AI.NavMeshPathStatus get_status()
-    // Offset: 0x19809E0
+    // Offset: 0x1A0ABC4
     UnityEngine::AI::NavMeshPathStatus get_status();
     // public System.Void .ctor()
-    // Offset: 0x1980744
+    // Offset: 0x1A0A928
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static NavMeshPath* New_ctor();
     // protected override System.Void Finalize()
-    // Offset: 0x19807C4
+    // Offset: 0x1A0A9A8
     // Implemented from: System.Object
     // Base method: System.Void Object::Finalize()
     void Finalize();

@@ -24,13 +24,13 @@ namespace System::Xml {
     // Offset: 0x20
     int size;
     // public System.Void .ctor(System.Int32 growthRate)
-    // Offset: 0x1199084
+    // Offset: 0x14DF1A0
     static ByteStack* New_ctor(int growthRate);
     // public System.Void Push(System.Byte data)
-    // Offset: 0x1199108
+    // Offset: 0x14DF224
     void Push(uint8_t data);
     // public System.Byte Pop()
-    // Offset: 0x11991F8
+    // Offset: 0x14DF314
     uint8_t Pop();
   }; // System.Xml.ByteStack
 }

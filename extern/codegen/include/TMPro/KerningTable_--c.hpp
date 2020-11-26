@@ -39,16 +39,16 @@ namespace TMPro {
     // Set static field: static public System.Func`2<TMPro.KerningPair,System.UInt32> <>9__7_1
     static void _set_$$9__7_1(System::Func_2<TMPro::KerningPair*, uint>* value);
     // static private System.Void .cctor()
-    // Offset: 0xB51530
+    // Offset: 0xF4EA44
     static void _cctor();
     // System.UInt32 <SortKerningPairs>b__7_0(TMPro.KerningPair s)
-    // Offset: 0xB515A0
+    // Offset: 0xF4EAB4
     uint $SortKerningPairs$b__7_0(TMPro::KerningPair* s);
     // System.UInt32 <SortKerningPairs>b__7_1(TMPro.KerningPair s)
-    // Offset: 0xB515B8
+    // Offset: 0xF4EACC
     uint $SortKerningPairs$b__7_1(TMPro::KerningPair* s);
     // public System.Void .ctor()
-    // Offset: 0xB51598
+    // Offset: 0xF4EAAC
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static KerningTable::$$c* New_ctor();

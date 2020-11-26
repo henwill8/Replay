@@ -60,7 +60,7 @@ namespace GlobalNamespace {
     // private UnityEngine.UI.Image[] _ringGLowImages
     // Offset: 0x40
     ::Array<UnityEngine::UI::Image*>* ringGLowImages;
-    // private ColorManager _colorManager
+    // private readonly ColorManager _colorManager
     // Offset: 0x48
     GlobalNamespace::ColorManager* colorManager;
     // private System.Boolean _highlighted
@@ -72,7 +72,7 @@ namespace GlobalNamespace {
     // private System.Single _activationProgress
     // Offset: 0x58
     float activationProgress;
-    // private System.Collections.Generic.HashSet`1<SaberType> _sabersInside
+    // private readonly System.Collections.Generic.HashSet`1<SaberType> _sabersInside
     // Offset: 0x60
     System::Collections::Generic::HashSet_1<GlobalNamespace::SaberType>* sabersInside;
     // private System.Boolean _sabersInsideAfterOnEnable
@@ -81,40 +81,40 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.Void set_alpha(System.Single value)
-    // Offset: 0xB45F78
+    // Offset: 0xF1C0F4
     void set_alpha(float value);
     // public System.Boolean get_fullyActivated()
-    // Offset: 0xB45CD4
+    // Offset: 0xF1BE50
     bool get_fullyActivated();
     // public SaberType get_saberType()
-    // Offset: 0xB4613C
+    // Offset: 0xF1C2B8
     GlobalNamespace::SaberType get_saberType();
     // public System.Void set_saberType(SaberType value)
-    // Offset: 0xB46144
+    // Offset: 0xF1C2C0
     void set_saberType(GlobalNamespace::SaberType value);
     // protected System.Void Start()
-    // Offset: 0xB4614C
+    // Offset: 0xF1C2C8
     void Start();
     // protected System.Void OnEnable()
-    // Offset: 0xB461E4
+    // Offset: 0xF1C360
     void OnEnable();
     // protected System.Void Update()
-    // Offset: 0xB4623C
+    // Offset: 0xF1C3B8
     void Update();
     // private System.Void SetProgressImagesfillAmount(System.Single fillAmount)
-    // Offset: 0xB463AC
+    // Offset: 0xF1C528
     void SetProgressImagesfillAmount(float fillAmount);
     // private System.Void OnTriggerEnter(UnityEngine.Collider other)
-    // Offset: 0xB46428
+    // Offset: 0xF1C5A4
     void OnTriggerEnter(UnityEngine::Collider* other);
     // private System.Void OnTriggerExit(UnityEngine.Collider other)
-    // Offset: 0xB4652C
+    // Offset: 0xF1C6A8
     void OnTriggerExit(UnityEngine::Collider* other);
     // private System.Void OnTriggerStay(UnityEngine.Collider other)
-    // Offset: 0xB46630
+    // Offset: 0xF1C7AC
     void OnTriggerStay(UnityEngine::Collider* other);
     // public System.Void .ctor()
-    // Offset: 0xB46740
+    // Offset: 0xF1C8BC
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

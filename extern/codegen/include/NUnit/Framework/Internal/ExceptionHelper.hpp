@@ -36,22 +36,22 @@ namespace NUnit::Framework::Internal {
     // Set static field: static private System.Action`1<System.Exception> CS$<>9__CachedAnonymousMethodDelegate1
     static void _set_CS$$$9__CachedAnonymousMethodDelegate1(System::Action_1<System::Exception*>* value);
     // static private System.Void .cctor()
-    // Offset: 0x1089FE0
+    // Offset: 0x13F0218
     static void _cctor();
     // static public System.String BuildMessage(System.Exception exception)
-    // Offset: 0x108A1EC
+    // Offset: 0x13F0424
     static ::Il2CppString* BuildMessage(System::Exception* exception);
     // static public System.String BuildStackTrace(System.Exception exception)
-    // Offset: 0x108A6E0
+    // Offset: 0x13F0918
     static ::Il2CppString* BuildStackTrace(System::Exception* exception);
     // static public System.String GetStackTrace(System.Exception exception)
-    // Offset: 0x108A94C
+    // Offset: 0x13F0B84
     static ::Il2CppString* GetStackTrace(System::Exception* exception);
     // static private System.Collections.Generic.List`1<System.Exception> FlattenExceptionHierarchy(System.Exception exception)
-    // Offset: 0x108A60C
+    // Offset: 0x13F0844
     static System::Collections::Generic::List_1<System::Exception*>* FlattenExceptionHierarchy(System::Exception* exception);
     // static private System.Void <.cctor>b__0(System.Exception _)
-    // Offset: 0x108AA24
+    // Offset: 0x13F0C5C
     static void $_cctor$b__0(System::Exception* _);
   }; // NUnit.Framework.Internal.ExceptionHelper
 }

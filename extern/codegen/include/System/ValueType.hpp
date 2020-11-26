@@ -4,7 +4,7 @@
 #pragma once
 #pragma pack(push, 8)
 // Begin includes
-#include "../System/Object.hpp"
+#include "System/Object.hpp"
 // Completed includes
 // Begin il2cpp-utils forward declares
 struct Il2CppObject;
@@ -18,31 +18,31 @@ namespace System {
   class ValueType : public System::Object {
     public:
     // static private System.Boolean InternalEquals(System.Object o1, System.Object o2, out System.Object[] fields)
-    // Offset: 0x17A06DC
+    // Offset: 0x1660864
     static bool InternalEquals(::Il2CppObject* o1, ::Il2CppObject* o2, ::Array<::Il2CppObject*>*& fields);
     // static System.Boolean DefaultEquals(System.Object o1, System.Object o2)
-    // Offset: 0x17A06E0
+    // Offset: 0x1660868
     static bool DefaultEquals(::Il2CppObject* o1, ::Il2CppObject* o2);
     // static System.Int32 InternalGetHashCode(System.Object o, out System.Object[] fields)
-    // Offset: 0x17A08AC
+    // Offset: 0x1660A34
     static int InternalGetHashCode(::Il2CppObject* o, ::Array<::Il2CppObject*>*& fields);
     // protected System.Void .ctor()
-    // Offset: 0x17A06D4
+    // Offset: 0x166085C
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static ValueType* New_ctor();
     // public override System.Boolean Equals(System.Object obj)
-    // Offset: 0x17A08A8
+    // Offset: 0x1660A30
     // Implemented from: System.Object
     // Base method: System.Boolean Object::Equals(System.Object obj)
     bool Equals(::Il2CppObject* obj);
     // public override System.Int32 GetHashCode()
-    // Offset: 0x17A08B0
+    // Offset: 0x1660A38
     // Implemented from: System.Object
     // Base method: System.Int32 Object::GetHashCode()
     int GetHashCode();
     // public override System.String ToString()
-    // Offset: 0x17A093C
+    // Offset: 0x1660AC4
     // Implemented from: System.Object
     // Base method: System.String Object::ToString()
     ::Il2CppString* ToString();

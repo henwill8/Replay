@@ -43,20 +43,24 @@ namespace GlobalNamespace {
     static System::Collections::Generic::List_1<GlobalNamespace::DirectionalLight*>* _get__lights();
     // Set static field: static private System.Collections.Generic.List`1<DirectionalLight> _lights
     static void _set__lights(System::Collections::Generic::List_1<GlobalNamespace::DirectionalLight*>* value);
+    // Get static field: static private DirectionalLight _mainLight
+    static GlobalNamespace::DirectionalLight* _get__mainLight();
+    // Set static field: static private DirectionalLight _mainLight
+    static void _set__mainLight(GlobalNamespace::DirectionalLight* value);
     // static public System.Collections.Generic.List`1<DirectionalLight> get_lights()
-    // Offset: 0x1828D28
+    // Offset: 0x1878D18
     static System::Collections::Generic::List_1<GlobalNamespace::DirectionalLight*>* get_lights();
     // static private System.Void NoDomainReloadInit()
-    // Offset: 0x1828D90
+    // Offset: 0x1878D80
     static void NoDomainReloadInit();
     // protected System.Void OnEnable()
-    // Offset: 0x1828E24
+    // Offset: 0x1878E14
     void OnEnable();
     // protected System.Void OnDisable()
-    // Offset: 0x1828EA8
+    // Offset: 0x1878E98
     void OnDisable();
     // public System.Void .ctor()
-    // Offset: 0x1828F2C
+    // Offset: 0x1878F1C
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()
@@ -65,7 +69,7 @@ namespace GlobalNamespace {
     // Base method: System.Void Object::.ctor()
     static DirectionalLight* New_ctor();
     // static private System.Void .cctor()
-    // Offset: 0x1828F34
+    // Offset: 0x1878F24
     // Implemented from: UnityEngine.Object
     // Base method: System.Void Object::.cctor()
     static void _cctor();

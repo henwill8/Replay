@@ -28,19 +28,19 @@ namespace System::Runtime::Serialization::Formatters::Binary {
       return idRef;
     }
     // System.Void Set(System.Int32 idRef)
-    // Offset: 0xE2AE54
+    // Offset: 0x12F3110
     void Set(int idRef);
     // public System.Void Write(System.Runtime.Serialization.Formatters.Binary.__BinaryWriter sout)
-    // Offset: 0xE2AE5C
+    // Offset: 0x12F3118
     void Write(System::Runtime::Serialization::Formatters::Binary::__BinaryWriter* sout);
     // public System.Void Read(System.Runtime.Serialization.Formatters.Binary.__BinaryParser input)
-    // Offset: 0xE2AEA0
+    // Offset: 0x12F3194
     void Read(System::Runtime::Serialization::Formatters::Binary::__BinaryParser* input);
     // public System.Void Dump()
-    // Offset: 0xE2AED4
+    // Offset: 0x12F31F8
     void Dump();
     // System.Void .ctor()
-    // Offset: 0xE2AE4C
+    // Offset: 0x12F3108
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static MemberReference* New_ctor();

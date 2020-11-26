@@ -23,7 +23,7 @@ namespace GlobalNamespace {
       return spawnPosition;
     }
     // public System.Void .ctor(FlyingScoreSpawner/SpawnPosition spawnPosition)
-    // Offset: 0xBF0D4C
+    // Offset: 0x1A158E0
     static FlyingScoreSpawner::InitData* New_ctor(GlobalNamespace::FlyingScoreSpawner::SpawnPosition spawnPosition);
   }; // FlyingScoreSpawner/InitData
 }

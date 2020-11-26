@@ -1,3 +1,4 @@
+#pragma once
 #include <functional>
 
 #include "beatsaber-hook/shared/utils/typedefs.h"

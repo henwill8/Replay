@@ -35,7 +35,7 @@ namespace GlobalNamespace {
     // private UnityEngine.Vector3 _rotationVector
     // Offset: 0x1C
     UnityEngine::Vector3 rotationVector;
-    // private BeatmapObjectCallbackController _beatmapObjectCallbackController
+    // private readonly BeatmapObjectCallbackController _beatmapObjectCallbackController
     // Offset: 0x28
     GlobalNamespace::BeatmapObjectCallbackController* beatmapObjectCallbackController;
     // private UnityEngine.Transform _transform
@@ -56,19 +56,19 @@ namespace GlobalNamespace {
     // Set static field: static private System.Single kSpeedMultiplier
     static void _set_kSpeedMultiplier(float value);
     // protected System.Void Start()
-    // Offset: 0xBFA310
+    // Offset: 0x1AC7558
     void Start();
     // protected System.Void Update()
-    // Offset: 0xBFA3E8
+    // Offset: 0x1AC7630
     void Update();
     // private System.Void OnDestroy()
-    // Offset: 0xBFA450
+    // Offset: 0x1AC7698
     void OnDestroy();
     // private System.Void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(BeatmapEventData beatmapEventData)
-    // Offset: 0xBFA528
+    // Offset: 0x1AC7774
     void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(GlobalNamespace::BeatmapEventData* beatmapEventData);
     // public System.Void .ctor()
-    // Offset: 0xBFA664
+    // Offset: 0x1AC78B0
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

@@ -89,58 +89,58 @@ namespace RootMotion::FinalIK {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.Void EnableRagdoll()
-    // Offset: 0x1234A10
+    // Offset: 0x15E2B30
     void EnableRagdoll();
     // public System.Void DisableRagdoll()
-    // Offset: 0x1234AC0
+    // Offset: 0x15E2BE0
     void DisableRagdoll();
     // public System.Void Start()
-    // Offset: 0x1234BFC
+    // Offset: 0x15E2D1C
     void Start();
     // private System.Collections.IEnumerator DisableRagdollSmooth()
-    // Offset: 0x1234B80
+    // Offset: 0x15E2CA0
     System::Collections::IEnumerator* DisableRagdollSmooth();
     // private System.Void Update()
-    // Offset: 0x1235284
+    // Offset: 0x15E33A4
     void Update();
     // private System.Void FixedUpdate()
-    // Offset: 0x12354D0
+    // Offset: 0x15E35F0
     void FixedUpdate();
     // private System.Void LateUpdate()
-    // Offset: 0x1235588
+    // Offset: 0x15E36A8
     void LateUpdate();
     // private System.Void AfterLastIK()
-    // Offset: 0x12357C8
+    // Offset: 0x15E38E8
     void AfterLastIK();
     // private System.Void AfterAnimation()
-    // Offset: 0x1235608
+    // Offset: 0x15E3728
     void AfterAnimation();
     // private System.Void OnFinalPose()
-    // Offset: 0x1235784
+    // Offset: 0x15E38A4
     void OnFinalPose();
     // private System.Void RagdollEnabler()
-    // Offset: 0x1235864
+    // Offset: 0x15E3984
     void RagdollEnabler();
     // private System.Boolean get_isRagdoll()
-    // Offset: 0x1234A48
+    // Offset: 0x15E2B68
     bool get_isRagdoll();
     // private System.Void RecordVelocities()
-    // Offset: 0x12357FC
+    // Offset: 0x15E391C
     void RecordVelocities();
     // private System.Boolean get_ikUsed()
-    // Offset: 0x1235644
+    // Offset: 0x15E3764
     bool get_ikUsed();
     // private System.Void StoreLocalState()
-    // Offset: 0x1234B18
+    // Offset: 0x15E2C38
     void StoreLocalState();
     // private System.Void FixTransforms(System.Single weight)
-    // Offset: 0x1235510
+    // Offset: 0x15E3630
     void FixTransforms(float weight);
     // private System.Void OnDestroy()
-    // Offset: 0x1236008
+    // Offset: 0x15E4128
     void OnDestroy();
     // public System.Void .ctor()
-    // Offset: 0x1236130
+    // Offset: 0x15E4250
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

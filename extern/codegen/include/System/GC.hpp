@@ -23,40 +23,40 @@ namespace System {
     // Set static field: static readonly System.Object EPHEMERON_TOMBSTONE
     static void _set_EPHEMERON_TOMBSTONE(::Il2CppObject* value);
     // static private System.Int32 GetMaxGeneration()
-    // Offset: 0xDA9DDC
+    // Offset: 0x112BAFC
     static int GetMaxGeneration();
     // static private System.Void InternalCollect(System.Int32 generation)
-    // Offset: 0xDA9DE0
+    // Offset: 0x112BB00
     static void InternalCollect(int generation);
     // static System.Void register_ephemeron_array(System.Runtime.CompilerServices.Ephemeron[] array)
-    // Offset: 0xDA9DE4
+    // Offset: 0x112BB04
     static void register_ephemeron_array(::Array<System::Runtime::CompilerServices::Ephemeron>* array);
     // static private System.Object get_ephemeron_tombstone()
-    // Offset: 0xDA9DE8
+    // Offset: 0x112BB08
     static ::Il2CppObject* get_ephemeron_tombstone();
     // static public System.Void Collect()
-    // Offset: 0xDA9DEC
+    // Offset: 0x112BB0C
     static void Collect();
     // static public System.Void KeepAlive(System.Object obj)
-    // Offset: 0xDA9EA8
+    // Offset: 0x112BBC8
     static void KeepAlive(::Il2CppObject* obj);
     // static public System.Int32 get_MaxGeneration()
-    // Offset: 0xDA9E4C
+    // Offset: 0x112BB6C
     static int get_MaxGeneration();
     // static private System.Void _SuppressFinalize(System.Object o)
-    // Offset: 0xDA9EAC
+    // Offset: 0x112BBCC
     static void _SuppressFinalize(::Il2CppObject* o);
     // static public System.Void SuppressFinalize(System.Object obj)
-    // Offset: 0xDA9EB0
+    // Offset: 0x112BBD0
     static void SuppressFinalize(::Il2CppObject* obj);
     // static private System.Void _ReRegisterForFinalize(System.Object o)
-    // Offset: 0xDA9F54
+    // Offset: 0x112BC74
     static void _ReRegisterForFinalize(::Il2CppObject* o);
     // static public System.Void ReRegisterForFinalize(System.Object obj)
-    // Offset: 0xDA9F58
+    // Offset: 0x112BC78
     static void ReRegisterForFinalize(::Il2CppObject* obj);
     // static private System.Void .cctor()
-    // Offset: 0xDA9FFC
+    // Offset: 0x112BD1C
     static void _cctor();
   }; // System.GC
 }

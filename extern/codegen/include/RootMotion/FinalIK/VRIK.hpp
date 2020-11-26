@@ -31,41 +31,41 @@ namespace RootMotion::FinalIK {
     // Offset: 0x40
     RootMotion::FinalIK::IKSolverVR* solver;
     // private System.Void OpenSetupTutorial()
-    // Offset: 0x123C9A0
+    // Offset: 0x15EAAC0
     void OpenSetupTutorial();
     // public System.Void AutoDetectReferences()
-    // Offset: 0x123C9EC
+    // Offset: 0x15EAB0C
     void AutoDetectReferences();
     // public System.Void GuessHandOrientations()
-    // Offset: 0x123CE94
+    // Offset: 0x15EAFB4
     void GuessHandOrientations();
     // protected override System.Void OpenUserManual()
-    // Offset: 0x123C908
+    // Offset: 0x15EAA28
     // Implemented from: RootMotion.FinalIK.IK
     // Base method: System.Void IK::OpenUserManual()
     void OpenUserManual();
     // protected override System.Void OpenScriptReference()
-    // Offset: 0x123C954
+    // Offset: 0x15EAA74
     // Implemented from: RootMotion.FinalIK.IK
     // Base method: System.Void IK::OpenScriptReference()
     void OpenScriptReference();
     // public override RootMotion.FinalIK.IKSolver GetIKSolver()
-    // Offset: 0x123CEBC
+    // Offset: 0x15EAFDC
     // Implemented from: RootMotion.FinalIK.IK
     // Base method: RootMotion.FinalIK.IKSolver IK::GetIKSolver()
     RootMotion::FinalIK::IKSolver* GetIKSolver();
     // protected override System.Void InitiateSolver()
-    // Offset: 0x123CEC4
+    // Offset: 0x15EAFE4
     // Implemented from: RootMotion.FinalIK.IK
     // Base method: System.Void IK::InitiateSolver()
     void InitiateSolver();
     // protected override System.Void UpdateSolver()
-    // Offset: 0x123D830
+    // Offset: 0x15EB950
     // Implemented from: RootMotion.FinalIK.IK
     // Base method: System.Void IK::UpdateSolver()
     void UpdateSolver();
     // public System.Void .ctor()
-    // Offset: 0x123D9A8
+    // Offset: 0x15EBAC8
     // Implemented from: RootMotion.FinalIK.IK
     // Base method: System.Void IK::.ctor()
     // Base method: System.Void SolverManager::.ctor()

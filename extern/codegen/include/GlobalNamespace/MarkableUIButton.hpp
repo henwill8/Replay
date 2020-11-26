@@ -32,19 +32,19 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.Boolean get_marked()
-    // Offset: 0xCB8930
+    // Offset: 0x103789C
     bool get_marked();
     // public System.Void set_marked(System.Boolean value)
-    // Offset: 0xCB8938
+    // Offset: 0x10378A4
     void set_marked(bool value);
     // protected System.Void Awake()
-    // Offset: 0xCB8964
+    // Offset: 0x10378D0
     void Awake();
     // public System.Void ToggleMarked()
-    // Offset: 0xCB89BC
+    // Offset: 0x1037928
     void ToggleMarked();
     // public System.Void .ctor()
-    // Offset: 0xCB89CC
+    // Offset: 0x1037938
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

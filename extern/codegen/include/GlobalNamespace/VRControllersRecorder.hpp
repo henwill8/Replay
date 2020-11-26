@@ -148,67 +148,67 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.Void set_mode(VRControllersRecorder/Mode value)
-    // Offset: 0xC4F994
+    // Offset: 0xFFE784
     void set_mode(GlobalNamespace::VRControllersRecorder::Mode value);
     // public VRControllersRecorder/Mode get_mode()
-    // Offset: 0xC4F99C
+    // Offset: 0xFFE78C
     GlobalNamespace::VRControllersRecorder::Mode get_mode();
     // public System.Void set_recordingTextAsset(UnityEngine.TextAsset value)
-    // Offset: 0xC4F9A4
+    // Offset: 0xFFE794
     void set_recordingTextAsset(UnityEngine::TextAsset* value);
     // public UnityEngine.TextAsset get_recordingTextAsset()
-    // Offset: 0xC4F9AC
+    // Offset: 0xFFE79C
     UnityEngine::TextAsset* get_recordingTextAsset();
     // public System.Void set_recordingFileName(System.String value)
-    // Offset: 0xC4F9B4
+    // Offset: 0xFFE7A4
     void set_recordingFileName(::Il2CppString* value);
     // public System.String get_recordingFileName()
-    // Offset: 0xC4F9BC
+    // Offset: 0xFFE7AC
     ::Il2CppString* get_recordingFileName();
     // public System.Void set_changeToNonVRCamera(System.Boolean value)
-    // Offset: 0xC4F9C4
+    // Offset: 0xFFE7B4
     void set_changeToNonVRCamera(bool value);
     // public System.Boolean get_changeToNonVRCamera()
-    // Offset: 0xC4F9D0
+    // Offset: 0xFFE7C0
     bool get_changeToNonVRCamera();
     // protected System.Void Start()
-    // Offset: 0xC4F9D8
+    // Offset: 0xFFE7C8
     void Start();
     // protected System.Void OnDestroy()
-    // Offset: 0xC502A0
+    // Offset: 0xFFF090
     void OnDestroy();
     // public System.Void SetDefaultSettings()
-    // Offset: 0xC505D0
+    // Offset: 0xFFF3C0
     void SetDefaultSettings();
     // public System.Void SetInGamePlaybackDefaultSettings()
-    // Offset: 0xC50668
+    // Offset: 0xFFF458
     void SetInGamePlaybackDefaultSettings();
     // private System.Void PlaybackTick()
-    // Offset: 0xC50704
+    // Offset: 0xFFF4F4
     void PlaybackTick();
     // private System.Void SetPositionAndRotation(UnityEngine.Transform transf, UnityEngine.Vector3 targetPos, UnityEngine.Quaternion targetRot, System.Single t)
-    // Offset: 0xC50FDC
+    // Offset: 0xFFFDCC
     void SetPositionAndRotation(UnityEngine::Transform* transf, UnityEngine::Vector3 targetPos, UnityEngine::Quaternion targetRot, float t);
     // private System.Void RecordTick()
-    // Offset: 0xC51158
+    // Offset: 0xFFFF48
     void RecordTick();
     // protected System.Void Update()
-    // Offset: 0xC513A4
+    // Offset: 0x100018C
     void Update();
     // protected System.Void LateUpdate()
-    // Offset: 0xC51418
+    // Offset: 0x1000200
     void LateUpdate();
     // private System.Void Save()
-    // Offset: 0xC502B0
+    // Offset: 0xFFF0A0
     void Save();
     // private System.Void Load()
-    // Offset: 0xC4FD18
+    // Offset: 0xFFEB08
     void Load();
     // static public UnityEngine.AnimationClip CreateAnimationClipFromRecording(System.String recordingfilePath)
-    // Offset: 0xC51440
+    // Offset: 0x1000210
     static UnityEngine::AnimationClip* CreateAnimationClipFromRecording(::Il2CppString* recordingfilePath);
     // public System.Void .ctor()
-    // Offset: 0xC51FDC
+    // Offset: 0x1000DAC
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

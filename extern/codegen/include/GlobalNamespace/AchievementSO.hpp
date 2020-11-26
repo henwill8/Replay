@@ -19,10 +19,10 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.String get_achievementId()
-    // Offset: 0xB82DB4
+    // Offset: 0x1A3A5CC
     ::Il2CppString* get_achievementId();
     // public System.Void .ctor()
-    // Offset: 0xB82DBC
+    // Offset: 0x1A3A5D4
     // Implemented from: PersistentScriptableObject
     // Base method: System.Void PersistentScriptableObject::.ctor()
     // Base method: System.Void ScriptableObject::.ctor()

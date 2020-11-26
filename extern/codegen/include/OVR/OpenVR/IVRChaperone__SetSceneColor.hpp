@@ -31,16 +31,16 @@ namespace OVR::OpenVR {
   class IVRChaperone::_SetSceneColor : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0xED4E20
+    // Offset: 0x11FB0F8
     static IVRChaperone::_SetSceneColor* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Void Invoke(OVR.OpenVR.HmdColor_t color)
-    // Offset: 0xECA424
+    // Offset: 0x11F06FC
     void Invoke(OVR::OpenVR::HmdColor_t color);
     // public System.IAsyncResult BeginInvoke(OVR.OpenVR.HmdColor_t color, System.AsyncCallback callback, System.Object object)
-    // Offset: 0xED4E34
+    // Offset: 0x11FB10C
     System::IAsyncResult* BeginInvoke(OVR::OpenVR::HmdColor_t color, System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Void EndInvoke(System.IAsyncResult result)
-    // Offset: 0xED4EC4
+    // Offset: 0x11FB19C
     void EndInvoke(System::IAsyncResult* result);
   }; // OVR.OpenVR.IVRChaperone/_SetSceneColor
 }

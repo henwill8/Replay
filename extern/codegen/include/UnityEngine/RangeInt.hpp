@@ -21,10 +21,10 @@ namespace UnityEngine {
     // Creating value type constructor for type: RangeInt
     constexpr RangeInt(int start_ = {}, int length_ = {}) noexcept : start{start_}, length{length_} {}
     // public System.Int32 get_end()
-    // Offset: 0xA490DC
+    // Offset: 0xCA763C
     int get_end();
     // public System.Void .ctor(System.Int32 start, System.Int32 length)
-    // Offset: 0xA490E8
+    // Offset: 0xCA7648
     // ABORTED: conflicts with another method.  RangeInt(int start, int length);
   }; // UnityEngine.RangeInt
 }

@@ -31,7 +31,7 @@ namespace Oculus::Platform::Models {
       return Session;
     }
     // public System.Void .ctor(System.IntPtr o)
-    // Offset: 0xEA6878
+    // Offset: 0x11DD370
     static NetSyncSetSessionPropertyResult* New_ctor(System::IntPtr o);
   }; // Oculus.Platform.Models.NetSyncSetSessionPropertyResult
 }

@@ -32,24 +32,24 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.Void add_didGoToBackgroundExecutionEvent(System.Action value)
-    // Offset: 0xBD16FC
+    // Offset: 0xF026C8
     void add_didGoToBackgroundExecutionEvent(System::Action* value);
     // public System.Void remove_didGoToBackgroundExecutionEvent(System.Action value)
-    // Offset: 0xBD17A0
+    // Offset: 0xF0276C
     void remove_didGoToBackgroundExecutionEvent(System::Action* value);
     // public System.Void add_didGoToForegroundExecutionEvent(System.Action value)
-    // Offset: 0xBD1844
+    // Offset: 0xF02810
     void add_didGoToForegroundExecutionEvent(System::Action* value);
     // public System.Void remove_didGoToForegroundExecutionEvent(System.Action value)
-    // Offset: 0xBD18E8
+    // Offset: 0xF028B4
     void remove_didGoToForegroundExecutionEvent(System::Action* value);
     // protected System.Void Update()
-    // Offset: 0xBD198C
+    // Offset: 0xF02958
     void Update();
     // public System.Void .ctor()
-    // Offset: 0xBD19B0
+    // Offset: 0xF0297C
     // Implemented from: PersistentSingleton`1
-    // Base method: System.Void PersistentSingleton`1::.ctor()
+    // Base method: System.Void PersistentSingleton_1::.ctor()
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()
     // Base method: System.Void Component::.ctor()

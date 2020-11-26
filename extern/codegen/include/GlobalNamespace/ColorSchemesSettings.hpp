@@ -42,38 +42,41 @@ namespace GlobalNamespace {
     // Offset: 0x28
     ::Il2CppString* selectedColorSchemeId;
     // public System.Void set_selectedColorSchemeId(System.String value)
-    // Offset: 0xBE0518
+    // Offset: 0x1A51B6C
     void set_selectedColorSchemeId(::Il2CppString* value);
     // public System.String get_selectedColorSchemeId()
-    // Offset: 0xBE0520
+    // Offset: 0x1A51B74
     ::Il2CppString* get_selectedColorSchemeId();
     // public System.Void .ctor(ColorScheme[] colorSchemes)
-    // Offset: 0xBE0528
+    // Offset: 0x1A51B7C
     static ColorSchemesSettings* New_ctor(::Array<GlobalNamespace::ColorScheme*>* colorSchemes);
     // public System.Void .ctor(ColorSchemeSO[] colorSchemeSOs)
-    // Offset: 0xBE0684
+    // Offset: 0x1A51CD8
     static ColorSchemesSettings* New_ctor(::Array<GlobalNamespace::ColorSchemeSO*>* colorSchemeSOs);
     // static private ColorScheme[] ConvertColorSchemeSOs(ColorSchemeSO[] colorSchemeSOs)
-    // Offset: 0xBE06B0
+    // Offset: 0x1A51D04
     static ::Array<GlobalNamespace::ColorScheme*>* ConvertColorSchemeSOs(::Array<GlobalNamespace::ColorSchemeSO*>* colorSchemeSOs);
     // public System.Int32 GetNumberOfColorSchemes()
-    // Offset: 0xBE07E0
+    // Offset: 0x1A51E34
     int GetNumberOfColorSchemes();
     // public ColorScheme GetColorSchemeForIdx(System.Int32 idx)
-    // Offset: 0xBE0830
+    // Offset: 0x1A51E84
     GlobalNamespace::ColorScheme* GetColorSchemeForIdx(int idx);
     // public ColorScheme GetColorSchemeForId(System.String id)
-    // Offset: 0xBE08A8
+    // Offset: 0x1A51EFC
     GlobalNamespace::ColorScheme* GetColorSchemeForId(::Il2CppString* id);
     // public System.Void SetColorSchemeForId(ColorScheme colorScheme)
-    // Offset: 0xBE0910
+    // Offset: 0x1A51F64
     void SetColorSchemeForId(GlobalNamespace::ColorScheme* colorScheme);
     // public ColorScheme GetSelectedColorScheme()
-    // Offset: 0xBE0A0C
+    // Offset: 0x1A52060
     GlobalNamespace::ColorScheme* GetSelectedColorScheme();
     // public System.Int32 GetSelectedColorSchemeIdx()
-    // Offset: 0xBE0A68
+    // Offset: 0x1A520BC
     int GetSelectedColorSchemeIdx();
+    // public ColorScheme GetOverrideColorScheme()
+    // Offset: 0x1A52168
+    GlobalNamespace::ColorScheme* GetOverrideColorScheme();
   }; // ColorSchemesSettings
 }
 #include "extern/beatsaber-hook/shared/utils/il2cpp-type-check.hpp"

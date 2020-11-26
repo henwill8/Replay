@@ -82,43 +82,43 @@ namespace System::Runtime::Serialization::Formatters::Binary {
     // Set static field: static private System.Collections.Generic.Dictionary`2<System.Type,System.Runtime.Serialization.Formatters.Binary.TypeInformation> typeNameCache
     static void _set_typeNameCache(System::Collections::Generic::Dictionary_2<System::Type*, System::Runtime::Serialization::Formatters::Binary::TypeInformation*>* value);
     // public System.Void set_AssemblyFormat(System.Runtime.Serialization.Formatters.FormatterAssemblyStyle value)
-    // Offset: 0xE26FA8
+    // Offset: 0x1341D08
     void set_AssemblyFormat(System::Runtime::Serialization::Formatters::FormatterAssemblyStyle value);
     // public System.Void set_SurrogateSelector(System.Runtime.Serialization.ISurrogateSelector value)
-    // Offset: 0xE26FB0
+    // Offset: 0x1341D10
     void set_SurrogateSelector(System::Runtime::Serialization::ISurrogateSelector* value);
     // public System.Void set_Binder(System.Runtime.Serialization.SerializationBinder value)
-    // Offset: 0xE26FB8
+    // Offset: 0x1341D18
     void set_Binder(System::Runtime::Serialization::SerializationBinder* value);
     // public System.Void .ctor(System.Runtime.Serialization.ISurrogateSelector selector, System.Runtime.Serialization.StreamingContext context)
-    // Offset: 0xE1CDCC
+    // Offset: 0x1338314
     static BinaryFormatter* New_ctor(System::Runtime::Serialization::ISurrogateSelector* selector, System::Runtime::Serialization::StreamingContext context);
     // public System.Object Deserialize(System.IO.Stream serializationStream)
-    // Offset: 0xE1F99C
+    // Offset: 0x133A8D8
     ::Il2CppObject* Deserialize(System::IO::Stream* serializationStream);
     // System.Object Deserialize(System.IO.Stream serializationStream, System.Runtime.Remoting.Messaging.HeaderHandler handler, System.Boolean fCheck)
-    // Offset: 0xE2703C
+    // Offset: 0x1341D9C
     ::Il2CppObject* Deserialize(System::IO::Stream* serializationStream, System::Runtime::Remoting::Messaging::HeaderHandler* handler, bool fCheck);
     // public System.Object Deserialize(System.IO.Stream serializationStream, System.Runtime.Remoting.Messaging.HeaderHandler handler)
-    // Offset: 0xE27034
+    // Offset: 0x1341D94
     ::Il2CppObject* Deserialize(System::IO::Stream* serializationStream, System::Runtime::Remoting::Messaging::HeaderHandler* handler);
     // public System.Void Serialize(System.IO.Stream serializationStream, System.Object graph)
-    // Offset: 0xE1F834
+    // Offset: 0x133A770
     void Serialize(System::IO::Stream* serializationStream, ::Il2CppObject* graph);
     // public System.Void Serialize(System.IO.Stream serializationStream, System.Object graph, System.Runtime.Remoting.Messaging.Header[] headers)
-    // Offset: 0xE27758
+    // Offset: 0x1341FD8
     void Serialize(System::IO::Stream* serializationStream, ::Il2CppObject* graph, ::Array<System::Runtime::Remoting::Messaging::Header*>* headers);
     // System.Void Serialize(System.IO.Stream serializationStream, System.Object graph, System.Runtime.Remoting.Messaging.Header[] headers, System.Boolean fCheck)
-    // Offset: 0xE27760
+    // Offset: 0x1341FE0
     void Serialize(System::IO::Stream* serializationStream, ::Il2CppObject* graph, ::Array<System::Runtime::Remoting::Messaging::Header*>* headers, bool fCheck);
     // static System.Runtime.Serialization.Formatters.Binary.TypeInformation GetTypeInformation(System.Type type)
-    // Offset: 0xE27948
+    // Offset: 0x13421C8
     static System::Runtime::Serialization::Formatters::Binary::TypeInformation* GetTypeInformation(System::Type* type);
     // static private System.Void .cctor()
-    // Offset: 0xE27B70
+    // Offset: 0x13423F0
     static void _cctor();
     // public System.Void .ctor()
-    // Offset: 0xE26FC0
+    // Offset: 0x1341D20
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static BinaryFormatter* New_ctor();

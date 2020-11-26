@@ -43,31 +43,31 @@ namespace RootMotion::FinalIK {
     // Offset: 0x70
     bool isLimited;
     // public RootMotion.FinalIK.RotationLimit get_rotationLimit()
-    // Offset: 0x1389B78
+    // Offset: 0x170FB64
     RootMotion::FinalIK::RotationLimit* get_rotationLimit();
     // public System.Void set_rotationLimit(RootMotion.FinalIK.RotationLimit value)
-    // Offset: 0x1389C74
+    // Offset: 0x170FC60
     void set_rotationLimit(RootMotion::FinalIK::RotationLimit* value);
     // public System.Void Swing(UnityEngine.Vector3 swingTarget, System.Single weight)
-    // Offset: 0x1389D08
+    // Offset: 0x170FCF4
     void Swing(UnityEngine::Vector3 swingTarget, float weight);
     // static public System.Void SolverSwing(RootMotion.FinalIK.IKSolver/Bone[] bones, System.Int32 index, UnityEngine.Vector3 swingTarget, System.Single weight)
-    // Offset: 0x1389FC8
+    // Offset: 0x170FFB4
     static void SolverSwing(::Array<RootMotion::FinalIK::IKSolver::Bone*>* bones, int index, UnityEngine::Vector3 swingTarget, float weight);
     // public System.Void Swing2D(UnityEngine.Vector3 swingTarget, System.Single weight)
-    // Offset: 0x138A2A8
+    // Offset: 0x1710294
     void Swing2D(UnityEngine::Vector3 swingTarget, float weight);
     // public System.Void SetToSolverPosition()
-    // Offset: 0x138A510
+    // Offset: 0x17104FC
     void SetToSolverPosition();
     // public System.Void .ctor(UnityEngine.Transform transform)
-    // Offset: 0x138A63C
+    // Offset: 0x1710628
     static IKSolver::Bone* New_ctor(UnityEngine::Transform* transform);
     // public System.Void .ctor(UnityEngine.Transform transform, System.Single weight)
-    // Offset: 0x138A6DC
+    // Offset: 0x17106C8
     static IKSolver::Bone* New_ctor(UnityEngine::Transform* transform, float weight);
     // public System.Void .ctor()
-    // Offset: 0x138A538
+    // Offset: 0x1710524
     // Implemented from: RootMotion.FinalIK.IKSolver/Point
     // Base method: System.Void Point::.ctor()
     // Base method: System.Void Object::.ctor()

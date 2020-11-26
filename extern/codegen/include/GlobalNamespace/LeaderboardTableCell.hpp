@@ -15,8 +15,6 @@
 namespace TMPro {
   // Forward declaring type: TextMeshProUGUI
   class TextMeshProUGUI;
-  // Forward declaring type: TMP_FontAsset
-  class TMP_FontAsset;
 }
 // Forward declaring namespace: UnityEngine::UI
 namespace UnityEngine::UI {
@@ -44,40 +42,35 @@ namespace GlobalNamespace {
     // private UnityEngine.Color _normalColor
     // Offset: 0x70
     UnityEngine::Color normalColor;
-    // private TMPro.TMP_FontAsset _normalFont
-    // Offset: 0x80
-    TMPro::TMP_FontAsset* normalFont;
     // private UnityEngine.Color _specialScoreColor
-    // Offset: 0x88
+    // Offset: 0x80
     UnityEngine::Color specialScoreColor;
-    // private TMPro.TMP_FontAsset _specialScoreFont
-    // Offset: 0x98
-    TMPro::TMP_FontAsset* specialScoreFont;
     // private UnityEngine.UI.Image _separatorImage
-    // Offset: 0xA0
+    // Offset: 0x90
     UnityEngine::UI::Image* separatorImage;
     // public System.Void set_rank(System.Int32 value)
-    // Offset: 0xB47B08
+    // Offset: 0xF1E2F4
     void set_rank(int value);
     // public System.Void set_playerName(System.String value)
-    // Offset: 0xB47B4C
+    // Offset: 0xF1E338
     void set_playerName(::Il2CppString* value);
     // public System.Void set_score(System.Int32 value)
-    // Offset: 0xB47B68
+    // Offset: 0xF1E354
     void set_score(int value);
     // public System.Void set_showSeparator(System.Boolean value)
-    // Offset: 0xB47C0C
+    // Offset: 0xF1E3F8
     void set_showSeparator(bool value);
     // public System.Void set_showFullCombo(System.Boolean value)
-    // Offset: 0xB47C2C
+    // Offset: 0xF1E418
     void set_showFullCombo(bool value);
     // public System.Void set_specialScore(System.Boolean value)
-    // Offset: 0xB47C4C
+    // Offset: 0xF1E438
     void set_specialScore(bool value);
     // public System.Void .ctor()
-    // Offset: 0xB47DAC
+    // Offset: 0xF1E53C
     // Implemented from: HMUI.TableCell
     // Base method: System.Void TableCell::.ctor()
+    // Base method: System.Void SelectableCell::.ctor()
     // Base method: System.Void Interactable::.ctor()
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

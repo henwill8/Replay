@@ -21,16 +21,16 @@ namespace UnityEngine::Networking {
       return m_Ptr;
     }
     // private System.Void Release()
-    // Offset: 0x1947E28
+    // Offset: 0x19DD93C
     void Release();
     // protected System.Boolean ValidateCertificate(System.Byte[] certificateData)
-    // Offset: 0x1947E68
+    // Offset: 0x19DD97C
     bool ValidateCertificate(::Array<uint8_t>* certificateData);
     // System.Boolean ValidateCertificateNative(System.Byte[] certificateData)
-    // Offset: 0x1947E70
+    // Offset: 0x19DD984
     bool ValidateCertificateNative(::Array<uint8_t>* certificateData);
     // public System.Void Dispose()
-    // Offset: 0x1947E7C
+    // Offset: 0x19DD990
     void Dispose();
   }; // UnityEngine.Networking.CertificateHandler
 }

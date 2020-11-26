@@ -15,8 +15,6 @@ namespace UnityEngine {
   // Forward declaring type: CollisionDetectionMode
   struct CollisionDetectionMode;
   // Skipping declaration: Quaternion because it is already included!
-  // Forward declaring type: ForceMode
-  struct ForceMode;
 }
 // Completed forward declares
 // Type namespace: UnityEngine
@@ -25,88 +23,76 @@ namespace UnityEngine {
   class Rigidbody : public UnityEngine::Component {
     public:
     // public System.Void set_velocity(UnityEngine.Vector3 value)
-    // Offset: 0x19666DC
+    // Offset: 0x19F4F94
     void set_velocity(UnityEngine::Vector3 value);
     // public System.Void set_angularVelocity(UnityEngine.Vector3 value)
-    // Offset: 0x1966784
+    // Offset: 0x19F503C
     void set_angularVelocity(UnityEngine::Vector3 value);
     // public System.Void set_mass(System.Single value)
-    // Offset: 0x196682C
+    // Offset: 0x19F50E4
     void set_mass(float value);
     // public System.Void set_useGravity(System.Boolean value)
-    // Offset: 0x196687C
+    // Offset: 0x19F5134
     void set_useGravity(bool value);
     // public System.Boolean get_isKinematic()
-    // Offset: 0x19668CC
+    // Offset: 0x19F5184
     bool get_isKinematic();
     // public System.Void set_isKinematic(System.Boolean value)
-    // Offset: 0x196690C
+    // Offset: 0x19F51C4
     void set_isKinematic(bool value);
     // public System.Void set_collisionDetectionMode(UnityEngine.CollisionDetectionMode value)
-    // Offset: 0x196695C
+    // Offset: 0x19F5214
     void set_collisionDetectionMode(UnityEngine::CollisionDetectionMode value);
     // public UnityEngine.Vector3 get_worldCenterOfMass()
-    // Offset: 0x19669AC
+    // Offset: 0x19F5264
     UnityEngine::Vector3 get_worldCenterOfMass();
     // public UnityEngine.Vector3 get_position()
-    // Offset: 0x1966A5C
+    // Offset: 0x19F5314
     UnityEngine::Vector3 get_position();
     // public System.Void set_position(UnityEngine.Vector3 value)
-    // Offset: 0x1966B0C
+    // Offset: 0x19F53C4
     void set_position(UnityEngine::Vector3 value);
     // public System.Void set_rotation(UnityEngine.Quaternion value)
-    // Offset: 0x1966BB4
+    // Offset: 0x19F546C
     void set_rotation(UnityEngine::Quaternion value);
     // public System.Single get_maxAngularVelocity()
-    // Offset: 0x1966C5C
+    // Offset: 0x19F5514
     float get_maxAngularVelocity();
     // public System.Void MovePosition(UnityEngine.Vector3 position)
-    // Offset: 0x1966C9C
+    // Offset: 0x19F5554
     void MovePosition(UnityEngine::Vector3 position);
     // public System.Void MoveRotation(UnityEngine.Quaternion rot)
-    // Offset: 0x1966D44
+    // Offset: 0x19F55FC
     void MoveRotation(UnityEngine::Quaternion rot);
     // public System.Void WakeUp()
-    // Offset: 0x1966DEC
+    // Offset: 0x19F56A4
     void WakeUp();
-    // public System.Void AddForce(UnityEngine.Vector3 force, UnityEngine.ForceMode mode)
-    // Offset: 0x1966E2C
-    void AddForce(UnityEngine::Vector3 force, UnityEngine::ForceMode mode);
-    // public System.Void AddTorque(UnityEngine.Vector3 torque, UnityEngine.ForceMode mode)
-    // Offset: 0x1966EEC
-    void AddTorque(UnityEngine::Vector3 torque, UnityEngine::ForceMode mode);
     // private System.Void set_velocity_Injected(ref UnityEngine.Vector3 value)
-    // Offset: 0x1966734
+    // Offset: 0x19F4FEC
     void set_velocity_Injected(UnityEngine::Vector3& value);
     // private System.Void set_angularVelocity_Injected(ref UnityEngine.Vector3 value)
-    // Offset: 0x19667DC
+    // Offset: 0x19F5094
     void set_angularVelocity_Injected(UnityEngine::Vector3& value);
     // private System.Void get_worldCenterOfMass_Injected(out UnityEngine.Vector3 ret)
-    // Offset: 0x1966A0C
+    // Offset: 0x19F52C4
     void get_worldCenterOfMass_Injected(UnityEngine::Vector3& ret);
     // private System.Void get_position_Injected(out UnityEngine.Vector3 ret)
-    // Offset: 0x1966ABC
+    // Offset: 0x19F5374
     void get_position_Injected(UnityEngine::Vector3& ret);
     // private System.Void set_position_Injected(ref UnityEngine.Vector3 value)
-    // Offset: 0x1966B64
+    // Offset: 0x19F541C
     void set_position_Injected(UnityEngine::Vector3& value);
     // private System.Void set_rotation_Injected(ref UnityEngine.Quaternion value)
-    // Offset: 0x1966C0C
+    // Offset: 0x19F54C4
     void set_rotation_Injected(UnityEngine::Quaternion& value);
     // private System.Void MovePosition_Injected(ref UnityEngine.Vector3 position)
-    // Offset: 0x1966CF4
+    // Offset: 0x19F55AC
     void MovePosition_Injected(UnityEngine::Vector3& position);
     // private System.Void MoveRotation_Injected(ref UnityEngine.Quaternion rot)
-    // Offset: 0x1966D9C
+    // Offset: 0x19F5654
     void MoveRotation_Injected(UnityEngine::Quaternion& rot);
-    // private System.Void AddForce_Injected(ref UnityEngine.Vector3 force, UnityEngine.ForceMode mode)
-    // Offset: 0x1966E94
-    void AddForce_Injected(UnityEngine::Vector3& force, UnityEngine::ForceMode mode);
-    // private System.Void AddTorque_Injected(ref UnityEngine.Vector3 torque, UnityEngine.ForceMode mode)
-    // Offset: 0x1966F54
-    void AddTorque_Injected(UnityEngine::Vector3& torque, UnityEngine::ForceMode mode);
     // public System.Void .ctor()
-    // Offset: 0x1966FAC
+    // Offset: 0x19F56E4
     // Implemented from: UnityEngine.Component
     // Base method: System.Void Component::.ctor()
     // Base method: System.Void Object::.ctor()

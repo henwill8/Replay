@@ -17,8 +17,8 @@ namespace GlobalNamespace {
   class SimpleColorSO;
   // Forward declaring type: ColorScheme
   class ColorScheme;
-  // Forward declaring type: NoteType
-  struct NoteType;
+  // Forward declaring type: ColorType
+  struct ColorType;
   // Forward declaring type: SaberType
   struct SaberType;
 }
@@ -71,31 +71,31 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // public System.Void add_colorsDidChangeEvent(System.Action value)
-    // Offset: 0xB80280
+    // Offset: 0x1A4F784
     void add_colorsDidChangeEvent(System::Action* value);
     // public System.Void remove_colorsDidChangeEvent(System.Action value)
-    // Offset: 0xB80324
+    // Offset: 0x1A4F828
     void remove_colorsDidChangeEvent(System::Action* value);
     // protected System.Void Awake()
-    // Offset: 0xB803C8
+    // Offset: 0x1A4F8CC
     void Awake();
     // protected System.Void Start()
-    // Offset: 0xB803F8
+    // Offset: 0x1A4F8FC
     void Start();
-    // public UnityEngine.Color ColorForNoteType(NoteType type)
-    // Offset: 0xB80514
-    UnityEngine::Color ColorForNoteType(GlobalNamespace::NoteType type);
+    // public UnityEngine.Color ColorForType(ColorType type)
+    // Offset: 0x1A4FA18
+    UnityEngine::Color ColorForType(GlobalNamespace::ColorType type);
     // public UnityEngine.Color ColorForSaberType(SaberType type)
-    // Offset: 0xB80568
+    // Offset: 0x1A4FA68
     UnityEngine::Color ColorForSaberType(GlobalNamespace::SaberType type);
     // public UnityEngine.Color EffectsColorForSaberType(SaberType type)
-    // Offset: 0xB805BC
+    // Offset: 0x1A4FABC
     UnityEngine::Color EffectsColorForSaberType(GlobalNamespace::SaberType type);
     // public UnityEngine.Color GetObstacleEffectColor()
-    // Offset: 0xB80654
+    // Offset: 0x1A4FB54
     UnityEngine::Color GetObstacleEffectColor();
     // public System.Void .ctor()
-    // Offset: 0xB806B8
+    // Offset: 0x1A4FBB8
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

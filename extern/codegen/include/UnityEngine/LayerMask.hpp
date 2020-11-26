@@ -25,16 +25,16 @@ namespace UnityEngine {
       return m_Mask;
     }
     // public System.Int32 get_value()
-    // Offset: 0xA45F78
+    // Offset: 0xCA522C
     int get_value();
     // public System.Void set_value(System.Int32 value)
-    // Offset: 0xA45F80
+    // Offset: 0xCA5234
     void set_value(int value);
     // static public System.String LayerToName(System.Int32 layer)
-    // Offset: 0x1316444
+    // Offset: 0x168D9B0
     static ::Il2CppString* LayerToName(int layer);
     // static public System.Int32 NameToLayer(System.String layerName)
-    // Offset: 0x1316484
+    // Offset: 0x168D9F0
     static int NameToLayer(::Il2CppString* layerName);
   }; // UnityEngine.LayerMask
 }

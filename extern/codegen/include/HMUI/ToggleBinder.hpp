@@ -46,28 +46,28 @@ namespace HMUI {
     // Offset: 0x18
     bool enabled;
     // public System.Void .ctor(System.Collections.Generic.List`1<System.Tuple`2<UnityEngine.UI.Toggle,System.Action`1<System.Boolean>>> bindingData)
-    // Offset: 0x10EBA98
+    // Offset: 0x108C96C
     static ToggleBinder* New_ctor(System::Collections::Generic::List_1<System::Tuple_2<UnityEngine::UI::Toggle*, System::Action_1<bool>*>*>* bindingData);
     // private System.Void Init()
-    // Offset: 0x10EBA28
+    // Offset: 0x108C8FC
     void Init();
     // public System.Void AddBindings(System.Collections.Generic.List`1<System.Tuple`2<UnityEngine.UI.Toggle,System.Action`1<System.Boolean>>> bindingData)
-    // Offset: 0x10EBAD8
+    // Offset: 0x108C9AC
     void AddBindings(System::Collections::Generic::List_1<System::Tuple_2<UnityEngine::UI::Toggle*, System::Action_1<bool>*>*>* bindingData);
     // public System.Void AddBinding(UnityEngine.UI.Toggle toggle, System.Action`1<System.Boolean> action)
-    // Offset: 0x10EBBE0
+    // Offset: 0x108CAB4
     void AddBinding(UnityEngine::UI::Toggle* toggle, System::Action_1<bool>* action);
     // public System.Void ClearBindings()
-    // Offset: 0x10EBCA0
+    // Offset: 0x108CB74
     void ClearBindings();
     // public System.Void Disable()
-    // Offset: 0x10EBE38
+    // Offset: 0x108CD0C
     void Disable();
     // public System.Void Enable()
-    // Offset: 0x10EBFC0
+    // Offset: 0x108CE94
     void Enable();
     // public System.Void .ctor()
-    // Offset: 0x10EB9F8
+    // Offset: 0x108C8CC
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static ToggleBinder* New_ctor();

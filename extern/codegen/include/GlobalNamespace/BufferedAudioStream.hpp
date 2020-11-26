@@ -68,16 +68,16 @@ namespace GlobalNamespace {
     // Set static field: static private System.Single playbackDelayTimeSeconds
     static void _set_playbackDelayTimeSeconds(float value);
     // public System.Void .ctor(UnityEngine.AudioSource audio)
-    // Offset: 0x15981E4
+    // Offset: 0x189C370
     static BufferedAudioStream* New_ctor(UnityEngine::AudioSource* audio);
     // public System.Void Update()
-    // Offset: 0x1598310
+    // Offset: 0x189C49C
     void Update();
     // private System.Void Stop()
-    // Offset: 0x15982C0
+    // Offset: 0x189C44C
     void Stop();
     // public System.Void AddData(System.Single[] samples)
-    // Offset: 0x15984E8
+    // Offset: 0x189C674
     void AddData(::Array<float>* samples);
   }; // BufferedAudioStream
 }

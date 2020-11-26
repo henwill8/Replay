@@ -27,13 +27,13 @@ namespace System {
     // Offset: 0x18
     int inheritanceLevel;
     // public System.Void .ctor(System.AttributeUsageAttribute usage, System.Int32 inheritanceLevel)
-    // Offset: 0x101A20C
+    // Offset: 0x1711DF4
     static MonoCustomAttrs::AttributeInfo* New_ctor(System::AttributeUsageAttribute* usage, int inheritanceLevel);
     // public System.AttributeUsageAttribute get_Usage()
-    // Offset: 0x101AEA0
+    // Offset: 0x1711E28
     System::AttributeUsageAttribute* get_Usage();
     // public System.Int32 get_InheritanceLevel()
-    // Offset: 0x101AEA8
+    // Offset: 0x1711E30
     int get_InheritanceLevel();
   }; // System.MonoCustomAttrs/AttributeInfo
 }

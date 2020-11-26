@@ -26,16 +26,16 @@ namespace Valve::VR {
   class IVRCompositor::_GetFrameTimeRemaining : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0x1605CC8
+    // Offset: 0x18E69C4
     static IVRCompositor::_GetFrameTimeRemaining* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Single Invoke()
-    // Offset: 0x1605CDC
+    // Offset: 0x18E69D8
     float Invoke();
     // public System.IAsyncResult BeginInvoke(System.AsyncCallback callback, System.Object object)
-    // Offset: 0x1605EF0
+    // Offset: 0x18E6BEC
     System::IAsyncResult* BeginInvoke(System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Single EndInvoke(System.IAsyncResult result)
-    // Offset: 0x1605F1C
+    // Offset: 0x18E6C18
     float EndInvoke(System::IAsyncResult* result);
   }; // Valve.VR.IVRCompositor/_GetFrameTimeRemaining
 }

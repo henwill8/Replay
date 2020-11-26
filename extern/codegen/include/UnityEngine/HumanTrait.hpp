@@ -12,13 +12,13 @@ namespace UnityEngine {
   class HumanTrait : public ::Il2CppObject {
     public:
     // static public System.Int32 get_MuscleCount()
-    // Offset: 0x1941D94
+    // Offset: 0x19CC040
     static int get_MuscleCount();
     // static System.Int32 GetBoneIndexFromMono(System.Int32 humanId)
-    // Offset: 0x1941508
+    // Offset: 0x19CB0EC
     static int GetBoneIndexFromMono(int humanId);
     // static public System.String[] get_MuscleName()
-    // Offset: 0x1942248
+    // Offset: 0x19CC4F4
     static ::Array<::Il2CppString*>* get_MuscleName();
   }; // UnityEngine.HumanTrait
 }

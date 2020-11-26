@@ -41,7 +41,7 @@ namespace GlobalNamespace {
     // private System.Single _moveSpeed
     // Offset: 0x2C
     float moveSpeed;
-    // private BeatmapObjectCallbackController _beatmapObjectCallbackController
+    // private readonly BeatmapObjectCallbackController _beatmapObjectCallbackController
     // Offset: 0x30
     GlobalNamespace::BeatmapObjectCallbackController* beatmapObjectCallbackController;
     // private System.Boolean _prevWasMinStep
@@ -50,16 +50,16 @@ namespace GlobalNamespace {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // protected System.Void Start()
-    // Offset: 0xC46FA0
+    // Offset: 0xFEDCEC
     void Start();
     // protected System.Void OnDestroy()
-    // Offset: 0xC47034
+    // Offset: 0xFEDD80
     void OnDestroy();
-    // public System.Void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(BeatmapEventData beatmapEventData)
-    // Offset: 0xC4710C
+    // private System.Void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(BeatmapEventData beatmapEventData)
+    // Offset: 0xFEDE5C
     void HandleBeatmapObjectCallbackControllerBeatmapEventDidTrigger(GlobalNamespace::BeatmapEventData* beatmapEventData);
     // public System.Void .ctor()
-    // Offset: 0xC471B8
+    // Offset: 0xFEDF08
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

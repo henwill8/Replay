@@ -52,28 +52,28 @@ namespace UnityEngine::Events {
     // Offset: 0x30
     UnityEngine::Events::UnityEventCallState m_CallState;
     // public UnityEngine.Object get_target()
-    // Offset: 0x130F840
+    // Offset: 0x1686C04
     UnityEngine::Object* get_target();
     // public System.String get_methodName()
-    // Offset: 0x130F848
+    // Offset: 0x1686C0C
     ::Il2CppString* get_methodName();
     // public UnityEngine.Events.PersistentListenerMode get_mode()
-    // Offset: 0x130F850
+    // Offset: 0x1686C14
     UnityEngine::Events::PersistentListenerMode get_mode();
     // public UnityEngine.Events.ArgumentCache get_arguments()
-    // Offset: 0x130F858
+    // Offset: 0x1686C1C
     UnityEngine::Events::ArgumentCache* get_arguments();
     // public System.Boolean IsValid()
-    // Offset: 0x130F860
+    // Offset: 0x1686C24
     bool IsValid();
     // public UnityEngine.Events.BaseInvokableCall GetRuntimeCall(UnityEngine.Events.UnityEventBase theEvent)
-    // Offset: 0x130F8F4
+    // Offset: 0x1686CB8
     UnityEngine::Events::BaseInvokableCall* GetRuntimeCall(UnityEngine::Events::UnityEventBase* theEvent);
     // static private UnityEngine.Events.BaseInvokableCall GetObjectCall(UnityEngine.Object target, System.Reflection.MethodInfo method, UnityEngine.Events.ArgumentCache arguments)
-    // Offset: 0x130FC5C
+    // Offset: 0x1687020
     static UnityEngine::Events::BaseInvokableCall* GetObjectCall(UnityEngine::Object* target, System::Reflection::MethodInfo* method, UnityEngine::Events::ArgumentCache* arguments);
     // public System.Void .ctor()
-    // Offset: 0x13100B4
+    // Offset: 0x1687478
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static PersistentCall* New_ctor();

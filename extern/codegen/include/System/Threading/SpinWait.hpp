@@ -22,10 +22,10 @@ namespace System::Threading {
       return m_count;
     }
     // public System.Boolean get_NextSpinWillYield()
-    // Offset: 0xA2DD60
+    // Offset: 0xE8BDD0
     bool get_NextSpinWillYield();
     // public System.Void SpinOnce()
-    // Offset: 0xA2DD90
+    // Offset: 0xE8BE00
     void SpinOnce();
   }; // System.Threading.SpinWait
 }

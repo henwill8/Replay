@@ -11,6 +11,13 @@
 namespace System {
   // Forward declaring type: NotImplementedException
   class NotImplementedException;
+  // Forward declaring type: NotSupportedException
+  class NotSupportedException;
+}
+// Forward declaring namespace: System::Net
+namespace System::Net {
+  // Forward declaring type: WebException
+  class WebException;
 }
 // Completed forward declares
 // Type namespace: System.Net
@@ -19,11 +26,17 @@ namespace System::Net {
   class ExceptionHelper : public ::Il2CppObject {
     public:
     // static System.NotImplementedException get_MethodNotImplementedException()
-    // Offset: 0xF6E070
+    // Offset: 0x13181A4
     static System::NotImplementedException* get_MethodNotImplementedException();
     // static System.NotImplementedException get_PropertyNotImplementedException()
-    // Offset: 0xF6DFC0
+    // Offset: 0x13180E4
     static System::NotImplementedException* get_PropertyNotImplementedException();
+    // static System.NotSupportedException get_PropertyNotSupportedException()
+    // Offset: 0x131B3F0
+    static System::NotSupportedException* get_PropertyNotSupportedException();
+    // static System.Net.WebException get_RequestAbortedException()
+    // Offset: 0x131B46C
+    static System::Net::WebException* get_RequestAbortedException();
   }; // System.Net.ExceptionHelper
 }
 #include "extern/beatsaber-hook/shared/utils/il2cpp-type-check.hpp"

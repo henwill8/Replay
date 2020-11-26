@@ -37,36 +37,36 @@ namespace GlobalNamespace {
   class EnterTextViewController : public HMUI::ViewController {
     public:
     // private VRTextEntryController _textEntryController
-    // Offset: 0x68
+    // Offset: 0x70
     GlobalNamespace::VRTextEntryController* textEntryController;
     // private TMPro.TextMeshProUGUI _titleText
-    // Offset: 0x70
+    // Offset: 0x78
     TMPro::TextMeshProUGUI* titleText;
     // private UnityEngine.UI.Button _okButton
-    // Offset: 0x78
+    // Offset: 0x80
     UnityEngine::UI::Button* okButton;
     // private System.Action`2<EnterTextViewController,System.String> didFinishEvent
-    // Offset: 0x80
+    // Offset: 0x88
     System::Action_2<GlobalNamespace::EnterTextViewController*, ::Il2CppString*>* didFinishEvent;
     // public System.Void add_didFinishEvent(System.Action`2<EnterTextViewController,System.String> value)
-    // Offset: 0xBEA3F4
+    // Offset: 0x1A605C8
     void add_didFinishEvent(System::Action_2<GlobalNamespace::EnterTextViewController*, ::Il2CppString*>* value);
     // public System.Void remove_didFinishEvent(System.Action`2<EnterTextViewController,System.String> value)
-    // Offset: 0xBEA498
+    // Offset: 0x1A6066C
     void remove_didFinishEvent(System::Action_2<GlobalNamespace::EnterTextViewController*, ::Il2CppString*>* value);
     // public System.Void Init(System.String titleText)
-    // Offset: 0xBEA53C
+    // Offset: 0x1A60710
     void Init(::Il2CppString* titleText);
     // public System.Void OkButtonPressed()
-    // Offset: 0xBEA634
+    // Offset: 0x1A60808
     void OkButtonPressed();
-    // protected override System.Void DidActivate(System.Boolean firstActivation, HMUI.ViewController/ActivationType activationType)
-    // Offset: 0xBEA558
+    // protected override System.Void DidActivate(System.Boolean firstActivation, System.Boolean addedToHierarchy, System.Boolean screenSystemEnabling)
+    // Offset: 0x1A6072C
     // Implemented from: HMUI.ViewController
-    // Base method: System.Void ViewController::DidActivate(System.Boolean firstActivation, HMUI.ViewController/ActivationType activationType)
-    void DidActivate(bool firstActivation, HMUI::ViewController::ActivationType activationType);
+    // Base method: System.Void ViewController::DidActivate(System.Boolean firstActivation, System.Boolean addedToHierarchy, System.Boolean screenSystemEnabling)
+    void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling);
     // public System.Void .ctor()
-    // Offset: 0xBEA6D4
+    // Offset: 0x1A608A8
     // Implemented from: HMUI.ViewController
     // Base method: System.Void ViewController::.ctor()
     // Base method: System.Void MonoBehaviour::.ctor()

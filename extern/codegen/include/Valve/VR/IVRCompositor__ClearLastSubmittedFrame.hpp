@@ -26,16 +26,16 @@ namespace Valve::VR {
   class IVRCompositor::_ClearLastSubmittedFrame : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0x16035F4
+    // Offset: 0x18E42F0
     static IVRCompositor::_ClearLastSubmittedFrame* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Void Invoke()
-    // Offset: 0x1603608
+    // Offset: 0x18E4304
     void Invoke();
     // public System.IAsyncResult BeginInvoke(System.AsyncCallback callback, System.Object object)
-    // Offset: 0x1603814
+    // Offset: 0x18E4510
     System::IAsyncResult* BeginInvoke(System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Void EndInvoke(System.IAsyncResult result)
-    // Offset: 0x1603840
+    // Offset: 0x18E453C
     void EndInvoke(System::IAsyncResult* result);
   }; // Valve.VR.IVRCompositor/_ClearLastSubmittedFrame
 }

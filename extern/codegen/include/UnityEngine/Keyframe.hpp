@@ -36,34 +36,34 @@ namespace UnityEngine {
     // Creating value type constructor for type: Keyframe
     constexpr Keyframe(float m_Time_ = {}, float m_Value_ = {}, float m_InTangent_ = {}, float m_OutTangent_ = {}, int m_WeightedMode_ = {}, float m_InWeight_ = {}, float m_OutWeight_ = {}) noexcept : m_Time{m_Time_}, m_Value{m_Value_}, m_InTangent{m_InTangent_}, m_OutTangent{m_OutTangent_}, m_WeightedMode{m_WeightedMode_}, m_InWeight{m_InWeight_}, m_OutWeight{m_OutWeight_} {}
     // public System.Void .ctor(System.Single time, System.Single value)
-    // Offset: 0xA45F14
+    // Offset: 0xCA51C8
     Keyframe(float time, float value);
     // public System.Void .ctor(System.Single time, System.Single value, System.Single inTangent, System.Single outTangent)
-    // Offset: 0xA45F24
+    // Offset: 0xCA51D8
     Keyframe(float time, float value, float inTangent, float outTangent);
     // public System.Single get_time()
-    // Offset: 0xA45F38
+    // Offset: 0xCA51EC
     float get_time();
     // public System.Void set_time(System.Single value)
-    // Offset: 0xA45F40
+    // Offset: 0xCA51F4
     void set_time(float value);
     // public System.Single get_value()
-    // Offset: 0xA45F48
+    // Offset: 0xCA51FC
     float get_value();
     // public System.Void set_value(System.Single value)
-    // Offset: 0xA45F50
+    // Offset: 0xCA5204
     void set_value(float value);
     // public System.Single get_inTangent()
-    // Offset: 0xA45F58
+    // Offset: 0xCA520C
     float get_inTangent();
     // public System.Void set_inTangent(System.Single value)
-    // Offset: 0xA45F60
+    // Offset: 0xCA5214
     void set_inTangent(float value);
     // public System.Single get_outTangent()
-    // Offset: 0xA45F68
+    // Offset: 0xCA521C
     float get_outTangent();
     // public System.Void set_outTangent(System.Single value)
-    // Offset: 0xA45F70
+    // Offset: 0xCA5224
     void set_outTangent(float value);
   }; // UnityEngine.Keyframe
 }

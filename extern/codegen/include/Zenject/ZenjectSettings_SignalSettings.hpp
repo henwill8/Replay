@@ -34,25 +34,25 @@ namespace Zenject {
     // Set static field: static public Zenject.ZenjectSettings/SignalSettings Default
     static void _set_Default(Zenject::ZenjectSettings::SignalSettings* value);
     // public System.Void .ctor(Zenject.SignalDefaultSyncModes defaultSyncMode, Zenject.SignalMissingHandlerResponses missingHandlerDefaultResponse, System.Boolean requireStrictUnsubscribe, System.Int32 defaultAsyncTickPriority)
-    // Offset: 0x1944610
+    // Offset: 0x19D3A14
     static ZenjectSettings::SignalSettings* New_ctor(Zenject::SignalDefaultSyncModes defaultSyncMode, Zenject::SignalMissingHandlerResponses missingHandlerDefaultResponse, bool requireStrictUnsubscribe, int defaultAsyncTickPriority);
     // public System.Int32 get_DefaultAsyncTickPriority()
-    // Offset: 0x19446A0
+    // Offset: 0x19D3AA4
     int get_DefaultAsyncTickPriority();
     // public Zenject.SignalDefaultSyncModes get_DefaultSyncMode()
-    // Offset: 0x19446A8
+    // Offset: 0x19D3AAC
     Zenject::SignalDefaultSyncModes get_DefaultSyncMode();
     // public Zenject.SignalMissingHandlerResponses get_MissingHandlerDefaultResponse()
-    // Offset: 0x19446B0
+    // Offset: 0x19D3AB4
     Zenject::SignalMissingHandlerResponses get_MissingHandlerDefaultResponse();
     // public System.Boolean get_RequireStrictUnsubscribe()
-    // Offset: 0x19446B8
+    // Offset: 0x19D3ABC
     bool get_RequireStrictUnsubscribe();
     // static private System.Void .cctor()
-    // Offset: 0x19446C0
+    // Offset: 0x19D3AC4
     static void _cctor();
     // public System.Void .ctor()
-    // Offset: 0x1944664
+    // Offset: 0x19D3A68
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static ZenjectSettings::SignalSettings* New_ctor();

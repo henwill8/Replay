@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_set>
-#include "../../modloader/shared/modloader.hpp"
+#include "modloader/shared/modloader.hpp"
 
 namespace bs_utils {
     /// @struct Information about the mod that is currentlying disabling score submission
@@ -49,6 +49,8 @@ namespace bs_utils {
             static bool getEnabled();
         private:
             static std::unordered_set<DisablingModInfo, DisablingModInfoHash> disablingMods;
+            static void init();
             static bool enabled;
+            static bool initialized;
     };
 }

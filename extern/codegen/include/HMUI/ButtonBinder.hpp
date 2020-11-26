@@ -45,25 +45,25 @@ namespace HMUI {
       return bindings;
     }
     // public System.Void .ctor(UnityEngine.UI.Button button, System.Action action)
-    // Offset: 0xED6BF4
+    // Offset: 0x10A83E8
     static ButtonBinder* New_ctor(UnityEngine::UI::Button* button, System::Action* action);
     // public System.Void .ctor(System.Collections.Generic.List`1<System.Tuple`2<UnityEngine.UI.Button,System.Action>> bindingData)
-    // Offset: 0xED6CEC
+    // Offset: 0x10A84E0
     static ButtonBinder* New_ctor(System::Collections::Generic::List_1<System::Tuple_2<UnityEngine::UI::Button*, System::Action*>*>* bindingData);
     // private System.Void Init()
-    // Offset: 0xED6B84
+    // Offset: 0x10A8378
     void Init();
     // public System.Void AddBindings(System.Collections.Generic.List`1<System.Tuple`2<UnityEngine.UI.Button,System.Action>> bindingData)
-    // Offset: 0xED6D24
+    // Offset: 0x10A8518
     void AddBindings(System::Collections::Generic::List_1<System::Tuple_2<UnityEngine::UI::Button*, System::Action*>*>* bindingData);
     // public System.Void AddBinding(UnityEngine.UI.Button button, System.Action action)
-    // Offset: 0xED6C3C
+    // Offset: 0x10A8430
     void AddBinding(UnityEngine::UI::Button* button, System::Action* action);
     // public System.Void ClearBindings()
-    // Offset: 0xED6E2C
+    // Offset: 0x10A8620
     void ClearBindings();
     // public System.Void .ctor()
-    // Offset: 0xED6B5C
+    // Offset: 0x10A8350
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static ButtonBinder* New_ctor();

@@ -26,16 +26,16 @@ namespace UnityEngine {
   class Canvas::WillRenderCanvases : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0x1970084
+    // Offset: 0x19FCEF8
     static Canvas::WillRenderCanvases* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Void Invoke()
-    // Offset: 0x196FE70
+    // Offset: 0x19FCCE4
     void Invoke();
     // public System.IAsyncResult BeginInvoke(System.AsyncCallback callback, System.Object object)
-    // Offset: 0x1970098
+    // Offset: 0x19FCF0C
     System::IAsyncResult* BeginInvoke(System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Void EndInvoke(System.IAsyncResult result)
-    // Offset: 0x19700C4
+    // Offset: 0x19FCF38
     void EndInvoke(System::IAsyncResult* result);
   }; // UnityEngine.Canvas/WillRenderCanvases
 }

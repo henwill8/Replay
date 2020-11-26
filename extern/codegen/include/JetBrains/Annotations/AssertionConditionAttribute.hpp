@@ -23,13 +23,13 @@ namespace JetBrains::Annotations {
       return ConditionType;
     }
     // public System.Void .ctor(JetBrains.Annotations.AssertionConditionType conditionType)
-    // Offset: 0x19610F8
+    // Offset: 0x19EE374
     static AssertionConditionAttribute* New_ctor(JetBrains::Annotations::AssertionConditionType conditionType);
     // public JetBrains.Annotations.AssertionConditionType get_ConditionType()
-    // Offset: 0x1961124
+    // Offset: 0x19EE3A0
     JetBrains::Annotations::AssertionConditionType get_ConditionType();
     // private System.Void set_ConditionType(JetBrains.Annotations.AssertionConditionType value)
-    // Offset: 0x196112C
+    // Offset: 0x19EE3A8
     void set_ConditionType(JetBrains::Annotations::AssertionConditionType value);
   }; // JetBrains.Annotations.AssertionConditionAttribute
 }

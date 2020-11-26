@@ -42,7 +42,7 @@ namespace Oculus::Platform::Models {
     // Offset: 0x40
     ::Il2CppString* UserName;
     // public System.Void .ctor(System.IntPtr o)
-    // Offset: 0xEA7338
+    // Offset: 0x11DDE30
     static PartyUpdateNotification* New_ctor(System::IntPtr o);
   }; // Oculus.Platform.Models.PartyUpdateNotification
 }

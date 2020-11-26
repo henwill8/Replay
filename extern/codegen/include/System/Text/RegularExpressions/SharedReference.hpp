@@ -26,7 +26,7 @@ namespace System::Text::RegularExpressions {
       return ref;
     }
     // public System.Void .ctor()
-    // Offset: 0x1504468
+    // Offset: 0x1551260
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static SharedReference* New_ctor();

@@ -37,25 +37,25 @@ namespace RootMotion::FinalIK {
     // Deleting conversion operator: operator System::IntPtr
     constexpr operator System::IntPtr() const noexcept = delete;
     // private System.Boolean get_animatePhysics()
-    // Offset: 0x1384CAC
+    // Offset: 0x170AC98
     bool get_animatePhysics();
     // private System.Void Start()
-    // Offset: 0x1384D48
+    // Offset: 0x170AD34
     void Start();
     // private System.Void Update()
-    // Offset: 0x1384DB8
+    // Offset: 0x170ADA4
     void Update();
     // private System.Void FixedUpdate()
-    // Offset: 0x1384E74
+    // Offset: 0x170AE60
     void FixedUpdate();
     // private System.Void LateUpdate()
-    // Offset: 0x1384EB0
+    // Offset: 0x170AE9C
     void LateUpdate();
     // private System.Void FixTransforms()
-    // Offset: 0x1384DEC
+    // Offset: 0x170ADD8
     void FixTransforms();
     // public System.Void .ctor()
-    // Offset: 0x1384F3C
+    // Offset: 0x170AF28
     // Implemented from: UnityEngine.MonoBehaviour
     // Base method: System.Void MonoBehaviour::.ctor()
     // Base method: System.Void Behaviour::.ctor()

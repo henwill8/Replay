@@ -51,13 +51,13 @@ namespace UnityEngine::UI {
     // Set static field: static private UnityEngine.UI.ReflectionMethodsCache s_ReflectionMethodsCache
     static void _set_s_ReflectionMethodsCache(UnityEngine::UI::ReflectionMethodsCache* value);
     // static public UnityEngine.UI.ReflectionMethodsCache get_Singleton()
-    // Offset: 0x12095DC
+    // Offset: 0x1569B8C
     static UnityEngine::UI::ReflectionMethodsCache* get_Singleton();
     // static private System.Void .cctor()
-    // Offset: 0x12096A4
+    // Offset: 0x1569C54
     static void _cctor();
     // public System.Void .ctor()
-    // Offset: 0x120896C
+    // Offset: 0x1568F1C
     // Implemented from: System.Object
     // Base method: System.Void Object::.ctor()
     static ReflectionMethodsCache* New_ctor();

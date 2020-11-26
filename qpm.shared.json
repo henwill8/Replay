@@ -5,18 +5,13 @@
     "info": {
       "name": "replay",
       "id": "replay",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "url": null,
       "additionalData": {}
     },
     "dependencies": [
       {
-        "id": "codegen",
-        "versionRange": "*",
-        "additionalData": {}
-      },
-      {
-        "id": "beatsaber-hook",
+        "id": "questui",
         "versionRange": "*",
         "additionalData": {}
       }
@@ -26,7 +21,7 @@
   "restoredDependencies": [
     {
       "dependency": {
-        "id": "codegen",
+        "id": "questui",
         "versionRange": "*",
         "additionalData": {}
       },
@@ -35,10 +30,14 @@
     {
       "dependency": {
         "id": "beatsaber-hook",
-        "versionRange": "^0.7.0",
-        "additionalData": {}
+        "versionRange": "^0.8.4",
+        "additionalData": {
+          "extraFiles": [
+            "src/inline-hook"
+          ]
+        }
       },
-      "version": "0.7.1"
+      "version": "0.8.4"
     },
     {
       "dependency": {
@@ -46,7 +45,7 @@
         "versionRange": "^1.0.0",
         "additionalData": {}
       },
-      "version": "1.0.2"
+      "version": "1.0.4"
     },
     {
       "dependency": {
@@ -55,6 +54,30 @@
         "additionalData": {}
       },
       "version": "0.1.2"
+    },
+    {
+      "dependency": {
+        "id": "codegen",
+        "versionRange": "^0.4.0",
+        "additionalData": {}
+      },
+      "version": "0.4.0"
+    },
+    {
+      "dependency": {
+        "id": "custom-types",
+        "versionRange": "^0.2.14",
+        "additionalData": {}
+      },
+      "version": "0.2.14"
+    },
+    {
+      "dependency": {
+        "id": "bs-utils",
+        "versionRange": "*",
+        "additionalData": {}
+      },
+      "version": "0.4.11"
     }
   ]
 }

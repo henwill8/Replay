@@ -22,7 +22,7 @@ namespace System::Runtime::CompilerServices {
     // Creating value type constructor for type: YieldAwaitable
     constexpr YieldAwaitable() noexcept {}
     // public System.Runtime.CompilerServices.YieldAwaitable/YieldAwaiter GetAwaiter()
-    // Offset: 0xA4252C
+    // Offset: 0xC948AC
     System::Runtime::CompilerServices::YieldAwaitable::YieldAwaiter GetAwaiter();
   }; // System.Runtime.CompilerServices.YieldAwaitable
 }

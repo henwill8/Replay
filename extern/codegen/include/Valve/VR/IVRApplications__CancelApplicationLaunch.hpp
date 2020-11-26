@@ -26,16 +26,16 @@ namespace Valve::VR {
   class IVRApplications::_CancelApplicationLaunch : public System::MulticastDelegate {
     public:
     // public System.Void .ctor(System.Object object, System.IntPtr method)
-    // Offset: 0xFE9990
+    // Offset: 0x136D940
     static IVRApplications::_CancelApplicationLaunch* New_ctor(::Il2CppObject* object, System::IntPtr method);
     // public System.Boolean Invoke(System.String pchAppKey)
-    // Offset: 0xFDE2C4
+    // Offset: 0x1362274
     bool Invoke(::Il2CppString* pchAppKey);
     // public System.IAsyncResult BeginInvoke(System.String pchAppKey, System.AsyncCallback callback, System.Object object)
-    // Offset: 0xFE99A4
+    // Offset: 0x136D954
     System::IAsyncResult* BeginInvoke(::Il2CppString* pchAppKey, System::AsyncCallback* callback, ::Il2CppObject* object);
     // public System.Boolean EndInvoke(System.IAsyncResult result)
-    // Offset: 0xFE99C8
+    // Offset: 0x136D978
     bool EndInvoke(System::IAsyncResult* result);
   }; // Valve.VR.IVRApplications/_CancelApplicationLaunch
 }

@@ -23,15 +23,15 @@ namespace System::ComponentModel {
       return browsableState;
     }
     // public System.Void .ctor(System.ComponentModel.EditorBrowsableState state)
-    // Offset: 0xF5E394
+    // Offset: 0x14819C8
     static EditorBrowsableAttribute* New_ctor(System::ComponentModel::EditorBrowsableState state);
     // public override System.Boolean Equals(System.Object obj)
-    // Offset: 0xF5E3C0
+    // Offset: 0x14819F4
     // Implemented from: System.Attribute
     // Base method: System.Boolean Attribute::Equals(System.Object obj)
     bool Equals(::Il2CppObject* obj);
     // public override System.Int32 GetHashCode()
-    // Offset: 0xF5E45C
+    // Offset: 0x1481A90
     // Implemented from: System.Attribute
     // Base method: System.Int32 Attribute::GetHashCode()
     int GetHashCode();

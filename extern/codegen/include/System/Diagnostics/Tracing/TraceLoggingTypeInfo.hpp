@@ -54,28 +54,28 @@ namespace System::Diagnostics::Tracing {
     // Offset: 0x30
     System::Type* dataType;
     // System.Void .ctor(System.Type dataType)
-    // Offset: 0xDA0AE8
+    // Offset: 0x11221C0
     static TraceLoggingTypeInfo* New_ctor(System::Type* dataType);
     // System.Void .ctor(System.Type dataType, System.String name, System.Diagnostics.Tracing.EventLevel level, System.Diagnostics.Tracing.EventOpcode opcode, System.Diagnostics.Tracing.EventKeywords keywords, System.Diagnostics.Tracing.EventTags tags)
-    // Offset: 0xDA0BEC
+    // Offset: 0x11222C4
     static TraceLoggingTypeInfo* New_ctor(System::Type* dataType, ::Il2CppString* name, System::Diagnostics::Tracing::EventLevel level, System::Diagnostics::Tracing::EventOpcode opcode, System::Diagnostics::Tracing::EventKeywords keywords, System::Diagnostics::Tracing::EventTags tags);
     // public System.String get_Name()
-    // Offset: 0xDA0D50
+    // Offset: 0x1122428
     ::Il2CppString* get_Name();
     // public System.Diagnostics.Tracing.EventLevel get_Level()
-    // Offset: 0xDA0D58
+    // Offset: 0x1122430
     System::Diagnostics::Tracing::EventLevel get_Level();
     // public System.Diagnostics.Tracing.EventOpcode get_Opcode()
-    // Offset: 0xDA0D60
+    // Offset: 0x1122438
     System::Diagnostics::Tracing::EventOpcode get_Opcode();
     // public System.Diagnostics.Tracing.EventKeywords get_Keywords()
-    // Offset: 0xDA0D68
+    // Offset: 0x1122440
     System::Diagnostics::Tracing::EventKeywords get_Keywords();
     // public System.Diagnostics.Tracing.EventTags get_Tags()
-    // Offset: 0xDA0D70
+    // Offset: 0x1122448
     System::Diagnostics::Tracing::EventTags get_Tags();
     // System.Type get_DataType()
-    // Offset: 0xDA0D78
+    // Offset: 0x1122450
     System::Type* get_DataType();
     // public System.Void WriteMetadata(System.Diagnostics.Tracing.TraceLoggingMetadataCollector collector, System.String name, System.Diagnostics.Tracing.EventFieldFormat format)
     // Offset: 0xFFFFFFFF
@@ -84,7 +84,7 @@ namespace System::Diagnostics::Tracing {
     // Offset: 0xFFFFFFFF
     void WriteObjectData(System::Diagnostics::Tracing::TraceLoggingDataCollector* collector, ::Il2CppObject* value);
     // public System.Object GetData(System.Object value)
-    // Offset: 0xD9EEEC
+    // Offset: 0x11205C4
     ::Il2CppObject* GetData(::Il2CppObject* value);
   }; // System.Diagnostics.Tracing.TraceLoggingTypeInfo
 }
