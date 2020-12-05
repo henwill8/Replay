@@ -3,7 +3,6 @@
 #include "codegen.hpp"
 #include "UI.hpp"
 #include "cameraReplace.hpp"
-#include "avatarController.hpp"
 #include "../extern/beatsaber-hook/shared/utils/utils.h"
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
 #include "../extern/modloader/shared/modloader.hpp"
@@ -1186,8 +1185,6 @@ extern "C" void load() {
     QuestUI::Init();
     
     custom_types::Register::RegisterType<Replay::CameraReplace>();
-
-    custom_types::Register::RegisterType<Replay::AvatarController>();
 
     custom_types::Register::RegisterType<Replay::UIController>();
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
