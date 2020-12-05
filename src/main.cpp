@@ -3,6 +3,7 @@
 #include "codegen.hpp"
 #include "UI.hpp"
 #include "cameraReplace.hpp"
+#include "avatarController.hpp"
 #include "../extern/beatsaber-hook/shared/utils/utils.h"
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
 #include "../extern/modloader/shared/modloader.hpp"
@@ -25,6 +26,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
+#include <math.h> 
 #include <fstream>
 
 using namespace il2cpp_utils;
@@ -34,12 +36,17 @@ using namespace UnityEngine::UI;
 using namespace UnityEngine::Events;
 
 Configuration& getConfig() {
-  static Configuration configuration(modInfo);
-  return configuration;
+    static Configuration config(modInfo);
+    config.Load();
+    return config;
 }
 
 void log(std::string str) {
     Logger::get().info("Replay: " + str);
+}
+
+int clip(int n, int lower, int upper) {
+    return std::max(lower, std::min(n, upper));
 }
 
 struct replayKeyFrame {
@@ -114,7 +121,10 @@ std::string cameraToggleString = "hmd";
 Button* replayButton = nullptr;
 Button* cameraToggle = nullptr;
 Button* failedReplayButton = nullptr;
+Button* failedCameraToggle = nullptr;
 Toggle* speedToggle = nullptr;
+
+int replayButtonCount = 0;
 
 TMPro::TextMeshProUGUI* replayText;
 
@@ -158,8 +168,6 @@ void cameraToggleOnClick() {
             log("setting text to smooth camera");
             cameraToggleString = "smooth";
             buttonTMP->set_text(createcsstr("Smooth Camera"));
-            BeatSaberUI::ToggleButtonWordWrapping(cameraToggle, true);
-            // buttonTMP->set_fontSize(5);
         } else if(cameraToggleString == "smooth") {
             log("setting text to third person");
             cameraToggleString = "thirdPerson";
@@ -170,6 +178,26 @@ void cameraToggleOnClick() {
             cameraToggleString = "hmd";
             buttonTMP->set_text(createcsstr("Normal"));
             // buttonTMP->set_fontSize(11);
+        }
+    }
+}
+
+void failedCameraToggleOnClick() {
+    TMPro::TextMeshProUGUI* buttonTMP = failedCameraToggle->get_gameObject()->GetComponentInChildren<TMPro::TextMeshProUGUI*>();
+    if(buttonTMP != nullptr) {
+        buttonTMP->get_gameObject()->SetActive(true);
+        if(cameraToggleString == "hmd") {
+            log("setting text to smooth camera");
+            cameraToggleString = "smooth";
+            buttonTMP->set_text(createcsstr("Smooth Camera"));
+        } else if(cameraToggleString == "smooth") {
+            log("setting text to third person");
+            cameraToggleString = "thirdPerson";
+            buttonTMP->set_text(createcsstr("Third Person"));
+        } else if(cameraToggleString == "thirdPerson") {
+            log("setting text to normal");
+            cameraToggleString = "hmd";
+            buttonTMP->set_text(createcsstr("Normal"));
         }
     }
 }
@@ -187,8 +215,6 @@ int rank;
 float scoreMultiplier = 1.0f;
 
 int combo = 0;
-
-Il2CppObject* scoreUI;
 
 int indexNum = 0;
 
@@ -223,6 +249,9 @@ std::string songName = "";
 Quaternion smoothCameraRotation;
 Vector3 smoothCameraPosition;
 
+UnityEngine::Vector3 smoothHeadPosition;
+UnityEngine::Quaternion smoothHeadRotation;
+
 float positionSmooth;
 float rotationSmooth;
 
@@ -243,13 +272,19 @@ Vector3 rightSaberRot;
 Vector3 leftSaberPos;
 Vector3 leftSaberRot;
 
-// int offset = getConfig().config["Offset"].GetInt();
-int offset = -1;
+UnityEngine::Transform* leftSaberTransformCache = nullptr;
+UnityEngine::Transform* rightSaberTransformCache = nullptr;
+
+UnityEngine::GameObject* customAvatar = nullptr;
+
+int offset = 0;
+
+bool installedQosmeticsHook = false;
 
 std::string fileExtensionName = ".questReplayFileForQuestDontTryOnPcAlsoPinkEraAndLillieAreCuteBtwWilliamGay";
 
 void SaveConfig() {
-    if(!fileexists("sdcard/Android/data/com.beatgames.beatsaber/files/mod_cfgs/Replay.json")) {
+    if(!getConfig().config.HasMember("ThirdPersonCircularMovement")) {
         log("Creating config");
         getConfig().config.RemoveAllMembers();
         getConfig().config.SetObject();
@@ -260,7 +295,7 @@ void SaveConfig() {
         rapidjson::Value SmoothCameraObject(rapidjson::kObjectType);
         SmoothCameraObject.AddMember("x", 0, allocator);
         SmoothCameraObject.AddMember("y", 0, allocator);
-        SmoothCameraObject.AddMember("z", -1, allocator);
+        SmoothCameraObject.AddMember("z", -0.75f, allocator);
         getConfig().config.AddMember("SmoothCameraOffset", SmoothCameraObject, allocator);
         
         rapidjson::Value ThirdPersonPosObject(rapidjson::kObjectType);
@@ -274,14 +309,16 @@ void SaveConfig() {
         ThirdPersonRotObject.AddMember("y", 45, allocator);
         ThirdPersonRotObject.AddMember("z", 0, allocator);
         getConfig().config.AddMember("ThirdPersonCameraRot", ThirdPersonRotObject, allocator);
+        
+        getConfig().config.AddMember("ThirdPersonCircularMovement", false, allocator);
 
         getConfig().config.AddMember("FullComboOverwrites", false, allocator);
         getConfig().config.AddMember("DisableVibration", true, allocator);
 
         getConfig().Write();
     } else {
-        getConfig().Load();
         log("Not creating config");
+        getConfig().Load();
     }
 }
 
@@ -345,7 +382,7 @@ bool hasFakeMiss() {
     int amountCheckingEachSide = 2;
 
     for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
-        if(replayData[indexNum+i].combo <= 1) {
+        if(replayData[clip(indexNum+i, 0, replayData.size()-1)].combo <= 1) {
             return false;
         }
     }
@@ -378,8 +415,32 @@ Quaternion eulerToQuaternion(Vector3 euler) {
     return tempQuaternion;
 }
 
-int clip(int n, int lower, int upper) {
-    return std::max(lower, std::min(n, upper));
+MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
+
+    int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
+    int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
+
+    int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
+    int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+
+    float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
+
+    if(leftSaberTransformCache != nullptr) {
+        UnityEngine::Vector3 lerpedPosition = UnityEngine::Vector3::Lerp(UnityEngine::Vector3{replayData[offsetIndex].leftSaberPosX, replayData[offsetIndex].leftSaberPosY, replayData[offsetIndex].leftSaberPosZ}, UnityEngine::Vector3{replayData[nextOffsetIndex].leftSaberPosX, replayData[nextOffsetIndex].leftSaberPosY, replayData[nextOffsetIndex].leftSaberPosZ}, lerpAmount);
+        leftSaberTransformCache->set_position(lerpedPosition);
+
+        UnityEngine::Quaternion lerpedRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].leftSaberRotX, replayData[offsetIndex].leftSaberRotY, replayData[offsetIndex].leftSaberRotZ), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].leftSaberRotX, replayData[nextOffsetIndex].leftSaberRotY, replayData[nextOffsetIndex].leftSaberRotZ), lerpAmount);
+        leftSaberTransformCache->set_rotation(lerpedRotation);
+    }
+    if(rightSaberTransformCache != nullptr) {
+        UnityEngine::Vector3 lerpedPosition = UnityEngine::Vector3::Lerp(UnityEngine::Vector3{replayData[offsetIndex].rightSaberPosX, replayData[offsetIndex].rightSaberPosY, replayData[offsetIndex].rightSaberPosZ}, UnityEngine::Vector3{replayData[nextOffsetIndex].rightSaberPosX, replayData[nextOffsetIndex].rightSaberPosY, replayData[nextOffsetIndex].rightSaberPosZ}, lerpAmount);
+        rightSaberTransformCache->set_position(lerpedPosition);
+
+        UnityEngine::Quaternion lerpedRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].rightSaberRotX, replayData[offsetIndex].rightSaberRotY, replayData[offsetIndex].rightSaberRotZ), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].rightSaberRotX, replayData[nextOffsetIndex].rightSaberRotY, replayData[nextOffsetIndex].rightSaberRotZ), lerpAmount);
+        rightSaberTransformCache->set_rotation(lerpedRotation);
+    }
+
+    QosmeticsTrail_Update(self);
 }
 
 MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTransforms* self) {
@@ -404,11 +465,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
 
             score, percent, rank, combo, songTime
         });
-    }
-
-    PlayerController_Update(self);
-
-    if(!recording) {
+    } else {
         bool foundCorrectIndex = false;
         while(!foundCorrectIndex) {
             if(indexNum < replayData.size()-1) {
@@ -421,15 +478,41 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
                 foundCorrectIndex = true;
             }
         }
+        
+        if(customAvatar != nullptr) {
+            customAvatar->get_transform()->SetParent(self->get_transform());
+            customAvatar->get_transform()->set_position(UnityEngine::Vector3{0, 0, 0});
+            customAvatar->get_transform()->set_localScale(UnityEngine::Vector3{1, 1, 1});
+            customAvatar->SetActive(true);
+            GlobalNamespace::AvatarPoseController* poseController = customAvatar->GetComponent<GlobalNamespace::AvatarPoseController*>();
+
+            float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
+
+            smoothHeadPosition = UnityEngine::Vector3::Lerp(smoothHeadPosition, UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ}, deltaTime * 12);
+            smoothHeadRotation = UnityEngine::Quaternion::Slerp(smoothHeadRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].headRotX*90, replayData[indexNum].headRotY*90, replayData[indexNum].headRotZ*90), deltaTime * 12);
+            log(std::to_string(replayData[indexNum].headRotX*90)+" "+std::to_string(replayData[indexNum].headRotY*90)+" "+std::to_string(replayData[indexNum].headRotZ*90));
+            poseController->UpdateTransforms(
+                smoothHeadPosition, 
+                UnityEngine::Vector3{replayData[indexNum].leftSaberPosX, replayData[indexNum].leftSaberPosY, replayData[indexNum].leftSaberPosZ},
+                UnityEngine::Vector3{replayData[indexNum].rightSaberPosX, replayData[indexNum].rightSaberPosY, replayData[indexNum].rightSaberPosZ},
+                smoothHeadRotation,
+                UnityEngine::Quaternion::Euler(replayData[indexNum].leftSaberRotX, replayData[indexNum].leftSaberRotY, replayData[indexNum].leftSaberRotZ),
+                UnityEngine::Quaternion::Euler(replayData[indexNum].rightSaberRotX, replayData[indexNum].rightSaberRotY, replayData[indexNum].rightSaberRotZ)
+            );
+        }
 
         CRASH_UNLESS(SetFieldValue(self, "_overrideHeadPos", true));
         SetFieldValue(self, "_overridenHeadPos", UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
+        SetFieldValue(self, "_headPos", UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
+        RunMethod(*GetFieldValue<Il2CppObject*>(self, "_headTransform"), "set_localPosition", Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
     }
+
+    PlayerController_Update(self);
 }
 
-MAKE_HOOK_OFFSETLESS(SaberManager_Update, void, GlobalNamespace::Saber* self) {
+MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
-    // log("SaberManager_Update");
+    // log("Saber_ManualUpdate");
     
     int saberType = *RunMethod<int>(self, "get_saberType");
     
@@ -444,10 +527,18 @@ MAKE_HOOK_OFFSETLESS(SaberManager_Update, void, GlobalNamespace::Saber* self) {
             rightSaberRot = *RunMethod<Vector3>(rightSaberTransform, "get_eulerAngles");
         }
     } else {
+        if(il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0) && !installedQosmeticsHook) {
+            log("Installing Qosmetics hook");
+            INSTALL_HOOK_OFFSETLESS(QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
+            installedQosmeticsHook = true;
+        }
         int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
         int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
 
-        float lerpAmount = (songTime - replayData[offsetIndex].time) / (replayData[nextOffsetIndex].time - replayData[offsetIndex].time);
+        int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
+        int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+
+        float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
 
         if(saberType == 0) {
             UnityEngine::Vector3 lerpedPosition = UnityEngine::Vector3::Lerp(UnityEngine::Vector3{replayData[offsetIndex].leftSaberPosX, replayData[offsetIndex].leftSaberPosY, replayData[offsetIndex].leftSaberPosZ}, UnityEngine::Vector3{replayData[nextOffsetIndex].leftSaberPosX, replayData[nextOffsetIndex].leftSaberPosY, replayData[nextOffsetIndex].leftSaberPosZ}, lerpAmount);
@@ -455,16 +546,20 @@ MAKE_HOOK_OFFSETLESS(SaberManager_Update, void, GlobalNamespace::Saber* self) {
 
             UnityEngine::Quaternion lerpedRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].leftSaberRotX, replayData[offsetIndex].leftSaberRotY, replayData[offsetIndex].leftSaberRotZ), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].leftSaberRotX, replayData[nextOffsetIndex].leftSaberRotY, replayData[nextOffsetIndex].leftSaberRotZ), lerpAmount);
             self->get_transform()->set_rotation(lerpedRotation);
+
+            leftSaberTransformCache = self->get_transform();
         } else {
             UnityEngine::Vector3 lerpedPosition = UnityEngine::Vector3::Lerp(UnityEngine::Vector3{replayData[offsetIndex].rightSaberPosX, replayData[offsetIndex].rightSaberPosY, replayData[offsetIndex].rightSaberPosZ}, UnityEngine::Vector3{replayData[nextOffsetIndex].rightSaberPosX, replayData[nextOffsetIndex].rightSaberPosY, replayData[nextOffsetIndex].rightSaberPosZ}, lerpAmount);
             self->get_transform()->set_position(lerpedPosition);
 
             UnityEngine::Quaternion lerpedRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].rightSaberRotX, replayData[offsetIndex].rightSaberRotY, replayData[offsetIndex].rightSaberRotZ), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].rightSaberRotX, replayData[nextOffsetIndex].rightSaberRotY, replayData[nextOffsetIndex].rightSaberRotZ), lerpAmount);
             self->get_transform()->set_rotation(lerpedRotation);
+
+            rightSaberTransformCache = self->get_transform();
         }
     }
 
-    SaberManager_Update(self);
+    Saber_ManualUpdate(self);
 }
 
 MAKE_HOOK_OFFSETLESS(SongUpdate, void, Il2CppObject* self) {
@@ -505,6 +600,9 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, Il2CppObject* self, Il2CppString* gameMode
     indexNum = 0;
     replaySpeed = 1.0f;
     score = 0;
+
+    leftSaberTransformCache = nullptr;
+    rightSaberTransformCache = nullptr;
     
     if(recording) {
         dataToSave.clear();
@@ -594,11 +692,11 @@ MAKE_HOOK_OFFSETLESS(ScoreChanged, void, Il2CppObject* self, int rawScore, int m
     ScoreChanged(self, rawScore, modifiedScore);
 }
 
-MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
+MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject* self) {
     
     log("Refreshing Content, in song or results is "+std::to_string(inSongOrResults));
 
-    RefreshContent(self);
+    StandardLevelDetailView_RefreshContent(self);
 
     playButton = *GetFieldValue(self, "_actionButton");
 
@@ -624,32 +722,27 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
 
     songHash = to_utf8(csstrtostr(LevelID))+std::to_string(Difficulty)+modeName;
 
-    if(replayButton != nullptr) {
-        RunMethod("UnityEngine", "Object", "Destroy", replayButton->get_gameObject());
-        replayButton = nullptr;
-        RunMethod("UnityEngine", "Object", "Destroy", cameraToggle->get_gameObject());
+    if(cameraToggle != nullptr) {
+        log("Destroying camera toggle");
+        UnityEngine::GameObject::Destroy(cameraToggle->get_gameObject());
         cameraToggle = nullptr;
+    }
+    if(replayButton != nullptr) {
+        log("Destroying replay button");
+        UnityEngine::GameObject::Destroy(replayButton->get_gameObject());
+        replayButton = nullptr;
     }
 
     if(fileexists(replayDirectory+songHash+fileExtensionName)) {
         log("Making Replay button");
-        
         UnityEngine::Vector2 buttonsPosition = {-3.5f, -32};
         float buttonsScale = 0.8f;
         UnityEngine::Transform* playButtonTransform = *RunMethod<UnityEngine::Transform*>(playButton, "get_transform");
 
         UnityEngine::RectTransform* rectTransform = playButtonTransform->GetParent()->GetParent()->GetParent()->get_gameObject()->GetComponent<UnityEngine::RectTransform*>();
+        // rectTransform->set_localPosition(UnityEngine::Vector3(39.5f, -10.0f, 0.0f));
         rectTransform->set_offsetMin(UnityEngine::Vector2(4.5f, -48.0f));
         rectTransform->set_offsetMax(UnityEngine::Vector2(74.5f, 28.0f));
-        rectTransform->set_localPosition(UnityEngine::Vector3(39.5f, -10.0f, 0.0f));
-
-        replayButton = BeatSaberUI::CreateUIButton(
-            playButtonTransform->GetParent()->GetParent(), 
-            "Replay", 
-            UnityEngine::Vector2{buttonsPosition.x+13, buttonsPosition.y}, 
-            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, replayButtonOnClick)
-        );
-        replayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale+0.1f, buttonsScale+0.1f, buttonsScale+0.1f});
 
         std::string tempString;
         if(cameraToggleString == "hmd") {
@@ -666,6 +759,17 @@ MAKE_HOOK_OFFSETLESS(RefreshContent, void, Il2CppObject* self) {
             il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, cameraToggleOnClick)
         );
         cameraToggle->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
+        cameraToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{30, 10});
+
+        replayButton = BeatSaberUI::CreateUIButton(
+            playButtonTransform->GetParent()->GetParent(), 
+            "Replay", 
+            "OkButton", 
+            UnityEngine::Vector2{buttonsPosition.x+13, buttonsPosition.y-4}, 
+            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, replayButtonOnClick)
+        );
+        replayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
+        replayButton->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{30, 10});
     } else {
         log("Not making Replay button");
     }
@@ -810,9 +914,13 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
             continueButtonTransform->GetParent()->GetParent(),
             "Lock Speed",
             speedToggleBool,
-            UnityEngine::Vector2{0, 10},
+            UnityEngine::Vector2{28.5f, -25},
             il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), (Il2CppObject*)nullptr, speedToggleOnClick)
         );
+        UnityEngine::Vector2 sizeDeltaThing = speedToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->get_sizeDelta();
+        log(std::to_string(sizeDeltaThing.x)+" "+std::to_string(sizeDeltaThing.y));
+        log("test");
+        speedToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{147, sizeDeltaThing.y});
     }
 }
 
@@ -823,6 +931,11 @@ MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
     PauseFinish(self);
 
     inPauseMenu = false;
+    
+    if(!recording) {
+        UnityEngine::GameObject::Destroy(speedToggle->get_gameObject());
+        speedToggle = nullptr;
+    }
 }
 
 MAKE_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, void, Il2CppObject* self) {
@@ -855,13 +968,13 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
     // log("LightManager_OnWillRenderObject");
 
-    if(inSong && !recording && !inPauseMenu && !failedReplay) {
+    if(inSong && !recording && !inPauseMenu) {
         Il2CppObject* mainCamera = CRASH_UNLESS(il2cpp_utils::RunMethod("UnityEngine", "Camera", "get_main"));
         
-        UnityEngine::GameObject* go = *RunMethod<UnityEngine::GameObject*>(mainCamera, "get_gameObject");
-        if(!go->GetComponent<Replay::CameraReplace*>()) {
+        UnityEngine::GameObject* cameraGO = *RunMethod<UnityEngine::GameObject*>(mainCamera, "get_gameObject");
+        if(!cameraGO->GetComponent<Replay::CameraReplace*>()) {
             log("adding custom script");
-            go->AddComponent<Replay::CameraReplace*>();
+            cameraGO->AddComponent<Replay::CameraReplace*>();
         }
 
         Il2CppObject* mainCameraTransform = CRASH_UNLESS(RunMethod(mainCamera, "get_transform"));
@@ -874,35 +987,46 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         if(cameraToggleString == "smooth") {
             float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
 
-            smoothCameraPosition = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ}, deltaTime * rotationSmooth);
-            smoothCameraRotation = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Slerp", smoothCameraRotation, eulerToQuaternion(Vector3{replayData[indexNum].headRotX, replayData[indexNum].headRotY, replayData[indexNum].headRotZ}), deltaTime * positionSmooth);
+            smoothCameraPosition = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ}, deltaTime * positionSmooth);
+            smoothCameraRotation = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Slerp", smoothCameraRotation, eulerToQuaternion(Vector3{replayData[indexNum].headRotX, replayData[indexNum].headRotY, replayData[indexNum].headRotZ}), deltaTime * rotationSmooth);
 
             RunMethod(mainCameraTransform, "SetPositionAndRotation", addVector3(smoothCameraPosition, smoothPositionOffset), smoothCameraRotation);
         } else if(cameraToggleString == "thirdPerson") {
-            bool aButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
-            bool bButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::Two, GlobalNamespace::OVRInput::Controller::RTouch);
+            if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
+                float camX = sin(songTime/5)*6;
+                float camY = 2.5f;
+                float camZ = cos(songTime/2.5f)*-2-2.5f;
+                RunMethod(mainCameraTransform, "set_position", UnityEngine::Vector3{camX, 2.5f, camZ});
+                UnityEngine::Transform* newTransform = UnityEngine::GameObject::New_ctor()->get_transform();
+                newTransform->set_position(UnityEngine::Vector3{0, 1.6f, 0});
 
-            if(aButtonValue || bButtonValue) {
-                pressedThirdPersonMoveButton = true;
-
-                newThirdPersonCamRot = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "op_Multiply", *RunMethod<Quaternion>("UnityEngine", "Quaternion", "op_Multiply", prevRot, *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Inverse", basePrevRot)), thirdPersonCamRot);
-                
-                RunMethod(mainCameraTransform, "SetPositionAndRotation", newThirdPersonCamPos, newThirdPersonCamRot);
-
-                if(aButtonValue) {
-                    RunMethod(mainCameraTransform, "Translate", divideVector3ByFloat(subtractVector3(prevPos, basePrevPos), 1.5));
-                }
-
-                newThirdPersonCamPos = *RunMethod<Vector3>(mainCameraTransform, "get_position");
+                RunMethod(mainCameraTransform, "LookAt", newTransform);
             } else {
-                if(pressedThirdPersonMoveButton) {
-                    thirdPersonCamPos = newThirdPersonCamPos;
-                    thirdPersonCamRot = newThirdPersonCamRot;
+                bool aButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
+                bool bButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::Two, GlobalNamespace::OVRInput::Controller::RTouch);
+
+                if(aButtonValue || bButtonValue) {
+                    pressedThirdPersonMoveButton = true;
+
+                    newThirdPersonCamRot = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "op_Multiply", *RunMethod<Quaternion>("UnityEngine", "Quaternion", "op_Multiply", prevRot, *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Inverse", basePrevRot)), thirdPersonCamRot);
+                    
+                    RunMethod(mainCameraTransform, "SetPositionAndRotation", newThirdPersonCamPos, newThirdPersonCamRot);
+
+                    if(aButtonValue) {
+                        RunMethod(mainCameraTransform, "Translate", divideVector3ByFloat(subtractVector3(prevPos, basePrevPos), 1.5));
+                    }
+
+                    newThirdPersonCamPos = *RunMethod<Vector3>(mainCameraTransform, "get_position");
+                } else {
+                    if(pressedThirdPersonMoveButton) {
+                        thirdPersonCamPos = newThirdPersonCamPos;
+                        thirdPersonCamRot = newThirdPersonCamRot;
+                    }
+                    RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, thirdPersonCamRot);
+                    
+                    basePrevPos = prevPos;
+                    basePrevRot = prevRot;
                 }
-                RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, thirdPersonCamRot);
-                
-                basePrevPos = prevPos;
-                basePrevRot = prevRot;
             }
         }
     }
@@ -934,19 +1058,31 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, Il2CppObject* self
         failedReplayButton = nullptr;
     }
 
-    if(cameraToggle != nullptr) {
-        UnityEngine::GameObject::Destroy(cameraToggle->get_gameObject());
-        cameraToggle = nullptr;
+    if(failedCameraToggle != nullptr) {
+        UnityEngine::GameObject::Destroy(failedCameraToggle->get_gameObject());
+        failedCameraToggle = nullptr;
     }
 
     if(levelEndState == 2 && (recording || failedReplay)) {
+        log("Creating failed replay buttons");
+
         recording = true;
         failedReplay = false;
+
+        float buttonsScale = 0.8f;
 
         restartButton = *GetFieldValue(self, "_restartButton");
         UnityEngine::Transform* restartButtonTransform = *RunMethod<UnityEngine::Transform*>(restartButton, "get_transform");
 
-        failedReplayButton = BeatSaberUI::CreateUIButton(restartButtonTransform->GetParent()->GetParent(), "Replay", il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, failedReplayButtonOnClick));
+        failedReplayButton = BeatSaberUI::CreateUIButton(
+            restartButtonTransform->GetParent()->GetParent()->GetParent(), 
+            "Replay", 
+            "OkButton", 
+            UnityEngine::Vector2{17.25f, -32.5f},
+            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, failedReplayButtonOnClick)
+        );
+        failedReplayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
+        failedReplayButton->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{45, 10});
         
         std::string tempString;
         if(cameraToggleString == "hmd") {
@@ -956,7 +1092,14 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, Il2CppObject* self
         } else if(cameraToggleString == "thirdPerson") {
             tempString = "Third Person";
         }
-        cameraToggle = BeatSaberUI::CreateUIButton(restartButtonTransform->GetParent()->GetParent(), tempString, UnityEngine::Vector2{-10, 0}, il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, cameraToggleOnClick));
+        failedCameraToggle = BeatSaberUI::CreateUIButton(
+            restartButtonTransform->GetParent()->GetParent()->GetParent(),
+            tempString, 
+            UnityEngine::Vector2{-20.75f, -28.5f},
+            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, failedCameraToggleOnClick)
+        );
+        failedCameraToggle->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
+        failedCameraToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{45, 10});
     }
 }
 
@@ -1006,6 +1149,24 @@ MAKE_HOOK_OFFSETLESS(NoteWasCut, void, Il2CppObject* self, Il2CppObject* noteCut
     NoteWasCut(self, noteCutInfo);
 }
 
+MAKE_HOOK_OFFSETLESS(EditAvatarFlowCoordinator_DidActivate, void, GlobalNamespace::EditAvatarFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+
+    log("EditAvatarFlowCoordinator_DidActivate");
+
+    EditAvatarFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+
+    if(customAvatar == nullptr) {
+        log("Creating copy of avatar");
+        customAvatar = UnityEngine::Object::Instantiate(UnityEngine::GameObject::Find(createcsstr("PlayerAvatar")));
+        // avatarthing->get_transform()->set_position(UnityEngine::Vector3{0, 1.6f, 0});
+        // avatarthing->SetActive(true);
+        // customAvatar = UnityEngine::Object::Instantiate(UnityEngine::GameObject::Find(createcsstr("PlayerAvatar")));
+        // customAvatar->GetComponentsFromChildren
+        UnityEngine::Object::DontDestroyOnLoad(customAvatar);
+        log(to_utf8(csstrtostr(customAvatar->get_name())));
+    }
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
     info.version = "0.3.0";
@@ -1016,6 +1177,7 @@ extern "C" void setup(ModInfo& info) {
     // We can even check information specific to the modloader!
     Logger::get().info("Modloader name: %s", Modloader::getInfo().name.c_str());
     
+    getConfig().Load();
     SaveConfig();
 }
 
@@ -1025,6 +1187,8 @@ extern "C" void load() {
     
     custom_types::Register::RegisterType<Replay::CameraReplace>();
 
+    custom_types::Register::RegisterType<Replay::AvatarController>();
+
     custom_types::Register::RegisterType<Replay::UIController>();
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
 
@@ -1032,17 +1196,16 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(SongUpdate, il2cpp_utils::FindMethodUnsafe("", "AudioTimeSyncController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(SongStart, il2cpp_utils::FindMethodUnsafe("", "StandardLevelScenesTransitionSetupDataSO", "Init", 9));
     INSTALL_HOOK_OFFSETLESS(PlayerController_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
-    // INSTALL_HOOK_OFFSETLESS(SaberManager_Update, il2cpp_utils::FindMethodUnsafe("", "SaberManager", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(SaberManager_Update, il2cpp_utils::FindMethodUnsafe("", "Saber", "ManualUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(Saber_ManualUpdate, il2cpp_utils::FindMethodUnsafe("", "Saber", "ManualUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
-    INSTALL_HOOK_OFFSETLESS(RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
+    INSTALL_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
     INSTALL_HOOK_OFFSETLESS(HandleLevelFailed, il2cpp_utils::FindMethodUnsafe("", "StandardLevelFailedController", "HandleLevelFailed", 0));
     INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
     INSTALL_HOOK_OFFSETLESS(Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
     INSTALL_HOOK_OFFSETLESS(ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
     INSTALL_HOOK_OFFSETLESS(ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "Start", 0));
+    INSTALL_HOOK_OFFSETLESS(PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "ShowMenu", 0));
     INSTALL_HOOK_OFFSETLESS(PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "StartResumeAnimation", 0));
     INSTALL_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "MenuButtonPressed", 0));
     INSTALL_HOOK_OFFSETLESS(ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 2));
@@ -1052,6 +1215,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(ResultsViewController_Init, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "Init", 4));
     INSTALL_HOOK_OFFSETLESS(NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
     INSTALL_HOOK_OFFSETLESS(NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent", 1));
+    INSTALL_HOOK_OFFSETLESS(EditAvatarFlowCoordinator_DidActivate, il2cpp_utils::FindMethodUnsafe("", "EditAvatarFlowCoordinator", "DidActivate", 3));
     Logger::get().info("Installed all hooks!");
     il2cpp_functions::Init();
 

@@ -6,12 +6,16 @@ using namespace UnityEngine;
 
 DEFINE_CLASS(Replay::UIController);
 
-void toggleDisableVibration(bool newValue) {
-    getConfig().config["DisableVibration"].SetBool(newValue);
+void toggleDisableVibration() {
+    getConfig().config["DisableVibration"].SetBool(!getConfig().config["DisableVibration"].GetBool());
 }
 
-void toggleFCOverwrite(bool newValue) {
-    getConfig().config["FullComboOverwrites"].SetBool(newValue);
+void toggleFCOverwrite() {
+    getConfig().config["FullComboOverwrites"].SetBool(!getConfig().config["FullComboOverwrites"].GetBool());
+}
+
+void toggleCircular() {
+    getConfig().config["ThirdPersonCircularMovement"].SetBool(!getConfig().config["ThirdPersonCircularMovement"].GetBool());
 }
 
 void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -63,8 +67,21 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
             il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleFCOverwrite)
         );
 		QuestUI::BeatSaberUI::AddHoverHint(FCToggle->get_gameObject(), "FC-ing a map will overwrite any existing replay");
-		// FCToggle->get_gameObject()->GetComponent<LayoutElement*>()->set_preferredWidth(50);
+		// FCToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
+
+        Toggle* CircularToggle = BeatSaberUI::CreateToggle(
+            Parent1,
+            "Enable Third Person Circular Movement",
+            getConfig().config["ThirdPersonCircularMovement"].GetBool(),
+            il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleCircular)
+        );
+		QuestUI::BeatSaberUI::AddHoverHint(CircularToggle->get_gameObject(), "FC-ing a map will overwrite any existing replay");
+		// CircularToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
 
         // auto Button = CreateUIButton(get_transform(), "OKButton", il2cpp_utils::MakeAction<UnityEngine::Events::UnityAction>(il2cpp_functions::class_get_type(classof(UnityEngine::Events::UnityAction*)), (Il2CppObject*)nullptr, unhideModal), "Modal", nullptr);
 	}
+}
+
+void Replay::UIController::DidDeactivate(bool removedFromHierarchy, bool systemScreenDisabling)  {
+    getConfig().Write();
 }
