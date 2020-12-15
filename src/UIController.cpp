@@ -18,6 +18,10 @@ void toggleCircular() {
     getConfig().config["ThirdPersonCircularMovement"].SetBool(!getConfig().config["ThirdPersonCircularMovement"].GetBool());
 }
 
+void toggleAvatar() {
+    getConfig().config["Avatars"].SetBool(!getConfig().config["Avatars"].GetBool());
+}
+
 void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 	if(firstActivation)
 	{
@@ -75,7 +79,16 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
             getConfig().config["ThirdPersonCircularMovement"].GetBool(),
             il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleCircular)
         );
-		QuestUI::BeatSaberUI::AddHoverHint(CircularToggle->get_gameObject(), "FC-ing a map will overwrite any existing replay");
+		QuestUI::BeatSaberUI::AddHoverHint(CircularToggle->get_gameObject(), "Third person camera will be on a camera rig");
+		// CircularToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
+
+        Toggle* AvatarToggle = BeatSaberUI::CreateToggle(
+            Parent1,
+            "Enable Replay Avatars",
+            getConfig().config["Avatars"].GetBool(),
+            il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleAvatar)
+        );
+		QuestUI::BeatSaberUI::AddHoverHint(AvatarToggle->get_gameObject(), "An avatar will show in normal or third person camera");
 		// CircularToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
 
         // auto Button = CreateUIButton(get_transform(), "OKButton", il2cpp_utils::MakeAction<UnityEngine::Events::UnityAction>(il2cpp_functions::class_get_type(classof(UnityEngine::Events::UnityAction*)), (Il2CppObject*)nullptr, unhideModal), "Modal", nullptr);
