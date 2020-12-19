@@ -22,6 +22,10 @@ void toggleAvatar() {
     getConfig().config["Avatars"].SetBool(!getConfig().config["Avatars"].GetBool());
 }
 
+void changeOffset(float newValue) {
+    getConfig().config["SaberTimeOffset"].SetInt(newValue);
+}
+
 void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 	if(firstActivation)
 	{
@@ -90,6 +94,16 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
         );
 		QuestUI::BeatSaberUI::AddHoverHint(AvatarToggle->get_gameObject(), "An avatar will show in normal or third person camera");
 		// CircularToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
+
+        QuestUI::IncrementSetting* OffsetIncrement = BeatSaberUI::CreateIncrementSetting(
+            Parent1,
+            "Saber Time Offset",
+            0,
+            1,
+            getConfig().config["SaberTimeOffset"].GetInt(),
+            il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<float>*>(classof(UnityEngine::Events::UnityAction_1<float>*), this, changeOffset)
+        );
+		QuestUI::BeatSaberUI::AddHoverHint(OffsetIncrement->get_gameObject(), "Change the saber time offset, the higher the number the sooner the saber swings");
 
         // auto Button = CreateUIButton(get_transform(), "OKButton", il2cpp_utils::MakeAction<UnityEngine::Events::UnityAction>(il2cpp_functions::class_get_type(classof(UnityEngine::Events::UnityAction*)), (Il2CppObject*)nullptr, unhideModal), "Modal", nullptr);
 	}

@@ -52,6 +52,7 @@
 #include "GlobalNamespace/MainEffectController.hpp"
 #include "GlobalNamespace/MainCameraCullingMask.hpp"
 #include "GlobalNamespace/MainCameraCullingMask_InitData.hpp"
+#include "GlobalNamespace/LayerMasks.hpp"
 #include "UnityEngine/UI/Slider.hpp"
 #include "UnityEngine/UI/Toggle.hpp"
 #include "UnityEngine/UI/LayoutElement.hpp"
