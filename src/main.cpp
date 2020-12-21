@@ -43,6 +43,24 @@ Configuration& getConfig() {
 void log(std::string str) {
     Logger::get().info("Replay: " + str);
 }
+void log(std::string baseStr, UnityEngine::Vector2 vector) {
+    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y));
+}
+void log(std::string baseStr, UnityEngine::Vector3 vector) {
+    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y)+" "+std::to_string(vector.z));
+}
+void log(std::string baseStr, Vector2 vector) {
+    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y));
+}
+void log(std::string baseStr, Vector3 vector) {
+    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y)+" "+std::to_string(vector.z));
+}
+void log(std::string baseStr, Quaternion quaternion) {
+    log(baseStr+" "+std::to_string(quaternion.x)+" "+std::to_string(quaternion.y)+" "+std::to_string(quaternion.z)+" "+std::to_string(quaternion.w));
+}
+void log(std::string baseStr, UnityEngine::Quaternion quaternion) {
+    log(baseStr+" "+std::to_string(quaternion.x)+" "+std::to_string(quaternion.y)+" "+std::to_string(quaternion.z)+" "+std::to_string(quaternion.w));
+}
 
 int clip(int n, int lower, int upper) {
     return std::max(lower, std::min(n, upper));
@@ -52,7 +70,26 @@ std::string csstr(Il2CppString* str) {
     return to_utf8(csstrtostr(str));
 }
 
-struct replayKeyFrame {
+struct eulerAngleTransform {
+    Vector3 pos;
+    Vector3 rot;
+};
+
+struct playerTransformData {
+    eulerAngleTransform rightSaber;
+
+    eulerAngleTransform leftSaber;
+    
+    eulerAngleTransform head;
+
+    void Write(std::ofstream& writer) const {
+        writer.write(reinterpret_cast<const char*>(&rightSaber), sizeof(eulerAngleTransform));
+        writer.write(reinterpret_cast<const char*>(&leftSaber), sizeof(eulerAngleTransform));
+        writer.write(reinterpret_cast<const char*>(&head), sizeof(eulerAngleTransform));
+    }
+};
+
+struct v1replayKeyFrame {
     float rightSaberPosX;
     float rightSaberPosY;
     float rightSaberPosZ;
@@ -82,37 +119,55 @@ struct replayKeyFrame {
     int rank;
     int combo;
     float time;
+};
+
+struct replayKeyFrame {
+    playerTransformData playerData;
+
+    int score;
+    float percent;
+    int rank;
+    int combo;
+    float time;
+    float jumpYOffset;
 
     void Write(std::ofstream& writer) const {
-        writer.write(reinterpret_cast<const char*>(&rightSaberPosX), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&rightSaberPosY), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&rightSaberPosZ), sizeof(float));
-        
-        writer.write(reinterpret_cast<const char*>(&rightSaberRotX), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&rightSaberRotY), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&rightSaberRotZ), sizeof(float));
-        
-        writer.write(reinterpret_cast<const char*>(&leftSaberPosX), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&leftSaberPosY), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&leftSaberPosZ), sizeof(float));
-        
-        writer.write(reinterpret_cast<const char*>(&leftSaberRotX), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&leftSaberRotY), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&leftSaberRotZ), sizeof(float));
-        
-        writer.write(reinterpret_cast<const char*>(&headPosX), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&headPosY), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&headPosZ), sizeof(float));
-        
-        writer.write(reinterpret_cast<const char*>(&headRotX), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&headRotY), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&headRotZ), sizeof(float));
+        playerData.Write(writer);
         
         writer.write(reinterpret_cast<const char*>(&score), sizeof(int));
         writer.write(reinterpret_cast<const char*>(&percent), sizeof(float));
         writer.write(reinterpret_cast<const char*>(&rank), sizeof(int));
         writer.write(reinterpret_cast<const char*>(&combo), sizeof(int));
         writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
+        writer.write(reinterpret_cast<const char*>(&jumpYOffset), sizeof(float));
+    }
+};
+
+struct replayBools {
+    bool batteryEnergy;
+    bool disappearingArrows;
+    bool noObstacles;
+    bool noBombs;
+    bool noArrows;
+    bool slowerSong;
+    bool noFail;
+    bool instafail;
+    bool ghostNotes;
+    bool fasterSong;
+    bool leftHanded;
+
+    void Write(std::ofstream& writer) const {
+        writer.write(reinterpret_cast<const char*>(&instafail), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&batteryEnergy), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&ghostNotes), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&disappearingArrows), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&fasterSong), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&noFail), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&noBombs), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&noObstacles), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&noArrows), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&slowerSong), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&leftHanded), sizeof(bool));
     }
 };
 
@@ -228,17 +283,7 @@ std::string songHash;
 
 std::string replayDirectory = "sdcard/Android/data/com.beatgames.beatsaber/files/replays/";
 
-bool batteryEnergy = false;
-bool disappearingArrows = false;
-bool noObstacles = false;
-bool noBombs = false;
-bool noArrows = false;
-bool slowerSong = false;
-bool noFail = false;
-bool instafail = false;
-bool ghostNotes = false;
-bool fasterSong = false;
-bool leftHanded = false;
+replayBools replaySaveBools;
 
 float jumpYOffset;
 bool gotJumpYOffset = false;
@@ -297,15 +342,13 @@ UnityEngine::GameObject* customAvatar = nullptr;
 UnityEngine::GameObject* playerAvatar = nullptr;
 UnityEngine::GameObject* customCamera = nullptr;
 
-int offset = -1;
+int offset = 0;
 
 bool installedQosmeticsHook = false;
 
 bool letChangeSpeed = false;
 
 UnityEngine::Transform* headFollowTransform;
-
-UnityEngine::Camera* mainCameraTest = nullptr;
 
 std::string fileExtensionName = ".questReplayFileForQuestDontTryOnPcAlsoPinkEraAndLillieAreCuteBtwWilliamGay";
 unsigned char fileHeader[3] = {
@@ -346,7 +389,7 @@ void SaveConfig() {
         getConfig().config.AddMember("FullComboOverwrites", false, allocator);
         getConfig().config.AddMember("DisableVibration", true, allocator);
         getConfig().config.AddMember("Avatars", false, allocator);
-        getConfig().config.AddMember("SaberTimeOffset", -1, allocator);
+        getConfig().config.AddMember("SaberTimeOffset", offset, allocator);
 
         getConfig().Write();
     } else {
@@ -368,19 +411,7 @@ void createReplayFile(std::string songHashID) {
         log("Writing version number");
         output.write(reinterpret_cast<const char*>(&fileVersion), sizeof(int));
 
-        output.write(reinterpret_cast<const char*>(&jumpYOffset), sizeof(float));
-
-        output.write(reinterpret_cast<const char*>(&instafail), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&batteryEnergy), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&ghostNotes), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&disappearingArrows), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&fasterSong), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&noFail), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&noBombs), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&noObstacles), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&noArrows), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&slowerSong), sizeof(bool));
-        output.write(reinterpret_cast<const char*>(&leftHanded), sizeof(bool));
+        output.write(reinterpret_cast<const char*>(&replaySaveBools), sizeof(replayBools));
 
         for(const auto& item : dataToSave) {
             item.Write(output);
@@ -400,8 +431,6 @@ void getReplayValues(std::string songHashID) {
     if(input.is_open()) {
         log("Successfully opened replay file at: "+replayDirectory+songHashID+fileExtensionName);
 
-        replayKeyFrame keyFrameData;
-
         bool isCorrectHeader = true;
         unsigned char headerBytes[3];
         for(int i = 0; i < 3; i++) {
@@ -417,41 +446,32 @@ void getReplayValues(std::string songHashID) {
         }
 
         log("File version is "+std::to_string(openedFileVersion));
+
+        replayKeyFrame keyFrameData;
         
         if(openedFileVersion == 1) {
             gotJumpYOffset = false;
-            instafail = headerBytes[0];
-            batteryEnergy = headerBytes[1];
-            ghostNotes = headerBytes[2];
-            input.read(reinterpret_cast<char*>(&disappearingArrows), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&fasterSong), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noFail), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noBombs), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noObstacles), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noArrows), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&slowerSong), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&leftHanded), sizeof(bool));
+            replaySaveBools.instafail = headerBytes[0];
+            replaySaveBools.batteryEnergy = headerBytes[1];
+            replaySaveBools.ghostNotes = headerBytes[2];
+            input.read(reinterpret_cast<char*>(&replaySaveBools.disappearingArrows), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.fasterSong), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.noFail), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.noBombs), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.noObstacles), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.noArrows), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.slowerSong), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools.leftHanded), sizeof(bool));
 
-            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(replayKeyFrame))) {
-                replayData.push_back(keyFrameData);            
+            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(v1replayKeyFrame))) {
+                keyFrameData.jumpYOffset = 0;
+                replayData.push_back(keyFrameData);
             }
         } else if(openedFileVersion == 2) {
-            input.read(reinterpret_cast<char*>(&jumpYOffset), sizeof(float));
-            gotJumpYOffset = true;
-            input.read(reinterpret_cast<char*>(&instafail), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&batteryEnergy), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&ghostNotes), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&disappearingArrows), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&fasterSong), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noFail), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noBombs), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noObstacles), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&noArrows), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&slowerSong), sizeof(bool));
-            input.read(reinterpret_cast<char*>(&leftHanded), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(replayBools));
 
             while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(replayKeyFrame))) {
-                replayData.push_back(keyFrameData);            
+                replayData.push_back(keyFrameData);
             }
         } else {
             log("Could not find way to use file version");
@@ -588,38 +608,38 @@ bool saveRecording(LevelCompletionResults* levelCompletionResults, bool practice
 
 void getModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificSettings) {
     log("Getting modifiers and player settings");
-    disappearingArrows = *RunMethod<bool>(gameplayModifiers, "get_disappearingArrows");
-    ghostNotes = *RunMethod<bool>(gameplayModifiers, "get_ghostNotes");
-    instafail = *RunMethod<bool>(gameplayModifiers, "get_instaFail");
-    noArrows = *RunMethod<bool>(gameplayModifiers, "get_noArrows");
-    noBombs = *RunMethod<bool>(gameplayModifiers, "get_noBombs");
-    noFail = *RunMethod<bool>(gameplayModifiers, "get_noFail");
-    leftHanded = *RunMethod<bool>(playerSpecificSettings, "get_leftHanded");
+    replaySaveBools.disappearingArrows = *RunMethod<bool>(gameplayModifiers, "get_disappearingArrows");
+    replaySaveBools.ghostNotes = *RunMethod<bool>(gameplayModifiers, "get_ghostNotes");
+    replaySaveBools.instafail = *RunMethod<bool>(gameplayModifiers, "get_instaFail");
+    replaySaveBools.noArrows = *RunMethod<bool>(gameplayModifiers, "get_noArrows");
+    replaySaveBools.noBombs = *RunMethod<bool>(gameplayModifiers, "get_noBombs");
+    replaySaveBools.noFail = *RunMethod<bool>(gameplayModifiers, "get_noFail");
+    replaySaveBools.leftHanded = *RunMethod<bool>(playerSpecificSettings, "get_leftHanded");
 
     int songSpeedLevel = *RunMethod<int>(gameplayModifiers, "get_songSpeed");
-    slowerSong = false;
-    fasterSong = false;
+    replaySaveBools.slowerSong = false;
+    replaySaveBools.fasterSong = false;
     if(songSpeedLevel == 1) {
-        fasterSong = true;
+        replaySaveBools.fasterSong = true;
     } else if(songSpeedLevel == 2) {
-        slowerSong = true;
+        replaySaveBools.slowerSong = true;
     }
 
     int obstacleNum = *RunMethod<int>(gameplayModifiers, "get_enabledObstacleType");
     if(obstacleNum == 2) {
-        noObstacles = true;
+        replaySaveBools.noObstacles = true;
     } else {
-        noObstacles = false;
+        replaySaveBools.noObstacles = false;
     }
 
     int energyNum = *RunMethod<int>(gameplayModifiers, "get_energyType");
     if(energyNum == 1) {
-        batteryEnergy = true;
+        replaySaveBools.batteryEnergy = true;
     } else {
-        batteryEnergy = false;
+        replaySaveBools.batteryEnergy = false;
     }
 
-    log("Modifiers are "+std::to_string(batteryEnergy)+" "+std::to_string(disappearingArrows)+" "+std::to_string(ghostNotes)+" "+std::to_string(instafail)+" "+std::to_string(noArrows)+" "+std::to_string(noBombs)+" "+std::to_string(noFail)+" "+std::to_string(noObstacles)+" "+std::to_string(leftHanded)+" "+std::to_string(fasterSong)+" "+std::to_string(slowerSong));
+    log("Modifiers are "+std::to_string(replaySaveBools.batteryEnergy)+" "+std::to_string(replaySaveBools.disappearingArrows)+" "+std::to_string(replaySaveBools.ghostNotes)+" "+std::to_string(replaySaveBools.instafail)+" "+std::to_string(replaySaveBools.noArrows)+" "+std::to_string(replaySaveBools.noBombs)+" "+std::to_string(replaySaveBools.noFail)+" "+std::to_string(replaySaveBools.noObstacles)+" "+std::to_string(replaySaveBools.leftHanded)+" "+std::to_string(replaySaveBools.fasterSong)+" "+std::to_string(replaySaveBools.slowerSong));
 }
 
 MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
@@ -647,17 +667,23 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
         
         CRASH_UNLESS(SetFieldValue(self, "_overrideHeadPos", false));
 
+        playerTransformData playerTransform {
+            eulerAngleTransform {
+                rightSaberPos,
+                rightSaberRot
+            },
+            eulerAngleTransform {
+                leftSaberPos,
+                leftSaberRot,
+            },
+            eulerAngleTransform {
+                headPos,
+                headRot
+            }
+        };
+
         dataToSave.push_back({
-            rightSaberPos.x, rightSaberPos.y, rightSaberPos.z,
-            rightSaberRot.x, rightSaberRot.y, rightSaberRot.z,
-
-            leftSaberPos.x, leftSaberPos.y, leftSaberPos.z,
-            leftSaberRot.x, leftSaberRot.y, leftSaberRot.z,
-
-            headPos.x, headPos.y, headPos.z,
-            headRot.x, headRot.y, headRot.z,
-
-            score, percent, rank, combo, songTime
+            playerTransform, score, percent, rank, combo, songTime, jumpYOffset
         });
     } else {
         bool foundCorrectIndex = false;
@@ -674,9 +700,9 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
         }
 
         CRASH_UNLESS(SetFieldValue(self, "_overrideHeadPos", true));
-        SetFieldValue(self, "_overridenHeadPos", UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
-        SetFieldValue(self, "_headPos", UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
-        RunMethod(*GetFieldValue<Il2CppObject*>(self, "_headTransform"), "set_localPosition", Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
+        SetFieldValue(self, "_overridenHeadPos", replayData[indexNum].playerData.head.pos);
+        SetFieldValue(self, "_headPos", replayData[indexNum].playerData.head.pos);
+        RunMethod(*GetFieldValue<Il2CppObject*>(self, "_headTransform"), "set_localPosition", replayData[indexNum].playerData.head.pos);
     }
 
     PlayerController_Update(self);
@@ -713,19 +739,20 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
         float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
 
         if(saberType == 0) {
-            lerpedLeftHandPosition = UnityEngine::Vector3::Lerp(UnityEngine::Vector3{replayData[offsetIndex].leftSaberPosX, replayData[offsetIndex].leftSaberPosY, replayData[offsetIndex].leftSaberPosZ}, UnityEngine::Vector3{replayData[nextOffsetIndex].leftSaberPosX, replayData[nextOffsetIndex].leftSaberPosY, replayData[nextOffsetIndex].leftSaberPosZ}, lerpAmount);
+            lerpedLeftHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.leftSaber.pos, replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
             self->get_transform()->set_position(lerpedLeftHandPosition);
 
-            lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].leftSaberRotX, replayData[offsetIndex].leftSaberRotY, replayData[offsetIndex].leftSaberRotZ), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].leftSaberRotX, replayData[nextOffsetIndex].leftSaberRotY, replayData[nextOffsetIndex].leftSaberRotZ), lerpAmount);
+            lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x, replayData[offsetIndex].playerData.leftSaber.rot.y, replayData[offsetIndex].playerData.leftSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x, replayData[nextOffsetIndex].playerData.leftSaber.rot.y, replayData[nextOffsetIndex].playerData.leftSaber.rot.z), lerpAmount);
             self->get_transform()->set_rotation(lerpedLeftHandRotation);
 
             leftSaberTransformCache = self->get_transform();
         } else {
-            lerpedRightHandPosition = UnityEngine::Vector3::Lerp(UnityEngine::Vector3{replayData[offsetIndex].rightSaberPosX, replayData[offsetIndex].rightSaberPosY, replayData[offsetIndex].rightSaberPosZ}, UnityEngine::Vector3{replayData[nextOffsetIndex].rightSaberPosX, replayData[nextOffsetIndex].rightSaberPosY, replayData[nextOffsetIndex].rightSaberPosZ}, lerpAmount);
+            lerpedRightHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.rightSaber.pos, replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
             self->get_transform()->set_position(lerpedRightHandPosition);
 
-            lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].rightSaberRotX, replayData[offsetIndex].rightSaberRotY, replayData[offsetIndex].rightSaberRotZ), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].rightSaberRotX, replayData[nextOffsetIndex].rightSaberRotY, replayData[nextOffsetIndex].rightSaberRotZ), lerpAmount);
+            lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x, replayData[offsetIndex].playerData.rightSaber.rot.y, replayData[offsetIndex].playerData.rightSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x, replayData[nextOffsetIndex].playerData.rightSaber.rot.y, replayData[nextOffsetIndex].playerData.rightSaber.rot.z), lerpAmount);
             self->get_transform()->set_rotation(lerpedRightHandRotation);
+            log("right hand rotation is", lerpedRightHandRotation);
 
             rightSaberTransformCache = self->get_transform();
         }
@@ -738,8 +765,8 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
             float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
 
-            smoothHeadPosition = UnityEngine::Vector3::Lerp(smoothHeadPosition, UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ}, deltaTime * 12);
-            smoothHeadRotation = UnityEngine::Quaternion::Slerp(smoothHeadRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].headRotX, replayData[indexNum].headRotY, replayData[indexNum].headRotZ), deltaTime * 12);
+            smoothHeadPosition = UnityEngine::Vector3::Lerp(smoothHeadPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, deltaTime * 12);
+            smoothHeadRotation = UnityEngine::Quaternion::Slerp(smoothHeadRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * 12);
             
             poseController->UpdateTransforms(
                 smoothHeadPosition, 
@@ -757,13 +784,14 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
 MAKE_HOOK_OFFSETLESS(BeatmapObjectSpawnMovementData_Update, void, Il2CppObject* self, float bpm, float jumpOffsetY) {
     
-    // log("SongUpdate");
+    // log("BeatmapObjectSpawnMovementData_Update");
 
     if(recording) {
         jumpYOffset = jumpOffsetY;
     } else if(gotJumpYOffset) {
-        jumpOffsetY = jumpYOffset;
+        jumpOffsetY = replayData[indexNum].jumpYOffset;
     }
+    log("Jump Y offset is "+std::to_string(jumpOffsetY));
 
     BeatmapObjectSpawnMovementData_Update(self, bpm, jumpOffsetY);
 }
@@ -842,31 +870,31 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
             getReplayValues(songHash);
         }
 
-        SetFieldValue(gameplayModifiers, "_disappearingArrows", disappearingArrows);
-        SetFieldValue(gameplayModifiers, "_ghostNotes", ghostNotes);
-        SetFieldValue(gameplayModifiers, "_instaFail", instafail);
-        SetFieldValue(gameplayModifiers, "_noArrows", noArrows);
-        SetFieldValue(gameplayModifiers, "_noBombs", noBombs);
-        SetFieldValue(gameplayModifiers, "_noFail", noFail);
-        SetFieldValue(playerSpecificSettings, "_leftHanded", leftHanded);
+        SetFieldValue(gameplayModifiers, "_disappearingArrows", replaySaveBools.disappearingArrows);
+        SetFieldValue(gameplayModifiers, "_ghostNotes", replaySaveBools.ghostNotes);
+        SetFieldValue(gameplayModifiers, "_instaFail", replaySaveBools.instafail);
+        SetFieldValue(gameplayModifiers, "_noArrows", replaySaveBools.noArrows);
+        SetFieldValue(gameplayModifiers, "_noBombs", replaySaveBools.noBombs);
+        SetFieldValue(gameplayModifiers, "_noFail", replaySaveBools.noFail);
+        SetFieldValue(playerSpecificSettings, "_leftHanded", replaySaveBools.leftHanded);
         
         reduceDebris = *GetFieldValue<bool>(playerSpecificSettings, "_reduceDebris");
 
-        if(batteryEnergy) {
+        if(replaySaveBools.batteryEnergy) {
             SetFieldValue(gameplayModifiers, "_energyType", 1);
         } else {
             SetFieldValue(gameplayModifiers, "_energyType", 0);
         }
 
-        if(noObstacles) {
+        if(replaySaveBools.noObstacles) {
             SetFieldValue(gameplayModifiers, "_enabledObstacleType", 2);
         } else {
             SetFieldValue(gameplayModifiers, "_enabledObstacleType", 0);
         }
 
-        if(fasterSong) {
+        if(replaySaveBools.fasterSong) {
             SetFieldValue(gameplayModifiers, "_songSpeed", 1);
-        } else if(slowerSong) {
+        } else if(replaySaveBools.slowerSong) {
             SetFieldValue(gameplayModifiers, "_songSpeed", 2);
         } else {
             SetFieldValue(gameplayModifiers, "_songSpeed", 0);
@@ -908,23 +936,13 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
 
     StandardLevelDetailView_RefreshContent(self);
 
-    playButton = *GetFieldValue(self, "_actionButton");
-    
-    UnityEngine::Transform* playButtonTransform = *RunMethod<UnityEngine::Transform*>(playButton, "get_transform");
-     
-    if(!inMulti) {
-        UnityEngine::RectTransform* rectTransform = playButtonTransform->GetParent()->GetParent()->GetParent()->get_gameObject()->GetComponent<UnityEngine::RectTransform*>();
-        UnityEngine::Object::Destroy(playButtonTransform->GetParent()->GetParent()->GetParent()->get_gameObject()->GetComponent<LayoutElement*>());
-        rectTransform->set_offsetMin(UnityEngine::Vector2(4.5f, -48.0f));
-        rectTransform->set_offsetMax(UnityEngine::Vector2(74.5f, 28.0f));
-        UnityEngine::Vector3 test = rectTransform->get_transform()->get_position();
-        log("test "+std::to_string(test.x)+" "+std::to_string(test.y)+" "+std::to_string(test.z)+" ");
-    }
-
     if(!inSongOrResults) {
         recording = true;
     }
 
+    playButton = *GetFieldValue(self, "_actionButton");    
+    UnityEngine::Transform* playButtonTransform = *RunMethod<UnityEngine::Transform*>(playButton, "get_transform");
+    
     Il2CppObject* Level = CRASH_UNLESS(*GetFieldValue(self, "_level"));
     Il2CppString* LevelID = CRASH_UNLESS(*GetPropertyValue<Il2CppString*>(Level, "levelID"));
 
@@ -934,7 +952,6 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
     Il2CppObject* parentDifficultyBeatmapSet = CRASH_UNLESS(*GetPropertyValue(SelectedBeatmapDifficulty, "parentDifficultyBeatmapSet"));
     Il2CppObject* beatmapCharacteristic = CRASH_UNLESS(*GetPropertyValue(parentDifficultyBeatmapSet, "beatmapCharacteristic"));
     std::string modeName = to_utf8(csstrtostr(*GetFieldValue<Il2CppString*>(beatmapCharacteristic, "_compoundIdPartName")));
-    log("Mode name is "+modeName);
 
     Il2CppObject* PlayerData = CRASH_UNLESS(*GetFieldValue(self, "_playerData"));
     Il2CppObject* playerLevelStatsData = CRASH_UNLESS(*RunMethod(PlayerData, "GetPlayerLevelStatsData", LevelID, Difficulty, beatmapCharacteristic));
@@ -946,12 +963,10 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
         warningText = nullptr;
     }
     if(cameraToggle != nullptr) {
-        log("Destroying camera toggle");
         UnityEngine::GameObject::Destroy(cameraToggle->get_gameObject());
         cameraToggle = nullptr;
     }
     if(replayButton != nullptr) {
-        log("Destroying replay button");
         UnityEngine::GameObject::Destroy(replayButton->get_gameObject());
         replayButton = nullptr;
     }
@@ -1001,6 +1016,24 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
     Il2CppObject* songNameText = *GetFieldValue(*GetFieldValue(self, "_levelBar"), "_songNameText");
     songName = to_utf8(csstrtostr(*RunMethod<Il2CppString*>(songNameText, "get_text")));
     log("Song name is "+songName);
+}
+
+MAKE_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, void, Il2CppObject* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+    
+    log("View Controller did activate");
+
+    StandardLevelDetailViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
+
+    playButton = *GetFieldValue(*GetFieldValue(self, "_standardLevelDetailView"), "_actionButton");
+    
+    UnityEngine::Transform* playButtonTransform = *RunMethod<UnityEngine::Transform*>(playButton, "get_transform");
+     
+    if(!inMulti) {
+        UnityEngine::RectTransform* rectTransform = playButtonTransform->GetParent()->GetParent()->GetParent()->get_gameObject()->GetComponent<UnityEngine::RectTransform*>();
+        rectTransform->set_localScale(UnityEngine::Vector3{1, 2, 1});
+        playButtonTransform->GetParent()->GetParent()->set_localScale(UnityEngine::Vector3{1, 0.5f, 1});
+        playButtonTransform->GetParent()->GetParent()->set_localPosition(UnityEngine::Vector3{0, 13.7f, 0});
+    }
 }
 
 MAKE_HOOK_OFFSETLESS(HandleLevelFailed, void, Il2CppObject* self) {
@@ -1236,8 +1269,8 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             if(cameraToggleString == "smooth") {
                 float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
 
-                smoothCameraPosition = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ}, deltaTime * positionSmooth);
-                smoothCameraRotation = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Slerp", smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].headRotX, replayData[indexNum].headRotY, replayData[indexNum].headRotZ), deltaTime * rotationSmooth);
+                smoothCameraPosition = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, deltaTime * positionSmooth);
+                smoothCameraRotation = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Slerp", smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
 
                 RunMethod(mainCameraTransform, "SetPositionAndRotation", addVector3(smoothCameraPosition, smoothPositionOffset), smoothCameraRotation);
             } else if(cameraToggleString == "thirdPerson") {
@@ -1247,7 +1280,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                     float camZ = cos(songTime/2.5f)*-2-2.5f;
                     RunMethod(mainCameraTransform, "set_position", UnityEngine::Vector3{camX, 2.5f, camZ});
 
-                    headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].headPosX, replayData[indexNum].headPosY, replayData[indexNum].headPosZ});
+                    headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z});
 
                     RunMethod(mainCameraTransform, "LookAt", headFollowTransform);
                 } else {
@@ -1369,6 +1402,15 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, Il2CppObject* self, Globa
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }
 
+MAKE_HOOK_OFFSETLESS(ResultsViewController_ContinueButtonPressed, void, Il2CppObject* self) {
+    
+    log("ResultsViewController_ContinueButtonPressed");
+
+    ResultsViewController_ContinueButtonPressed(self);
+
+    recording = true;
+}
+
 MAKE_HOOK_OFFSETLESS(NoteWasMissed, void, Il2CppObject* self) {
 
     if(!recording && hasFakeMiss()) {
@@ -1483,6 +1525,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(Saber_ManualUpdate, il2cpp_utils::FindMethodUnsafe("", "Saber", "ManualUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
     INSTALL_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
+    INSTALL_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "DidActivate", 3));
     INSTALL_HOOK_OFFSETLESS(HandleLevelFailed, il2cpp_utils::FindMethodUnsafe("", "StandardLevelFailedController", "HandleLevelFailed", 0));
     INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
@@ -1498,6 +1541,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(HapticFeedbackController_Rumble, il2cpp_utils::FindMethodUnsafe("", "HapticFeedbackController", "PlayHapticFeedback", 2));
     INSTALL_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "SetDataToUI", 0));
     INSTALL_HOOK_OFFSETLESS(ResultsViewController_Init, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "Init", 4));
+    INSTALL_HOOK_OFFSETLESS(ResultsViewController_ContinueButtonPressed, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "ContinueButtonPressed", 0));
     INSTALL_HOOK_OFFSETLESS(NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
     INSTALL_HOOK_OFFSETLESS(NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent", 1));
     INSTALL_HOOK_OFFSETLESS(NoteDebrisSpawner_SpawnDebris, il2cpp_utils::FindMethodUnsafe("", "NoteDebrisSpawner", "SpawnDebris", 9));
