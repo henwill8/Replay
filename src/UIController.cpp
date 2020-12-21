@@ -74,7 +74,7 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
             getConfig().config["FullComboOverwrites"].GetBool(),
             il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleFCOverwrite)
         );
-		QuestUI::BeatSaberUI::AddHoverHint(FCToggle->get_gameObject(), "FC-ing a map will overwrite any existing replay");
+		QuestUI::BeatSaberUI::AddHoverHint(FCToggle->get_gameObject(), "Full combo-ing a map will overwrite any existing replay");
 		// FCToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
 
         Toggle* CircularToggle = BeatSaberUI::CreateToggle(

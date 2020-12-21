@@ -1498,7 +1498,7 @@ MAKE_HOOK_OFFSETLESS(MultiplayerLevelFinishedController_HandlePlayerDidFinish, v
 
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
-    info.version = "0.3.0";
+    info.version = "0.4.0";
     modInfo = info;
     // Create logger
     static std::unique_ptr<const Logger> ptr(new Logger(info));
