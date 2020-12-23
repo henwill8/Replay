@@ -2,6 +2,7 @@
 #include "main.hpp"
 #include "codegen.hpp"
 #include "UI.hpp"
+#include "logging.hpp"
 #include "../extern/beatsaber-hook/shared/utils/utils.h"
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
 #include "../extern/modloader/shared/modloader.hpp"
@@ -24,6 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cmath>
+#include <limits>
 #include <math.h> 
 #include <fstream>
 
@@ -38,28 +40,6 @@ Configuration& getConfig() {
     static Configuration config(modInfo);
     config.Load();
     return config;
-}
-
-void log(std::string str) {
-    Logger::get().info("Replay: " + str);
-}
-void log(std::string baseStr, UnityEngine::Vector2 vector) {
-    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y));
-}
-void log(std::string baseStr, UnityEngine::Vector3 vector) {
-    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y)+" "+std::to_string(vector.z));
-}
-void log(std::string baseStr, Vector2 vector) {
-    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y));
-}
-void log(std::string baseStr, Vector3 vector) {
-    log(baseStr+" "+std::to_string(vector.x)+" "+std::to_string(vector.y)+" "+std::to_string(vector.z));
-}
-void log(std::string baseStr, Quaternion quaternion) {
-    log(baseStr+" "+std::to_string(quaternion.x)+" "+std::to_string(quaternion.y)+" "+std::to_string(quaternion.z)+" "+std::to_string(quaternion.w));
-}
-void log(std::string baseStr, UnityEngine::Quaternion quaternion) {
-    log(baseStr+" "+std::to_string(quaternion.x)+" "+std::to_string(quaternion.y)+" "+std::to_string(quaternion.z)+" "+std::to_string(quaternion.w));
 }
 
 int clip(int n, int lower, int upper) {
@@ -271,17 +251,13 @@ void speedToggleOnClick(bool newValue) {
 float songTime = 0.0f;
 
 int score;
+int maxRawScore;
 float percent;
 int rank;
 float scoreMultiplier = 1.0f;
-
 int combo = 0;
 
 int indexNum = 0;
-
-std::string songHash;
-
-std::string replayDirectory = "sdcard/Android/data/com.beatgames.beatsaber/files/replays/";
 
 replayBools replaySaveBools;
 
@@ -296,16 +272,13 @@ float lTriggerVal;
 
 bool inPauseMenu = false;
 bool inResumeAnimation = false;
-bool inMulti = false;
 
-int amountPerLine = 23;
+bool inMulti = false;
 
 float replaySpeed = 1.0f;
 
-std::string songName = "";
-
-Quaternion smoothCameraRotation;
-Vector3 smoothCameraPosition;
+UnityEngine::Quaternion smoothCameraRotation;
+UnityEngine::Vector3 smoothCameraPosition;
 
 UnityEngine::Vector3 smoothHeadPosition;
 UnityEngine::Quaternion smoothHeadRotation;
@@ -313,7 +286,7 @@ UnityEngine::Quaternion smoothHeadRotation;
 float positionSmooth;
 float rotationSmooth;
 
-Vector3 smoothPositionOffset;
+UnityEngine::Vector3 smoothPositionOffset;
 
 Vector3 thirdPersonCamPos;
 UnityEngine::Quaternion thirdPersonCamRot;
@@ -322,8 +295,6 @@ UnityEngine::Quaternion newThirdPersonCamRot;
 Vector3 basePrevPos;
 UnityEngine::Vector3 basePrevRot;
 bool pressedThirdPersonMoveButton = false;
-
-int maxRawScore;
 
 Vector3 rightSaberPos;
 Vector3 rightSaberRot;
@@ -350,6 +321,9 @@ bool letChangeSpeed = false;
 
 UnityEngine::Transform* headFollowTransform;
 
+std::string songHash;
+std::string songName = "";
+std::string replayDirectory = "sdcard/Android/data/com.beatgames.beatsaber/files/replays/";
 std::string fileExtensionName = ".questReplayFileForQuestDontTryOnPcAlsoPinkEraAndLillieAreCuteBtwWilliamGay";
 unsigned char fileHeader[3] = {
     0xa1, 0xd2, 0x45
@@ -468,6 +442,7 @@ void getReplayValues(std::string songHashID) {
                 replayData.push_back(keyFrameData);
             }
         } else if(openedFileVersion == 2) {
+            gotJumpYOffset = true;
             input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(replayBools));
 
             while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(replayKeyFrame))) {
@@ -493,6 +468,22 @@ bool hasFakeMiss() {
     }
 
     return true;
+}
+
+float closestRealOffset() {
+    int amountCheckingEachSide = 10;
+    float offset = -1;
+    int distance = 100;
+
+    for(int i = -amountCheckingEachSide; i < (amountCheckingEachSide*2)+1; i++) {
+        int clippedIndex = clip(indexNum+i, 0, replayData.size()-1);
+        if(replayData[clippedIndex].jumpYOffset != -1 && i < distance) {
+            offset = replayData[clippedIndex].jumpYOffset;
+            distance = i;
+        }
+    }
+    
+    return offset;
 }
 
 UnityEngine::GameObject* FindObject(std::string name) {
@@ -596,8 +587,31 @@ bool saveRecording(LevelCompletionResults* levelCompletionResults, bool practice
             createReplayFile(songHash);
             return true;
         } else {
+            replayBools tempBools = replaySaveBools;
+
             getReplayValues(songHash);
-            if(score > replayData[replayData.size()-1].score) {
+            
+            int energy = 0;
+            if(replaySaveBools.batteryEnergy) {
+                energy = 1;
+            }
+
+            int obstacles = 0;
+            if(replaySaveBools.noObstacles) {
+                obstacles = 2;
+            }
+
+            int speed = 0;
+            if(replaySaveBools.fasterSong) {
+                speed = 1;
+            } else if(replaySaveBools.slowerSong) {
+                speed = 2;
+            }
+
+            int oldModifiedScore = std::floor(replayData[replayData.size()-1].score * GameplayModifiersModelSO::New_ctor()->GetTotalMultiplier(GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.instafail, false, obstacles, replaySaveBools.noBombs, false, false, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes)));
+            int newModifiedScore = std::floor(replayData[replayData.size()-1].score * scoreMultiplier);
+            if(newModifiedScore > oldModifiedScore) {
+                replaySaveBools = tempBools;
                 createReplayFile(songHash);
                 return true;
             }
@@ -644,11 +658,24 @@ void getModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificS
 
 MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
     if(!recording) {
+        int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
+        int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
+
+        int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
+        int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+
+        float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
         if(leftSaberTransformCache != nullptr) {
+            lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x, replayData[offsetIndex].playerData.leftSaber.rot.y, replayData[offsetIndex].playerData.leftSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x, replayData[nextOffsetIndex].playerData.leftSaber.rot.y, replayData[nextOffsetIndex].playerData.leftSaber.rot.z), lerpAmount);
+            lerpedLeftHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.leftSaber.pos, replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
+            
             leftSaberTransformCache->set_position(lerpedLeftHandPosition);
             leftSaberTransformCache->set_rotation(lerpedLeftHandRotation);
         }
         if(rightSaberTransformCache != nullptr) {
+            lerpedRightHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.rightSaber.pos, replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
+            lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x, replayData[offsetIndex].playerData.rightSaber.rot.y, replayData[offsetIndex].playerData.rightSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x, replayData[nextOffsetIndex].playerData.rightSaber.rot.y, replayData[nextOffsetIndex].playerData.rightSaber.rot.z), lerpAmount);
+            
             rightSaberTransformCache->set_position(lerpedRightHandPosition);
             rightSaberTransformCache->set_rotation(lerpedRightHandRotation);
         }
@@ -664,8 +691,6 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
     if(recording) {
         Vector3 headPos = *GetFieldValue<Vector3>(self, "_headPos");
         Vector3 headRot = *RunMethod<Vector3>(*GetFieldValue<Il2CppObject*>(self, "_headTransform"), "get_eulerAngles");
-        
-        CRASH_UNLESS(SetFieldValue(self, "_overrideHeadPos", false));
 
         playerTransformData playerTransform {
             eulerAngleTransform {
@@ -685,6 +710,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
         dataToSave.push_back({
             playerTransform, score, percent, rank, combo, songTime, jumpYOffset
         });
+        jumpYOffset = -1;
     } else {
         bool foundCorrectIndex = false;
         while(!foundCorrectIndex) {
@@ -699,8 +725,6 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
             }
         }
 
-        CRASH_UNLESS(SetFieldValue(self, "_overrideHeadPos", true));
-        SetFieldValue(self, "_overridenHeadPos", replayData[indexNum].playerData.head.pos);
         SetFieldValue(self, "_headPos", replayData[indexNum].playerData.head.pos);
         RunMethod(*GetFieldValue<Il2CppObject*>(self, "_headTransform"), "set_localPosition", replayData[indexNum].playerData.head.pos);
     }
@@ -730,33 +754,47 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
             INSTALL_HOOK_OFFSETLESS(QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
             installedQosmeticsHook = true;
         }
-        int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
-        int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
 
-        int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
-        int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+        int offsetIndex;
+        int nextOffsetIndex;
 
-        float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
+        int lerpOffsetIndex;
+        int lerpNextOffsetIndex;
+
+        float lerpAmount;
+
+        if(!installedQosmeticsHook) {
+            int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
+            int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
+
+            int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
+            int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+
+            float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
+        }
 
         if(saberType == 0) {
-            lerpedLeftHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.leftSaber.pos, replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
-            self->get_transform()->set_position(lerpedLeftHandPosition);
-
-            lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x, replayData[offsetIndex].playerData.leftSaber.rot.y, replayData[offsetIndex].playerData.leftSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x, replayData[nextOffsetIndex].playerData.leftSaber.rot.y, replayData[nextOffsetIndex].playerData.leftSaber.rot.z), lerpAmount);
-            self->get_transform()->set_rotation(lerpedLeftHandRotation);
+            if(!installedQosmeticsHook) {
+                lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x, replayData[offsetIndex].playerData.leftSaber.rot.y, replayData[offsetIndex].playerData.leftSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x, replayData[nextOffsetIndex].playerData.leftSaber.rot.y, replayData[nextOffsetIndex].playerData.leftSaber.rot.z), lerpAmount);
+                lerpedLeftHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.leftSaber.pos, replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
+                
+                self->get_transform()->set_position(lerpedLeftHandPosition);
+                self->get_transform()->set_rotation(lerpedLeftHandRotation);
+            }
 
             leftSaberTransformCache = self->get_transform();
         } else {
-            lerpedRightHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.rightSaber.pos, replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
-            self->get_transform()->set_position(lerpedRightHandPosition);
-
-            lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x, replayData[offsetIndex].playerData.rightSaber.rot.y, replayData[offsetIndex].playerData.rightSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x, replayData[nextOffsetIndex].playerData.rightSaber.rot.y, replayData[nextOffsetIndex].playerData.rightSaber.rot.z), lerpAmount);
-            self->get_transform()->set_rotation(lerpedRightHandRotation);
-            log("right hand rotation is", lerpedRightHandRotation);
+            if(!installedQosmeticsHook) {
+                lerpedRightHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.rightSaber.pos, replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
+                lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x, replayData[offsetIndex].playerData.rightSaber.rot.y, replayData[offsetIndex].playerData.rightSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x, replayData[nextOffsetIndex].playerData.rightSaber.rot.y, replayData[nextOffsetIndex].playerData.rightSaber.rot.z), lerpAmount);
+                
+                self->get_transform()->set_position(lerpedRightHandPosition);
+                self->get_transform()->set_rotation(lerpedRightHandRotation);
+            }
 
             rightSaberTransformCache = self->get_transform();
         }
-        if(customAvatar != nullptr && cameraToggleString != "smooth" && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
+        if(customAvatar != nullptr && cameraToggleString == "thirdPerson" && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
             customAvatar->get_transform()->SetParent(self->get_transform()->GetParent()->GetParent()->GetParent());
             customAvatar->get_transform()->set_position(UnityEngine::Vector3{0, 0, 0});
             customAvatar->get_transform()->set_localScale(UnityEngine::Vector3{1, 1, 1});
@@ -789,9 +827,12 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectSpawnMovementData_Update, void, Il2CppObject* 
     if(recording) {
         jumpYOffset = jumpOffsetY;
     } else if(gotJumpYOffset) {
-        jumpOffsetY = replayData[indexNum].jumpYOffset;
+        float temp = closestRealOffset();
+        if(temp != -1) {
+            jumpOffsetY = temp;
+        }
     }
-    log("Jump Y offset is "+std::to_string(jumpOffsetY));
+    // log("Jump Y offset is "+std::to_string(jumpOffsetY));
 
     BeatmapObjectSpawnMovementData_Update(self, bpm, jumpOffsetY);
 }
@@ -905,7 +946,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         continueButton = nullptr;
         customCamera = nullptr;
 
-        if(cameraToggleString != "smooth" && getConfig().config["Avatars"].GetBool()) {
+        if(cameraToggleString == "thirdPerson" && getConfig().config["Avatars"].GetBool()) {
             customAvatar = UnityEngine::Object::Instantiate(playerAvatar);
             customAvatar->SetActive(false);
             UnityEngine::GameObject::SetName(customAvatar, createcsstr("CustomAvatar"));
@@ -1187,7 +1228,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
         //     }
         // }
 
-        if(customAvatar != nullptr && cameraToggleString != "smooth") customAvatar->SetActive(false);
+        if(customAvatar != nullptr && cameraToggleString == "thirdPerson") customAvatar->SetActive(false);
         if(customCamera != nullptr && cameraToggleString != "hmd") customCamera->SetActive(false);
     }
 }
@@ -1258,21 +1299,23 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             UnityEngine::Vector3 prevRot = *RunMethod<UnityEngine::Vector3>(mainCameraTransform, "get_eulerAngles");
             UnityEngine::Vector3 rotDifference = (oldPrevRot - prevRot);
             oldPrevRot = prevRot;
+            // log("difference is", rotDifference);
 
             if(cameraToggleString != "hmd") {
                 if(customCamera == nullptr) {
                     customCamera = UnityEngine::Object::Instantiate(cameraGO);
                 }
                 mainCameraTransform = *RunMethod<Il2CppObject*>(customCamera, "get_transform");
+                cameraGO = *RunMethod<UnityEngine::GameObject*>(customCamera, "get_gameObject");
             }
 
             if(cameraToggleString == "smooth") {
                 float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
 
-                smoothCameraPosition = *RunMethod<Vector3>("UnityEngine", "Vector3", "Lerp", smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, deltaTime * positionSmooth);
-                smoothCameraRotation = *RunMethod<Quaternion>("UnityEngine", "Quaternion", "Slerp", smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
+                smoothCameraPosition = UnityEngine::Vector3::Lerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, deltaTime * positionSmooth);
+                smoothCameraRotation = UnityEngine::Quaternion::Slerp(smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
 
-                RunMethod(mainCameraTransform, "SetPositionAndRotation", addVector3(smoothCameraPosition, smoothPositionOffset), smoothCameraRotation);
+                cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition + smoothPositionOffset, smoothCameraRotation);
             } else if(cameraToggleString == "thirdPerson") {
                 if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
                     float camX = sin(songTime/5)*6;
@@ -1306,8 +1349,8 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                             thirdPersonCamRot = newThirdPersonCamRot;
                         }
                         UnityEngine::Vector3 noShakeRot = thirdPersonCamRot.get_eulerAngles() + rotDifference;
-                        RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, UnityEngine::Quaternion::Euler(thirdPersonCamRot.get_eulerAngles() - (rotDifference*100)));
-                        // RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, thirdPersonCamRot);
+                        // RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, UnityEngine::Quaternion::Euler(thirdPersonCamRot.get_eulerAngles() - (rotDifference*100)));
+                        RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, thirdPersonCamRot);
                         
                         basePrevPos = prevPos;
                         basePrevRot = prevRot;
@@ -1555,7 +1598,7 @@ extern "C" void load() {
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
     rotationSmooth = getConfig().config["RotationSmooth"].GetFloat();
 
-    smoothPositionOffset = {getConfig().config["SmoothCameraOffset"]["x"].GetFloat(), getConfig().config["SmoothCameraOffset"]["y"].GetFloat(), getConfig().config["SmoothCameraOffset"]["z"].GetFloat()};
+    smoothPositionOffset = UnityEngine::Vector3{getConfig().config["SmoothCameraOffset"]["x"].GetFloat(), getConfig().config["SmoothCameraOffset"]["y"].GetFloat(), getConfig().config["SmoothCameraOffset"]["z"].GetFloat()};
 
     thirdPersonCamPos = {getConfig().config["ThirdPersonCameraPos"]["x"].GetFloat(), getConfig().config["ThirdPersonCameraPos"]["y"].GetFloat(), getConfig().config["ThirdPersonCameraPos"]["z"].GetFloat()};
     thirdPersonCamRot = *RunMethod<UnityEngine::Quaternion>("UnityEngine", "Quaternion", "Euler", getConfig().config["ThirdPersonCameraRot"]["x"].GetFloat(), getConfig().config["ThirdPersonCameraRot"]["y"].GetFloat(), getConfig().config["ThirdPersonCameraRot"]["z"].GetFloat());
