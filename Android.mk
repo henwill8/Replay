@@ -69,7 +69,7 @@ LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += bs-utils
 LOCAL_LDLIBS += -llog
-LOCAL_CFLAGS += -D"MOD_ID=\"replay\"" -D"VERSION=\"0.1.0\"" -I"C:\Program Files\Unity\Hub\Editor\2019.3.15f1\Editor\Data\il2cpp\libil2cpp" -DID='"replay"' -I'./shared' -I'./extern' -I'./extern/codegen/include'
+LOCAL_CFLAGS += -D"MOD_ID=\"replay\"" -D"VERSION=\"0.1.0\"" -I"extern/libil2cpp/il2cpp/libil2cpp" -DID='"replay"' -I'./shared' -I'./extern' -I'./extern/codegen/include'
 LOCAL_CPPFLAGS += -std=c++2a
 LOCAL_C_INCLUDES += ./include ./src
 LOCAL_CPP_FEATURES += exceptions
