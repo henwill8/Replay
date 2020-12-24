@@ -321,6 +321,8 @@ bool letChangeSpeed = false;
 
 UnityEngine::Transform* headFollowTransform;
 
+GameplayModifiersModelSO* modifiersModel = nullptr;
+
 std::string songHash;
 std::string songName = "";
 std::string replayDirectory = "sdcard/Android/data/com.beatgames.beatsaber/files/replays/";
@@ -583,24 +585,31 @@ Quaternion eulerToQuaternion(Vector3 euler) {
 
 bool saveRecording(LevelCompletionResults* levelCompletionResults, bool practice) {
     if(recording && levelCompletionResults->levelEndStateType == 1 && !practice) {
+        log("Level finished, trying to create replay file");
         if((!fileexists(replayDirectory+songHash+fileExtensionName)) || (levelCompletionResults->fullCombo && getConfig().config["FullComboOverwrites"].GetBool())) {
+            log("Creating replay as there are no existing replays");
             createReplayFile(songHash);
             return true;
         } else {
+            log("Checking if this is a higher score then previous");
+
             replayBools tempBools = replaySaveBools;
 
             getReplayValues(songHash);
-            
+
+            log("Getting energy type");
             int energy = 0;
             if(replaySaveBools.batteryEnergy) {
                 energy = 1;
             }
 
+            log("Getting obstacle type");
             int obstacles = 0;
             if(replaySaveBools.noObstacles) {
                 obstacles = 2;
             }
 
+            log("Getting song speed");
             int speed = 0;
             if(replaySaveBools.fasterSong) {
                 speed = 1;
@@ -608,8 +617,13 @@ bool saveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                 speed = 2;
             }
 
-            int oldModifiedScore = std::floor(replayData[replayData.size()-1].score * GameplayModifiersModelSO::New_ctor()->GetTotalMultiplier(GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.instafail, false, obstacles, replaySaveBools.noBombs, false, false, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes)));
-            int newModifiedScore = std::floor(replayData[replayData.size()-1].score * scoreMultiplier);
+            // log("Getting old score modifiers");
+            GameplayModifiers* oldScoreModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.instafail, false, obstacles, replaySaveBools.noBombs, false, false, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes);
+            // log("Getting old modified score");
+            int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, oldScoreModifiers);
+            // log("Getting new modified score");
+            int newModifiedScore = std::floor(float(score) * scoreMultiplier);
+            log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
             if(newModifiedScore > oldModifiedScore) {
                 replaySaveBools = tempBools;
                 createReplayFile(songHash);
@@ -1077,15 +1091,15 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, void, Il2Cpp
     }
 }
 
-MAKE_HOOK_OFFSETLESS(HandleLevelFailed, void, Il2CppObject* self) {
+MAKE_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, void, Il2CppObject* self, float value) {
     
-    log("HandleLevelFailed");
+    log("GameEnergyCounter_AddEnergy");
 
-    if(!recording && !failedReplay) {
+    if(!recording && !failedReplay && *RunMethod<float>(self, "get_energy")+value < 0.01f) {
         return;
     }
 
-    HandleLevelFailed(self);
+    GameEnergyCounter_AddEnergy(self, value);
 }
 
 MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
@@ -1095,6 +1109,8 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
     ScoreControllerLateUpdate(self);
 
     scoreMultiplier = *GetFieldValue<float>(self, "_gameplayModifiersScoreMultiplier");
+
+    modifiersModel = *GetFieldValue<GameplayModifiersModelSO*>(self, "_gameplayModifiersModel");
 
     if(indexNum > 2 && !recording) {
         SetFieldValue(self, "_baseRawScore", replayData[indexNum].score);
@@ -1571,8 +1587,8 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
     INSTALL_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
     INSTALL_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "DidActivate", 3));
-    INSTALL_HOOK_OFFSETLESS(HandleLevelFailed, il2cpp_utils::FindMethodUnsafe("", "StandardLevelFailedController", "HandleLevelFailed", 0));
-    INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "AddEnergy", 1));
+    INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelGameplayManager", "HandleGameEnergyDidReach0", 0));
     INSTALL_HOOK_OFFSETLESS(RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
     INSTALL_HOOK_OFFSETLESS(Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
     INSTALL_HOOK_OFFSETLESS(ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
