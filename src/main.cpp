@@ -316,6 +316,7 @@ UnityEngine::GameObject* customCamera = nullptr;
 int offset = 0;
 
 bool installedQosmeticsHook = false;
+bool qosmeticsIsRunning = false;
 
 bool letChangeSpeed = false;
 
@@ -670,7 +671,8 @@ void getModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificS
     log("Modifiers are "+std::to_string(replaySaveBools.batteryEnergy)+" "+std::to_string(replaySaveBools.disappearingArrows)+" "+std::to_string(replaySaveBools.ghostNotes)+" "+std::to_string(replaySaveBools.instafail)+" "+std::to_string(replaySaveBools.noArrows)+" "+std::to_string(replaySaveBools.noBombs)+" "+std::to_string(replaySaveBools.noFail)+" "+std::to_string(replaySaveBools.noObstacles)+" "+std::to_string(replaySaveBools.leftHanded)+" "+std::to_string(replaySaveBools.fasterSong)+" "+std::to_string(replaySaveBools.slowerSong));
 }
 
-MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {    
+MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
+    qosmeticsIsRunning = true;  
     if(!recording) {
         int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
         int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
@@ -777,7 +779,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
         float lerpAmount;
 
-        if(!installedQosmeticsHook) {
+        if(!qosmeticsIsRunning) {
             offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
             nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
 
@@ -788,7 +790,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
         }
 
         if(saberType == 0) {
-            if(!installedQosmeticsHook) {
+            if(!qosmeticsIsRunning) {
                 lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x, replayData[offsetIndex].playerData.leftSaber.rot.y, replayData[offsetIndex].playerData.leftSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x, replayData[nextOffsetIndex].playerData.leftSaber.rot.y, replayData[nextOffsetIndex].playerData.leftSaber.rot.z), lerpAmount);
                 lerpedLeftHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.leftSaber.pos, replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
                 
@@ -798,7 +800,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
             leftSaberTransformCache = self->get_transform();
         } else {
-            if(!installedQosmeticsHook) {
+            if(!qosmeticsIsRunning) {
                 lerpedRightHandPosition = *RunMethod<UnityEngine::Vector3>("UnityEngine", "Vector3", "Lerp", replayData[offsetIndex].playerData.rightSaber.pos, replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
                 lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x, replayData[offsetIndex].playerData.rightSaber.rot.y, replayData[offsetIndex].playerData.rightSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x, replayData[nextOffsetIndex].playerData.rightSaber.rot.y, replayData[nextOffsetIndex].playerData.rightSaber.rot.z), lerpAmount);
                 
@@ -906,6 +908,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
     score = 0;
     offset = getConfig().config["SaberTimeOffset"].GetInt();
     jumpYOffset = 0;
+    qosmeticsIsRunning = false;
 
     leftSaberTransformCache = nullptr;
     rightSaberTransformCache = nullptr;
