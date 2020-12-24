@@ -617,11 +617,11 @@ bool saveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                 speed = 2;
             }
 
-            // log("Getting old score modifiers");
+            log("Getting old score modifiers");
             GameplayModifiers* oldScoreModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.instafail, false, obstacles, replaySaveBools.noBombs, false, false, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes);
-            // log("Getting old modified score");
+            log("Getting old modified score");
             int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, oldScoreModifiers);
-            // log("Getting new modified score");
+            log("Getting new modified score");
             int newModifiedScore = std::floor(float(score) * scoreMultiplier);
             log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
             if(newModifiedScore > oldModifiedScore) {
@@ -1093,7 +1093,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, void, Il2Cpp
 
 MAKE_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, void, Il2CppObject* self, float value) {
     
-    log("GameEnergyCounter_AddEnergy");
+    // log("GameEnergyCounter_AddEnergy");
 
     if(!recording && !failedReplay && *RunMethod<float>(self, "get_energy")+value < 0.01f) {
         return;
@@ -1588,7 +1588,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
     INSTALL_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "DidActivate", 3));
     INSTALL_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "AddEnergy", 1));
-    INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelGameplayManager", "HandleGameEnergyDidReach0", 0));
+    INSTALL_HOOK_OFFSETLESS(ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
     INSTALL_HOOK_OFFSETLESS(Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
     INSTALL_HOOK_OFFSETLESS(ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
