@@ -656,7 +656,7 @@ void getModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificS
     log("Modifiers are "+std::to_string(replaySaveBools.batteryEnergy)+" "+std::to_string(replaySaveBools.disappearingArrows)+" "+std::to_string(replaySaveBools.ghostNotes)+" "+std::to_string(replaySaveBools.instafail)+" "+std::to_string(replaySaveBools.noArrows)+" "+std::to_string(replaySaveBools.noBombs)+" "+std::to_string(replaySaveBools.noFail)+" "+std::to_string(replaySaveBools.noObstacles)+" "+std::to_string(replaySaveBools.leftHanded)+" "+std::to_string(replaySaveBools.fasterSong)+" "+std::to_string(replaySaveBools.slowerSong));
 }
 
-MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
+MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {    
     if(!recording) {
         int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
         int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
@@ -749,7 +749,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
             rightSaberRot = *RunMethod<Vector3>(rightSaberTransform, "get_eulerAngles");
         }
     } else {
-        if(il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0) && !installedQosmeticsHook) {
+        if(il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0) != nullptr && !installedQosmeticsHook) {
             log("Installing Qosmetics hook");
             INSTALL_HOOK_OFFSETLESS(QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
             installedQosmeticsHook = true;
@@ -764,13 +764,13 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
         float lerpAmount;
 
         if(!installedQosmeticsHook) {
-            int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
-            int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
+            offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
+            nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
 
-            int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
-            int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+            lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
+            lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
 
-            float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
+            lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
         }
 
         if(saberType == 0) {
@@ -1297,13 +1297,15 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera") {
             Vector3 prevPos = *RunMethod<Vector3>(mainCameraTransform, "get_position");
             UnityEngine::Vector3 prevRot = *RunMethod<UnityEngine::Vector3>(mainCameraTransform, "get_eulerAngles");
-            UnityEngine::Vector3 rotDifference = (oldPrevRot - prevRot);
-            oldPrevRot = prevRot;
+            // UnityEngine::Vector3 rotDifference = (oldPrevRot - prevRot);
+            // oldPrevRot = prevRot;
             // log("difference is", rotDifference);
 
             if(cameraToggleString != "hmd") {
                 if(customCamera == nullptr) {
+                    log("Creating custom camera");
                     customCamera = UnityEngine::Object::Instantiate(cameraGO);
+                    log("Successfully created custom camera!");
                 }
                 mainCameraTransform = *RunMethod<Il2CppObject*>(customCamera, "get_transform");
                 cameraGO = *RunMethod<UnityEngine::GameObject*>(customCamera, "get_gameObject");
@@ -1348,7 +1350,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                             thirdPersonCamPos = newThirdPersonCamPos;
                             thirdPersonCamRot = newThirdPersonCamRot;
                         }
-                        UnityEngine::Vector3 noShakeRot = thirdPersonCamRot.get_eulerAngles() + rotDifference;
+                        // UnityEngine::Vector3 noShakeRot = thirdPersonCamRot.get_eulerAngles() + rotDifference;
                         // RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, UnityEngine::Quaternion::Euler(thirdPersonCamRot.get_eulerAngles() - (rotDifference*100)));
                         RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, thirdPersonCamRot);
                         
