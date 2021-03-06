@@ -5,6 +5,11 @@
 #include "modloader/shared/modloader.hpp"
 
 namespace bs_utils {
+    /// @brief Returns a path to the persistent data directory for the provided const ModInfo&.
+    /// @param info The const ModInfo& to find a path for.
+    /// @return The path to the directory.
+    std::string getDataDir(const ModInfo& info);
+
     /// @struct Information about the mod that is currentlying disabling score submission
     struct DisablingModInfo {
         // Id of the mod disabling

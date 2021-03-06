@@ -4,16 +4,11 @@
   "info": {
     "name": "replay",
     "id": "replay",
-    "version": "0.3.1",
+    "version": "0.4.0",
     "url": null,
     "additionalData": {}
   },
   "dependencies": [
-    {
-      "id": "questui",
-      "versionRange": "*",
-      "additionalData": {}
-    },
     {
       "id": "bs-utils",
       "versionRange": "*",
@@ -30,6 +25,16 @@
     },
     {
       "id": "codegen",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "custom-types",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "questui",
       "versionRange": "*",
       "additionalData": {}
     }

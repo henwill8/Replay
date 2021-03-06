@@ -4,6 +4,10 @@ using namespace QuestUI;
 using namespace UnityEngine::UI;
 using namespace UnityEngine;
 
+#define CreateIncrementMacro(parent, floatConfigValue, name, decimals, increment, hasMin, hasMax, minValue, maxValue) QuestUI::BeatSaberUI::CreateIncrementSetting(parent, name, decimals, increment, floatConfigValue.GetFloat(), hasMin, hasMax, minValue, maxValue, UnityEngine::Vector2{}, il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<float>*>(classof(UnityEngine::Events::UnityAction_1<float>*), (void*)nullptr, +[](float value) { floatConfigValue.SetFloat(value); }))
+
+#define CreateToggleMacro(parent, boolConfigValue, name) QuestUI::BeatSaberUI::CreateToggle(parent, name, boolConfigValue.GetBool(), il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), (void*)nullptr, +[](bool value) { boolConfigValue.SetBool(value); }))
+
 DEFINE_CLASS(Replay::UIController);
 
 void toggleDisableVibration() {
@@ -14,16 +18,16 @@ void toggleFCOverwrite() {
     getConfig().config["FullComboOverwrites"].SetBool(!getConfig().config["FullComboOverwrites"].GetBool());
 }
 
+void toggleNFOverwrite() {
+    getConfig().config["OverwriteNFPlays"].SetBool(!getConfig().config["OverwriteNFPlays"].GetBool());
+}
+
 void toggleCircular() {
     getConfig().config["ThirdPersonCircularMovement"].SetBool(!getConfig().config["ThirdPersonCircularMovement"].GetBool());
 }
 
 void toggleAvatar() {
     getConfig().config["Avatars"].SetBool(!getConfig().config["Avatars"].GetBool());
-}
-
-void changeOffset(float newValue) {
-    getConfig().config["SaberTimeOffset"].SetInt(newValue);
 }
 
 void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -33,31 +37,11 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
 		layout->set_spacing(2.5f);
 		
 		VerticalLayoutGroup* layout1 = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(layout->get_rectTransform());
-		// VerticalLayoutGroup* layout2 = QuestUI::BeatSaberUI::CreateVerticalLayoutGroup(layout->get_rectTransform());
-		layout1->set_spacing(3.5f);
-		// layout2->set_spacing(3.5f);
-
-		// layout1->get_gameObject()->AddComponent<QuestUI::Backgroundable*>()->ApplyBackground(il2cpp_utils::createcsstr("round-rect-panel"));
-		// layout2->get_gameObject()->AddComponent<QuestUI::Backgroundable*>()->ApplyBackground(il2cpp_utils::createcsstr("round-rect-panel"));
+		layout1->set_spacing(1.5f);
 
 		layout1->set_padding(UnityEngine::RectOffset::New_ctor(3, 3, 2, 2));
-		// layout2->set_padding(UnityEngine::RectOffset::New_ctor(3, 3, 2, 2));
 
-		// ContentSizeFitter* layout1Fitter = layout1->get_gameObject()->AddComponent<ContentSizeFitter*>();
-		// layout1Fitter->set_horizontalFit(ContentSizeFitter::FitMode::PreferredSize);
-		// layout1Fitter->set_verticalFit(ContentSizeFitter::FitMode::PreferredSize);
-
-		// ContentSizeFitter* layout2Fitter = layout2->get_gameObject()->AddComponent<ContentSizeFitter*>();
-		// layout2Fitter->set_horizontalFit(ContentSizeFitter::FitMode::PreferredSize);
-		// layout2Fitter->set_verticalFit(ContentSizeFitter::FitMode::PreferredSize);
-
-		// ContentSizeFitter* layoutFitter = layout->get_gameObject()->AddComponent<ContentSizeFitter*>();
-		// layoutFitter->set_horizontalFit(ContentSizeFitter::FitMode::Unconstrained);
-		// layoutFitter->set_verticalFit(ContentSizeFitter::FitMode::PreferredSize);
-
-		Transform* Parent1 = layout1->get_transform();
-		// Transform* Parent2 = layout2->get_transform();
-
+		UnityEngine::Transform* Parent1 = layout1->get_transform();
 		
 		Toggle* VibrationToggle = BeatSaberUI::CreateToggle(
             Parent1,
@@ -77,6 +61,14 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
 		QuestUI::BeatSaberUI::AddHoverHint(FCToggle->get_gameObject(), "Full combo-ing a map will overwrite any existing replay");
 		// FCToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
 
+        Toggle* NFToggle = BeatSaberUI::CreateToggle(
+            Parent1,
+            "Overwrite No Fail Plays",
+            getConfig().config["OverwriteNFPlays"].GetBool(),
+            il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleNFOverwrite)
+        );
+		QuestUI::BeatSaberUI::AddHoverHint(NFToggle->get_gameObject(), "When enabled, this will overwrite any replays that use no fail");
+
         Toggle* CircularToggle = BeatSaberUI::CreateToggle(
             Parent1,
             "Enable Third Person Circular Movement",
@@ -92,21 +84,14 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
             getConfig().config["Avatars"].GetBool(),
             il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), this, toggleAvatar)
         );
-		QuestUI::BeatSaberUI::AddHoverHint(AvatarToggle->get_gameObject(), "An avatar will show in normal or third person camera");
+		QuestUI::BeatSaberUI::AddHoverHint(AvatarToggle->get_gameObject(), "An avatar will show in third person camera");
 		// CircularToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{50, 10});
 
-        QuestUI::IncrementSetting* OffsetIncrement = BeatSaberUI::CreateIncrementSetting(
-            Parent1,
-            "Saber Time Offset",
-            0,
-            1,
-            getConfig().config["SaberTimeOffset"].GetInt(),
-            il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<float>*>(classof(UnityEngine::Events::UnityAction_1<float>*), this, changeOffset)
-        );
-		QuestUI::BeatSaberUI::AddHoverHint(OffsetIncrement->get_gameObject(), "Change the saber time offset, the higher the number the sooner the saber swings");
-
-        // auto Button = CreateUIButton(get_transform(), "OKButton", il2cpp_utils::MakeAction<UnityEngine::Events::UnityAction>(il2cpp_functions::class_get_type(classof(UnityEngine::Events::UnityAction*)), (Il2CppObject*)nullptr, unhideModal), "Modal", nullptr);
-	}
+        QuestUI::BeatSaberUI::AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["PositionSmooth"], "Position Smooth", 1, 0.1f, true, false, 0.1f, 0.0f)->get_gameObject(), "This is only used for smooth camera, smaller is smoother");
+        QuestUI::BeatSaberUI::AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["RotationSmooth"], "Rotation Smooth", 1, 0.1f, true, false, 0.1f, 0.0f)->get_gameObject(), "This is only used for smooth camera, smaller is smoother");
+        QuestUI::BeatSaberUI::AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["SmoothCameraOffset"]["y"], "Smooth Camera Y Offset", 1, 0.1f, false, false, 0.1f, 0.0f)->get_gameObject(), "This adds an offset to the Y position for the smooth camera");
+        QuestUI::BeatSaberUI::AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["SmoothCameraOffset"]["z"], "Smooth Camera Z Offset", 1, 0.1f, false, false, 0.1f, 0.0f)->get_gameObject(), "This adds an offset to the Z position for the smooth camera, it is recommended to have a bigger offset when using wide (16:9) recording");
+    }
 }
 
 void Replay::UIController::DidDeactivate(bool removedFromHierarchy, bool systemScreenDisabling)  {

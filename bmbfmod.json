@@ -1,11 +1,11 @@
 {
   "id": "replay",
   "name": "Replay",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "author": "Henwill8",
   "description": [],
   "category": "Gameplay",
-  "gameVersion": "1.13.0",
+  "gameVersion": "1.13.2",
   "platform": "Quest",
   "components": [
     {
@@ -20,25 +20,13 @@
     {
       "type": "HookModLibrary",
       "installAction": {
-        "installLibraryFile": "libbeatsaber-hook_0_8_4.so"
-      }
-    },
-    {
-      "type": "HookModLibrary",
-      "installAction": {
-        "installLibraryFile": "libquestui.so"
+        "installLibraryFile": "libbeatsaber-hook_1_1_4.so"
       }
     },
     {
       "type": "HookModLibrary",
       "installAction": {
         "installLibraryFile": "libbs-utils.so"
-      }
-    },
-    {
-      "type": "HookModLibrary",
-      "installAction": {
-        "installLibraryFile": "libcustom-types.so"
       }
     }
   ]

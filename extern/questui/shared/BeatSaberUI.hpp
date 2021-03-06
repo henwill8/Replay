@@ -6,6 +6,7 @@
 
 #include "GlobalNamespace/MainFlowCoordinator.hpp"
 #include "GlobalNamespace/GameplayModifierToggle.hpp"
+#include "GlobalNamespace/ColorChangeUIEventType.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/RectTransform.hpp"
 #include "UnityEngine/Vector2.hpp"
@@ -25,32 +26,37 @@
 #include "HMUI/HoverHint.hpp"
 #include "HMUI/InputFieldView.hpp"
 #include "HMUI/ModalView.hpp"
+#include "HMUI/SimpleTextDropdown.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
 #include "TMPro/TMP_FontAsset.hpp"
 #include "VRUIControls/PhysicsRaycasterWithCache.hpp"
 
 namespace QuestUI::BeatSaberUI {
 
-    GlobalNamespace::MainFlowCoordinator* getMainFlowCoordinator();
+    GlobalNamespace::MainFlowCoordinator* GetMainFlowCoordinator();
 
-    TMPro::TMP_FontAsset* getMainTextFont();
+    TMPro::TMP_FontAsset* GetMainTextFont();
 
-    UnityEngine::Sprite* getEditIcon();
+    UnityEngine::Sprite* GetEditIcon();
 
     VRUIControls::PhysicsRaycasterWithCache* GetPhysicsRaycasterWithCache();
+
+    void ClearCache();
+
+    UnityEngine::GameObject* CreateCanvas();
 
     HMUI::ViewController* CreateViewController(System::Type* type);
 
     template<class T = HMUI::ViewController*>
     T CreateViewController() {
-        return (T)CreateViewController(typeof(T));
+        return (T)CreateViewController(reinterpret_cast<System::Type*>(csTypeOf(T)));
     }
 
     HMUI::FlowCoordinator* CreateFlowCoordinator(System::Type* type);
 
     template<class T = HMUI::FlowCoordinator*>
     T CreateFlowCoordinator() {
-        return (T)CreateFlowCoordinator(typeof(T));
+        return (T)CreateFlowCoordinator(reinterpret_cast<System::Type*>(csTypeOf(T)));
     }
 
     TMPro::TextMeshProUGUI* CreateText(UnityEngine::Transform* parent, std::string text, UnityEngine::Vector2 anchoredPosition);
@@ -87,7 +93,15 @@ namespace QuestUI::BeatSaberUI {
 
     UnityEngine::UI::Image* CreateImage(UnityEngine::Transform* parent, UnityEngine::Sprite* sprite, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta);
 
-    UnityEngine::Sprite* Base64ToSprite(std::string base64, int width, int height);
+    UnityEngine::Sprite* Base64ToSprite(std::string& base64, int width, int height);   
+
+    UnityEngine::Sprite* Base64ToSprite(std::string& base64);   
+
+    UnityEngine::Sprite* FileToSprite(std::string& filePath, int width, int height);
+
+    UnityEngine::Sprite* FileToSprite(std::string& filePath);
+
+    UnityEngine::Sprite* ArrayToSprite(Array<uint8_t>* bytes);
 
     UnityEngine::UI::GridLayoutGroup* CreateGridLayoutGroup(UnityEngine::Transform* parent);
 
@@ -111,6 +125,12 @@ namespace QuestUI::BeatSaberUI {
     
     QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, UnityEngine::Vector2 anchoredPosition, UnityEngine::Events::UnityAction_1<float>* onValueChange = nullptr);
 
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, float minValue, float maxValue, UnityEngine::Events::UnityAction_1<float>* onValueChange = nullptr);
+    
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, float minValue, float maxValue, UnityEngine::Vector2 anchoredPosition, UnityEngine::Events::UnityAction_1<float>* onValueChange = nullptr);
+    
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, bool hasMin, bool hasMax, float minValue, float maxValue, UnityEngine::Vector2 anchoredPosition, UnityEngine::Events::UnityAction_1<float>* onValueChange = nullptr);
+
     UnityEngine::GameObject* CreateScrollView(UnityEngine::Transform* parent);
 
     UnityEngine::GameObject* CreateScrollableSettingsContainer(UnityEngine::Transform* parent);
@@ -120,5 +140,48 @@ namespace QuestUI::BeatSaberUI {
     HMUI::InputFieldView* CreateStringSetting(UnityEngine::Transform* parent, std::string settingsName, std::string currentValue, UnityEngine::Events::UnityAction_1<Il2CppString*>* onValueChange = nullptr);
 
     HMUI::InputFieldView* CreateStringSetting(UnityEngine::Transform* parent, std::string settingsName, std::string currentValue, UnityEngine::Vector2 anchoredPosition, UnityEngine::Events::UnityAction_1<Il2CppString*>* onValueChange = nullptr);
+
+    HMUI::SimpleTextDropdown* CreateDropdown(UnityEngine::Transform* parent, std::string dropdownName, std::string currentValue, std::vector<std::string> values, std::function<void(std::string)> onValueChange = nullptr);
+    
+    UnityEngine::GameObject* CreateColorPicker(UnityEngine::Transform* parent, std::string text, UnityEngine::Color defaultColor, std::function<void(UnityEngine::Color, GlobalNamespace::ColorChangeUIEventType)> onValueChange = nullptr);
+    
+#pragma region stdfunctionWrappers
+   
+    UnityEngine::UI::Button* CreateUIButton(UnityEngine::Transform* parent, std::string buttonText, std::string buttonTemplate, UnityEngine::Vector2 anchoredPosition, std::function<void()> onClick);
+
+    UnityEngine::UI::Button* CreateUIButton(UnityEngine::Transform* parent, std::string buttonText, std::string buttonTemplate, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta, std::function<void()> onClick);
+
+    UnityEngine::UI::Button* CreateUIButton(UnityEngine::Transform* parent, std::string buttonText, std::function<void()> onClick);
+
+    UnityEngine::UI::Button* CreateUIButton(UnityEngine::Transform* parent, std::string buttonText, UnityEngine::Vector2 anchoredPosition, std::function<void()> onClick);
+
+    UnityEngine::UI::Button* CreateUIButton(UnityEngine::Transform* parent, std::string buttonText, UnityEngine::Vector2 anchoredPosition, UnityEngine::Vector2 sizeDelta, std::function<void()> onClick);
+
+    UnityEngine::UI::Button* CreateUIButton(UnityEngine::Transform* parent, std::string buttonText, std::string buttonTemplate, std::function<void()> onClick);
+
+    UnityEngine::UI::Toggle* CreateToggle(UnityEngine::Transform* parent, std::string text, std::function<void(bool)> onToggle);
+
+    UnityEngine::UI::Toggle* CreateToggle(UnityEngine::Transform* parent, std::string text, bool currentValue, std::function<void(bool)> onToggle);
+    
+    UnityEngine::UI::Toggle* CreateToggle(UnityEngine::Transform* parent, std::string text, UnityEngine::Vector2 anchoredPosition, std::function<void(bool)> onToggle);
+    
+    UnityEngine::UI::Toggle* CreateToggle(UnityEngine::Transform* parent, std::string text, bool currentValue, UnityEngine::Vector2 anchoredPosition, std::function<void(bool)> onToggle);
+
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, std::function<void(float)> onValueChange);
+    
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, UnityEngine::Vector2 anchoredPosition, std::function<void(float)> onValueChange);
+
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, float minValue, float maxValue, std::function<void(float)> onValueChange);
+    
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, float minValue, float maxValue, UnityEngine::Vector2 anchoredPosition, std::function<void(float)> onValueChange);
+    
+    QuestUI::IncrementSetting* CreateIncrementSetting(UnityEngine::Transform* parent, std::string text, int decimals, float increment, float currentValue, bool hasMin, bool hasMax, float minValue, float maxValue, UnityEngine::Vector2 anchoredPosition, std::function<void(float)> onValueChange);
+
+    HMUI::InputFieldView* CreateStringSetting(UnityEngine::Transform* parent, std::string settingsName, std::string currentValue, std::function<void(std::string)> onValueChange);
+
+    HMUI::InputFieldView* CreateStringSetting(UnityEngine::Transform* parent, std::string settingsName, std::string currentValue, UnityEngine::Vector2 anchoredPosition, std::function<void(std::string)> onValueChange);
+ 
+#pragma endregion
+    
 
 }

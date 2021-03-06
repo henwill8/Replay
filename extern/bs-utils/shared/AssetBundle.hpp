@@ -9,8 +9,8 @@ namespace bs_utils {
 
     /// @class A C++ wrapper around the C# AssetBundle type.
     class AssetBundle : public Il2CppObject {
-        typedef std::function<void(Asset*)> AssetCallback;
-        typedef std::function<void(AssetBundle*)> AssetBundleCallback;
+      typedef std::function<void(Asset*)> AssetCallback;
+      typedef std::function<void(AssetBundle*)> AssetBundleCallback;
 
       public:
         AssetBundle() = delete;

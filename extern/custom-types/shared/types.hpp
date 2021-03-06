@@ -43,6 +43,24 @@ namespace custom_types {
         std::vector<Il2CppClass*> interfaces;
         bool abst = false;
         public:
+        constexpr const Il2CppTypeEnum getEnum() const {
+            return typeEnum;
+        }
+        constexpr const Il2CppClass* getBase() const {
+            return base;
+        }
+        std::string getNamespace() const {
+            return namespaze;
+        }
+        std::string getName() const {
+            return name;
+        }
+        constexpr bool isAbstract() const {
+            return abst;
+        }
+        std::vector<Il2CppClass*> getInterfaces() const {
+            return interfaces;
+        }
         /// @brief Copy constructor.
         type_info(type_info&&) = default;
         /// @brief Construct a type_info from some information.
@@ -79,7 +97,7 @@ namespace custom_types {
         /// @param flags The flags to use when creating the method.
         /// @param virtualInfo The virtual MethodInfo* to set in the vtable (nullptr if this is not a virtual method)
         method_info(std::string_view name, void* func, InvokerMethod invoker, const Il2CppType* returnType, std::vector<ParameterInfo>& parameters, uint16_t flags, const MethodInfo* virtualInfo);
-        ~method_info() = delete;
+        ~method_info() = default;
         /// @brief Get the MethodInfo* wrapped by this type.
         /// @return The MethodInfo*
         constexpr const MethodInfo* get() const {
@@ -101,7 +119,7 @@ namespace custom_types {
         /// @param type Il2CppType* of the field to create.
         /// @param fieldAttrs The attributes for the field to create.
         field_info(std::string_view name, const Il2CppType* type, uint16_t fieldAttrs);
-        ~field_info() = delete;
+        ~field_info() = default;
         /// @brief Get the FieldInfo wrapped by this type.
         /// @return The FieldInfo
         constexpr const FieldInfo get() const {
@@ -129,6 +147,7 @@ namespace custom_types {
         /// @brief Checks all valid virtual methods on the given info for a matching MethodInfo* with the given klass namespace, name, and methodName
         /// with an optional parameter count match.
         bool checkVirtualsForMatch(custom_types::method_info* info, std::string_view namespaze, std::string_view name, std::string_view methodName, int paramCount = -1);
+        int getVtableSize();
         void getVtable(std::vector<VirtualInvokeData>& vtable, std::vector<Il2CppRuntimeInterfaceOffsetPair>& offsets);
         void setupTypeHierarchy(Il2CppClass* base);
         void populateMethods();
@@ -182,16 +201,25 @@ namespace custom_types {
 
     #if __has_include(<concepts>)
     #include <concepts>
+    #include <type_traits>
     template<typename T>
-    constexpr bool has_field_wrapper = requires(const T& t) {
+    constexpr bool has_get = requires(const T& t) {
         t.get();
     };
+
+    template<typename T>
+    concept has_func_register = requires(std::vector<field_info*>& x, std::vector<method_info*>& y) {
+        {T::_register(x, x, y)} -> std::same_as<void>;
+    };
+
+    #ifndef CUSTOM_TYPES_NO_CONCEPTS
+    #define CUSTOM_TYPES_USE_CONCEPTS
+    #endif
+
     #elif __has_include(<experimental/type_traits>)
     #include <experimental/type_traits>
     template<typename T>
     using get_type = decltype(T::get());
-
-    template <class...> constexpr std::false_type false_t{};
 
     template<typename T>
     constexpr bool has_get = std::experimental::is_detected_v<get_type, T>;
@@ -223,6 +251,7 @@ namespace custom_types {
     #else
     #error No libraries for the implementation of "has_" anything available!
     #endif
+    template <class...> constexpr std::false_type false_t{};
     // Several of these concepts originally created by DaNike, modifications made by Sc2ad
 
     /// @struct A helper structure for getting parameters, return type, and function pointer from an instance method
@@ -255,13 +284,9 @@ namespace custom_types {
         static inline std::vector<ParameterInfo> get() {
             std::vector<ParameterInfo> params;
             auto& info = params.emplace_back();
-            const Il2CppType* type;
-            if constexpr (std::is_same_v<Decl, P>) {
-                type = nullptr;
-            } else {
-                il2cpp_functions::Init();
-                type = ::il2cpp_functions::class_get_type(::il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<P>::get());
-            }
+            il2cpp_functions::Init();
+            _logger().debug("Getting class type of parameter!");
+            const Il2CppType* type = ::il2cpp_functions::class_get_type(::il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<P>::get());
             // Ignore name, it will be set when we iterate over all of them (param_1, param_2, etc.)
             // Ignore position, it will also be set on iteration.
             // TODO: Maybe some day we can actually use the parameters names themselves!
@@ -397,13 +422,8 @@ namespace custom_types {
     template<typename Decl, typename TRet, typename... TArgs>
     struct method_info_template_static<Decl, TRet(*)(TArgs...)> {
         static inline const Il2CppType* get() {
-            if constexpr (std::is_same_v<Decl, TRet>) {
-                // Special case return for return types that are ourselves
-                return nullptr;
-            } else {
-                il2cpp_functions::Init();
-                return ::il2cpp_functions::class_get_type(::il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<TRet>::get());
-            }
+            il2cpp_functions::Init();
+            return ::il2cpp_functions::class_get_type(::il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_class<TRet>::get());
         }
         static inline const std::vector<ParameterInfo> get_params() {
             std::vector<ParameterInfo> vec = parameter_converter<Decl, TArgs...>::get();

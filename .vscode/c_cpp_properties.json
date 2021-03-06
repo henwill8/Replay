@@ -2,18 +2,17 @@
   "configurations": [
     {
       "defines": [
-        "MOD_ID=\"Replay\"",
-        "VERSION=\"0.3.0\"",
+        "VERSION=\"0.1.0\"",
         "__GNUC__",
-        "__aarch64__",
-        "ID=\"replay\""
+        "__aarch64__"
       ],
       "includePath": [
-        "${workspaceFolder}/**",
-        "c:/Program Files/Unity/Hub/Editor/2019.3.2f1/Editor/Data/il2cpp/libil2cpp",
-        "c:/Users/henwi/Desktop/ModdingBeatSaber/android-ndk-r20b/android-ndk-r20/**",
-        "${workspaceFolder}/shared",
-        "${workspaceFolder}/extern"
+        "../**",
+        "../shared",
+        "../include",
+        "../extern/**",
+        "../extern/libil2cpp/il2cpp/libil2cpp",
+        "c:/Users/henwi/Desktop/ModdingBeatSaber/android-ndk-r21d/**"
       ],
       "name": "Quest",
       "cStandard": "c11",
