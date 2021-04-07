@@ -26,3 +26,9 @@
 using namespace il2cpp_utils;
 
 Configuration& getConfig();
+
+static ModInfo modInfo;
+
+Logger& loggingFunction();
+
+#define log(...) loggingFunction().info(__VA_ARGS__)

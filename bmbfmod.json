@@ -1,7 +1,7 @@
 {
   "id": "replay",
   "name": "Replay",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": "Henwill8",
   "description": [],
   "category": "Gameplay",
@@ -27,6 +27,54 @@
       "type": "HookModLibrary",
       "installAction": {
         "installLibraryFile": "libbs-utils.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libavcodec.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libavdevice.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libavfilter.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libavformat.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libavutil.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libpostproc.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libswresample.so"
+      }
+    },
+    {
+      "type": "HookModLibrary",
+      "installAction": {
+        "installLibraryFile": "libswscale.so"
       }
     }
   ]

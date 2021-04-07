@@ -2,6 +2,8 @@
 #include "main.hpp"
 #include "codegen.hpp"
 #include "UI.hpp"
+#include "video_recorder.hpp"
+#include "audio_recorder.hpp"
 #include "../extern/beatsaber-hook/shared/utils/utils.h"
 #include "../extern/beatsaber-hook/shared/utils/logging.hpp"
 #include "../extern/modloader/shared/modloader.hpp"
@@ -29,6 +31,10 @@
 #include <algorithm>
 #include <fstream>
 #include <filesystem>
+#include <experimental/coroutine>
+#include "custom-types/shared/coroutine.hpp"
+#include <GLES3/gl32.h>
+#include <GLES3/gl3ext.h>
 
 using namespace il2cpp_utils;
 using namespace QuestUI;
@@ -37,12 +43,10 @@ using namespace GlobalNamespace;
 using namespace UnityEngine::UI;
 using namespace UnityEngine::Events;
 
-Logger& logger() {
-    static auto logger = new Logger(modInfo, LoggerOptions(false, true));
-    return *logger;
+Logger& loggingFunction() {
+    static auto logging = new Logger(modInfo, LoggerOptions(false, true));
+    return *logging;
 }
-
-#define log(...) logger().info(__VA_ARGS__)
 
 Configuration& getConfig() {
     static Configuration config(modInfo);
@@ -118,17 +122,6 @@ struct v4replayKeyFrame {
     int combo;
     float time;
     float jumpYOffset;
-
-    void Write(std::ofstream& writer) const {
-        playerData.Write(writer);
-        
-        writer.write(reinterpret_cast<const char*>(&score), sizeof(int));
-        writer.write(reinterpret_cast<const char*>(&percent), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&rank), sizeof(int));
-        writer.write(reinterpret_cast<const char*>(&combo), sizeof(int));
-        writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
-        writer.write(reinterpret_cast<const char*>(&jumpYOffset), sizeof(float));
-    }
 };
 
 struct replayKeyFrame {
@@ -155,7 +148,7 @@ struct replayKeyFrame {
     }
 };
 
-struct replayBools {
+struct v1replayBools {
     bool batteryEnergy;
     bool disappearingArrows;
     bool noObstacles;
@@ -167,13 +160,35 @@ struct replayBools {
     bool ghostNotes;
     bool fasterSong;
     bool leftHanded;
+};
+
+struct v6replayBools {
+    bool disappearingArrows;
+    bool noObstacles;
+    bool noBombs;
+    bool noArrows;
+    bool slowerSong;
+    bool noFail;
+    bool oneLife;
+    bool fourLives;
+    bool ghostNotes;
+    bool fasterSong;
+    bool leftHanded;
+    bool strictAngles;
+    bool proMode;
+    bool smallNotes;
+    bool superFastSong;
 
     void Write(std::ofstream& writer) const {
-        writer.write(reinterpret_cast<const char*>(&instafail), sizeof(bool));
-        writer.write(reinterpret_cast<const char*>(&batteryEnergy), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&oneLife), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&fourLives), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&strictAngles), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&proMode), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&smallNotes), sizeof(bool));
         writer.write(reinterpret_cast<const char*>(&ghostNotes), sizeof(bool));
         writer.write(reinterpret_cast<const char*>(&disappearingArrows), sizeof(bool));
         writer.write(reinterpret_cast<const char*>(&fasterSong), sizeof(bool));
+        writer.write(reinterpret_cast<const char*>(&superFastSong), sizeof(bool));
         writer.write(reinterpret_cast<const char*>(&noFail), sizeof(bool));
         writer.write(reinterpret_cast<const char*>(&noBombs), sizeof(bool));
         writer.write(reinterpret_cast<const char*>(&noObstacles), sizeof(bool));
@@ -189,7 +204,9 @@ Il2CppObject* restartButton = nullptr;
 std::string cameraToggleString = "hmd";
 
 Button* replayButton = nullptr;
+UnityEngine::GameObject* replayButtonGO = nullptr;
 Button* cameraToggle = nullptr;
+UnityEngine::GameObject* cameraToggleGO = nullptr;
 Button* failedReplayButton = nullptr;
 Button* failedCameraToggle = nullptr;
 Toggle* speedToggle = nullptr;
@@ -200,7 +217,9 @@ TMPro::TextMeshProUGUI* replayText = nullptr;
 std::string replayTextCurrent;
 
 TMPro::TextMeshProUGUI* warningText = nullptr;
+UnityEngine::GameObject* warningTextGO = nullptr;
 TMPro::TextMeshProUGUI* failedTimeText = nullptr;
+UnityEngine::GameObject* failedTimeTextGO = nullptr;
 
 UnityEngine::GameObject* failedTimeSlider = nullptr;
 UnityEngine::GameObject* latencySlider = nullptr;
@@ -224,11 +243,15 @@ bool failedInReplay;
 std::vector<replayKeyFrame> dataToSave;
 std::vector<replayKeyFrame> replayData;
 
+bool setSongTime = false;
+float oldSliderTime;
+
 void replayButtonOnClick() {
     if(playButton != nullptr) {
         recording = false;
         log("Pressed replay button");
         deathReplay = false;
+        setSongTime = false;
         RunMethod(playButton, "Press");
     }
 }
@@ -300,9 +323,10 @@ float energy;
 
 int indexNum = 0;
 
-replayBools replaySaveBools;
+v6replayBools replaySaveBools;
 bool didReach0Energy;
 float reached0Time;
+bool zenMode;
 
 float jumpYOffset;
 bool gotJumpYOffset = false;
@@ -367,24 +391,29 @@ UnityEngine::Transform* headFollowTransform;
 
 GameplayModifiersModelSO* modifiersModel = nullptr;
 
-replayBools oldModifiers;
+v6replayBools oldModifiers;
 bool resetModifiers = false;
 
 FPSCounter* fpsCounter = nullptr;
-int fps;
+int gameFPS;
 
 float songStartTime;
 float practiceStartTime;
 float maxSongTime;
-
-bool setSongTime = false;
-float oldSliderTime;
 
 bool levelFailedTextEffect;
 
 bool firstTimeInPause;
 
 bool doneFailedEffect;
+
+bool foundComboPanel;
+bool createText;
+
+float modifierSpeed;
+
+AudioRenderer audioRenderer;
+VideoCapture videoCapture;
 
 GameEnergyUIPanel* gameEnergyUIPanel;
 GameEnergyUIPanel* failedEnergyEffect;
@@ -397,6 +426,10 @@ UnityEngine::GameObject* rightTrickSaber = nullptr;
 UnityEngine::Transform* leftRealModel = nullptr;
 UnityEngine::Transform* rightRealModel = nullptr;
 
+UnityEngine::Rect rect;
+UnityEngine::RenderTexture* recordedRenderTexture = nullptr;
+UnityEngine::Texture2D* recordedTexture = nullptr;
+
 std::string songHash;
 std::string songName = "";
 std::string replayDirectory;
@@ -404,7 +437,7 @@ std::string fileExtensionName = ".reqlay";
 unsigned char fileHeader[3] = {
     0xa1, 0xd2, 0x45
 };
-int fileVersion = 5;
+int fileVersion = 6;
 int openedFileVersion;
 
 void SaveConfig() {
@@ -460,7 +493,8 @@ UnityEngine::GameObject* FindObject(std::string name, bool byParent = false, boo
         if(byParent) {
             go = go->get_transform()->GetParent()->get_gameObject();
         }
-        log(to_utf8(csstrtostr(UnityEngine::Transform::GetName(trs->values[i]))));
+        // log(to_utf8(csstrtostr(UnityEngine::Transform::GetName(trs->values[i]))));
+        if(go->m_CachedPtr.m_value == nullptr) continue;
         if(to_utf8(csstrtostr(UnityEngine::Transform::GetName(go))) == name){
             log("Found GameObject");
             return go;
@@ -622,7 +656,7 @@ void CreateReplayFile(std::string songHashID) {
         output.write(reinterpret_cast<const char*>(&failedInReplay), sizeof(bool));
         output.write(reinterpret_cast<const char*>(&failedSongTime), sizeof(float));
 
-        output.write(reinterpret_cast<const char*>(&replaySaveBools), sizeof(replayBools));
+        output.write(reinterpret_cast<const char*>(&replaySaveBools), sizeof(v6replayBools));
         output.write(reinterpret_cast<const char*>(&didReach0Energy), sizeof(bool));
         output.write(reinterpret_cast<const char*>(&reached0Time), sizeof(float));
 
@@ -661,11 +695,13 @@ void GetReplayValues(std::string songHashID) {
         log("File version is "+std::to_string(openedFileVersion));
 
         replayKeyFrame keyFrameData;
+
+        v1replayBools v1bools;
         
         if(openedFileVersion == 1) {
             gotJumpYOffset = false;
-            replaySaveBools.instafail = headerBytes[0];
-            replaySaveBools.batteryEnergy = headerBytes[1];
+            replaySaveBools.oneLife = headerBytes[0];
+            replaySaveBools.fourLives = headerBytes[1];
             replaySaveBools.ghostNotes = headerBytes[2];
             input.read(reinterpret_cast<char*>(&replaySaveBools.disappearingArrows), sizeof(bool));
             input.read(reinterpret_cast<char*>(&replaySaveBools.fasterSong), sizeof(bool));
@@ -687,7 +723,7 @@ void GetReplayValues(std::string songHashID) {
             }
         } else if(openedFileVersion == 2) {
             gotJumpYOffset = true;
-            input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(replayBools));
+            input.read(reinterpret_cast<char*>(&v1bools), sizeof(v1replayBools));
             didReach0Energy = replaySaveBools.noFail;
             reached0Time = 0;
 
@@ -700,7 +736,7 @@ void GetReplayValues(std::string songHashID) {
             input.read(reinterpret_cast<char*>(&failedSongTime), sizeof(float));
 
             gotJumpYOffset = true;
-            input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(replayBools));
+            input.read(reinterpret_cast<char*>(&v1bools), sizeof(v1replayBools));
             didReach0Energy = replaySaveBools.noFail;
             reached0Time = 0;
 
@@ -713,7 +749,7 @@ void GetReplayValues(std::string songHashID) {
             input.read(reinterpret_cast<char*>(&failedSongTime), sizeof(float));
 
             gotJumpYOffset = true;
-            input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(replayBools));
+            input.read(reinterpret_cast<char*>(&v1bools), sizeof(v1replayBools));
             input.read(reinterpret_cast<char*>(&didReach0Energy), sizeof(bool));
             input.read(reinterpret_cast<char*>(&reached0Time), sizeof(float));
 
@@ -726,7 +762,19 @@ void GetReplayValues(std::string songHashID) {
             input.read(reinterpret_cast<char*>(&failedSongTime), sizeof(float));
 
             gotJumpYOffset = true;
-            input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(replayBools));
+            input.read(reinterpret_cast<char*>(&v1bools), sizeof(v1replayBools));
+            input.read(reinterpret_cast<char*>(&didReach0Energy), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&reached0Time), sizeof(float));
+
+            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(replayKeyFrame))) {
+                replayData.push_back(keyFrameData);
+            }
+        } else if(openedFileVersion == 6) {
+            input.read(reinterpret_cast<char*>(&failedInReplay), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&failedSongTime), sizeof(float));
+
+            gotJumpYOffset = true;
+            input.read(reinterpret_cast<char*>(&replaySaveBools), sizeof(v6replayBools));
             input.read(reinterpret_cast<char*>(&didReach0Energy), sizeof(bool));
             input.read(reinterpret_cast<char*>(&reached0Time), sizeof(float));
 
@@ -735,6 +783,24 @@ void GetReplayValues(std::string songHashID) {
             }
         } else {
             log("Could not find way to use file version");
+        }
+
+        if(openedFileVersion <= 5 && openedFileVersion >= 2) {
+            replaySaveBools.disappearingArrows = v1bools.disappearingArrows;
+            replaySaveBools.noObstacles = v1bools.noObstacles;
+            replaySaveBools.noBombs = v1bools.noBombs;
+            replaySaveBools.slowerSong = v1bools.slowerSong;
+            replaySaveBools.noArrows = v1bools.noArrows;
+            replaySaveBools.noFail = v1bools.noFail;
+            replaySaveBools.oneLife = v1bools.instafail;
+            replaySaveBools.fourLives = v1bools.batteryEnergy;
+            replaySaveBools.ghostNotes = v1bools.ghostNotes;
+            replaySaveBools.fasterSong = v1bools.fasterSong;
+            replaySaveBools.leftHanded = v1bools.leftHanded;
+            replaySaveBools.strictAngles = false;
+            replaySaveBools.proMode = false;
+            replaySaveBools.smallNotes = false;
+            replaySaveBools.superFastSong = false;
         }
         
         input.close();
@@ -784,7 +850,7 @@ bool GetNoFail(std::string songHashID) {
     log("Checking if replay uses no fail");
     std::ifstream input(replayDirectory+songHashID+fileExtensionName, std::ios::binary);
 
-    replayBools tempReplayBools;
+    bool usesNoFail;
     if(input.is_open()) {
         log("Successfully opened replay file at: "+replayDirectory+songHashID+fileExtensionName);
 
@@ -804,25 +870,35 @@ bool GetNoFail(std::string songHashID) {
 
         log("File version is "+std::to_string(openedFileVersion));
 
-        if(openedFileVersion >= 3) {
+        if(openedFileVersion >= 3 && openedFileVersion <= 5) {
             float tempFloat;
             bool tempBool;
+            v1replayBools tempReplayBools;
             input.read(reinterpret_cast<char*>(&tempBool), sizeof(bool));
             input.read(reinterpret_cast<char*>(&tempFloat), sizeof(float));
-            input.read(reinterpret_cast<char*>(&tempReplayBools), sizeof(replayBools));
+            input.read(reinterpret_cast<char*>(&tempReplayBools), sizeof(v1replayBools));
+            usesNoFail = tempReplayBools.noFail;
+        } else if(openedFileVersion > 5) {
+            float tempFloat;
+            bool tempBool;
+            v6replayBools tempReplayBools;
+            input.read(reinterpret_cast<char*>(&tempBool), sizeof(bool));
+            input.read(reinterpret_cast<char*>(&tempFloat), sizeof(float));
+            input.read(reinterpret_cast<char*>(&tempReplayBools), sizeof(v6replayBools));
+            usesNoFail = tempReplayBools.noFail;
         } else {
-            tempReplayBools.noFail = false;
+            usesNoFail = false;
         }
         
         input.close();
         log("Successfully closed the replay file");
     }
-    log("Replay uses no fail is %i", tempReplayBools.noFail);
-    return tempReplayBools.noFail;
+    log("Replay uses no fail is %i", usesNoFail);
+    return usesNoFail;
 }
 
 bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice) {
-    if(recording && !practice) {
+    if(recording && !practice && !zenMode) {
         if(levelCompletionResults->levelEndStateType == 1) {
             log("Level finished, trying to create replay file");
             float storedFailedSongTime = failedSongTime;
@@ -855,13 +931,13 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                 }
 
                 log("Checking if this is a higher score than previous");
-                replayBools tempBools = replaySaveBools;
+                v6replayBools tempBools = replaySaveBools;
 
                 GetReplayValues(songHash);
 
                 log("Getting energy type");
                 int energy = 0;
-                if(replaySaveBools.batteryEnergy) {
+                if(replaySaveBools.fourLives) {
                     energy = 1;
                 }
 
@@ -877,12 +953,14 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                     speed = 1;
                 } else if(replaySaveBools.slowerSong) {
                     speed = 2;
+                } else if(replaySaveBools.superFastSong) {
+                    speed = 3;
                 }
 
                 log("Getting old score modifiers");
-                GameplayModifiers* oldScoreModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.instafail, false, obstacles, replaySaveBools.noBombs, false, false, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes);
+                GameplayModifiers* oldScoreModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.oneLife, false, obstacles, replaySaveBools.noBombs, false, replaySaveBools.strictAngles, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes, replaySaveBools.proMode, false, replaySaveBools.smallNotes);
                 log("Getting old modified score");
-                int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, oldScoreModifiers, didReach0Energy ? 0 : 1);
+                int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, modifiersModel->CreateModifierParamsList(oldScoreModifiers), didReach0Energy ? 0 : 1);
                 log("Getting new modified score");
                 int newModifiedScore = std::floor(float(score) * scoreMultiplier);
                 log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
@@ -935,23 +1013,31 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
 void GetModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificSettings, int value = 0) {
     log("Getting modifiers and player settings");
 
-    replayBools temp;
+    v6replayBools temp;
 
     temp.disappearingArrows = *RunMethod<bool>(gameplayModifiers, "get_disappearingArrows");
     temp.ghostNotes = *RunMethod<bool>(gameplayModifiers, "get_ghostNotes");
-    temp.instafail = *RunMethod<bool>(gameplayModifiers, "get_instaFail");
+    temp.oneLife = *RunMethod<bool>(gameplayModifiers, "get_instaFail");
     temp.noArrows = *RunMethod<bool>(gameplayModifiers, "get_noArrows");
     temp.noBombs = *RunMethod<bool>(gameplayModifiers, "get_noBombs");
     temp.noFail = *RunMethod<bool>(gameplayModifiers, "get_noFailOn0Energy");
+    temp.smallNotes = *RunMethod<bool>(gameplayModifiers, "get_smallCubes");
+    temp.proMode = *RunMethod<bool>(gameplayModifiers, "get_proMode");
+    temp.strictAngles = *RunMethod<bool>(gameplayModifiers, "get_strictAngles");
     temp.leftHanded = *RunMethod<bool>(playerSpecificSettings, "get_leftHanded");
+
+    zenMode = *RunMethod<bool>(gameplayModifiers, "get_zenMode");
 
     int songSpeedLevel = *RunMethod<int>(gameplayModifiers, "get_songSpeed");
     temp.slowerSong = false;
     temp.fasterSong = false;
+    temp.superFastSong = false;
     if(songSpeedLevel == 1) {
         temp.fasterSong = true;
     } else if(songSpeedLevel == 2) {
         temp.slowerSong = true;
+    } else if(songSpeedLevel == 3) {
+        temp.superFastSong = true;
     }
 
     int obstacleNum = *RunMethod<int>(gameplayModifiers, "get_enabledObstacleType");
@@ -963,12 +1049,12 @@ void GetModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificS
 
     int energyNum = *RunMethod<int>(gameplayModifiers, "get_energyType");
     if(energyNum == 1) {
-        temp.batteryEnergy = true;
+        temp.fourLives = true;
     } else {
-        temp.batteryEnergy = false;
+        temp.fourLives = false;
     }
 
-    log("Modifiers are "+std::to_string(temp.batteryEnergy)+" "+std::to_string(temp.disappearingArrows)+" "+std::to_string(temp.ghostNotes)+" "+std::to_string(temp.instafail)+" "+std::to_string(temp.noArrows)+" "+std::to_string(temp.noBombs)+" "+std::to_string(temp.noFail)+" "+std::to_string(temp.noObstacles)+" "+std::to_string(temp.leftHanded)+" "+std::to_string(temp.fasterSong)+" "+std::to_string(temp.slowerSong));
+    // log("Modifiers are "+std::to_string(temp.oneLife)+" "+std::to_string(temp.disappearingArrows)+" "+std::to_string(temp.ghostNotes)+" "+std::to_string(temp.instafail)+" "+std::to_string(temp.noArrows)+" "+std::to_string(temp.noBombs)+" "+std::to_string(temp.noFail)+" "+std::to_string(temp.noObstacles)+" "+std::to_string(temp.leftHanded)+" "+std::to_string(temp.fasterSong)+" "+std::to_string(temp.slowerSong));
 
     if(value == 0) {
         replaySaveBools = temp;
@@ -982,6 +1068,7 @@ void GetModifiers(Il2CppObject* gameplayModifiers, Il2CppObject* playerSpecificS
 void ResetVariables() {
     log("Resetting variables");
     inSong = true;
+
     indexNum = 0;
     replaySpeed = 1.0f;
     score = 0;
@@ -989,16 +1076,24 @@ void ResetVariables() {
     percent = 1;
     energy = 0.5f;
     jumpYOffset = 0;
+
     fpsCounter = nullptr;
     qosmeticsIsRunning = false;
     levelFailedTextEffect = false;
     failedEffectTimer = 10;
+
+    foundComboPanel = false;
+    createText = true;
     firstTimeInPause = true;
     didReach0Energy = false;
     checkedForTricksaber = false;
     usesTricksaber = false;
     resetModifiers = true;
+    modifiersModel = nullptr;
+    songTime = 0;
+
     gameEnergyUIPanel = GetFirstEnabledComponent<GameEnergyUIPanel*>();
+
     rotationSmooth = getConfig().config["RotationSmooth"].GetFloat();
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
     smoothPositionOffset.y = getConfig().config["SmoothCameraOffset"]["y"].GetFloat();
@@ -1017,7 +1112,7 @@ void SetSongTimeTo(AudioTimeSyncController* audioSync, float time) {
     audioSync->songTime = time;
     float num = audioSync->songTime + audioSync->songTimeOffset;
     bool flag = num >= 0;
-    audioSync->audioSource->set_time(std::max(0.0f, std::min(num, audioSync->audioSource->get_clip()->get_length() - 0.01f)));
+    audioSync->audioSource->set_time(std::max(0.0f, std::min(num, audioSync->get_songLength() - 0.01f)));
     if(audioSync->state == AudioTimeSyncController::State::Playing) {
         if(flag && !audioSync->audioStarted) {
             audioSync->audioSource->Play();
@@ -1029,7 +1124,7 @@ void SetSongTimeTo(AudioTimeSyncController* audioSync, float time) {
     audioSync->audioStarted = flag;
     audioSync->audioStartTimeOffsetSinceStart = audioSync->get_timeSinceStart() - num;
     audioSync->fixingAudioSyncError = false;
-    audioSync->prevAudioSamplePos = (int)((float)audioSync->audioSource->get_clip()->get_frequency() * num);
+    audioSync->prevAudioSamplePos = (int)((float)audioSync->initData->audioClip->get_frequency() * num);
     audioSync->dspTimeOffset = UnityEngine::AudioSettings::get_dspTime() - (double)num;
 }
 
@@ -1088,9 +1183,9 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
     if(fpsCounter == nullptr) {
         self->get_gameObject()->AddComponent<FPSCounter*>();
         fpsCounter = self->get_gameObject()->GetComponent<FPSCounter*>();
-    } else if(fpsCounter->get_currentFPS() < fps-2 && fpsCounter->get_currentFPS() > fps+2 && songTime > 5 && !inPauseMenu) {
-        fps = fpsCounter->get_currentFPS();
-        log("fps is "+std::to_string(fps));
+    } else if(fpsCounter->get_currentFPS() < gameFPS-2 && fpsCounter->get_currentFPS() > gameFPS+2 && songTime > 5 && !inPauseMenu) {
+        gameFPS = fpsCounter->get_currentFPS();
+        log("fps is "+std::to_string(gameFPS));
     }
     
     if(recording) {
@@ -1141,7 +1236,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
     // log("Saber_ManualUpdate %s", to_utf8(csstrtostr(self->get_gameObject()->get_name())).c_str());
     
-    int saberType = *RunMethod<int>(self, "get_saberType");
+    int saberType = int(self->get_saberType());
     
     if(recording) {
         if(!checkedForTricksaber && songTime > 0.75f) {
@@ -1199,7 +1294,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
             // }
             if(il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0) != nullptr) {
                 log("Installing Qosmetics hook");
-                INSTALL_HOOK_OFFSETLESS(logger(), QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
+                INSTALL_HOOK_OFFSETLESS(loggingFunction(), QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
                 installedQosmeticsHook = true;
             }
         }
@@ -1316,12 +1411,12 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, AudioTimeSyncController* self) {
         }
 
         if(!inPauseMenu) {
-            float roundedReplaySpeed = (float(int(replaySpeed*100)))/100;
+            float roundedReplaySpeed = float(int((replaySpeed * modifierSpeed)*100))/100;
 
             // log("Rounded replay speed is "+std::to_string(roundedReplaySpeed));
 
-            self->timeScale = float(int(replaySpeed*100))/100;
-            audio->set_pitch(float(int(replaySpeed*100))/100);
+            self->timeScale = roundedReplaySpeed;
+            audio->set_pitch(roundedReplaySpeed);
         }
     }
 
@@ -1355,7 +1450,7 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, AudioTimeSyncController* self) {
 
             log("Getting energy type");
             int energy = 0;
-            if(oldModifiers.batteryEnergy) {
+            if(oldModifiers.fourLives) {
                 energy = 1;
             }
 
@@ -1371,19 +1466,21 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, AudioTimeSyncController* self) {
                 speed = 1;
             } else if(oldModifiers.slowerSong) {
                 speed = 2;
+            } else if(oldModifiers.superFastSong) {
+                speed = 3;
             }
 
             GameplayModifiersPanelController* modifiersPanel = FindObject<GameplayModifiersPanelController*>("GameplayModifiers")->GetComponent<GameplayModifiersPanelController*>();
 
             log("Getting old score modifiers");
-            GameplayModifiers* prevModifiers = GameplayModifiers::New_ctor(false, false, energy, oldModifiers.noFail, oldModifiers.instafail, false, obstacles, oldModifiers.noBombs, false, false, oldModifiers.disappearingArrows, speed, oldModifiers.noArrows, oldModifiers.ghostNotes);
+            GameplayModifiers* prevModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.oneLife, false, obstacles, replaySaveBools.noBombs, false, replaySaveBools.strictAngles, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes, replaySaveBools.proMode, false, replaySaveBools.smallNotes);
             modifiersPanel->SetData(prevModifiers);
             modifiersPanel->RefreshTotalMultiplierAndRankUI();
         }
     }
 }
 
-MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, Il2CppObject* difficultyBeatmap, Il2CppObject* overrideEnvironmentSettings, Il2CppObject* overrideColorScheme, Il2CppObject* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, Il2CppObject* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
+MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, Il2CppObject* difficultyBeatmap, Il2CppObject* previewBeatmapLevel,Il2CppObject* overrideEnvironmentSettings, Il2CppObject* overrideColorScheme, GameplayModifiers* gameplayModifiers, PlayerSpecificSettings* playerSpecificSettings, Il2CppObject* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
 
     log("Song Start "+std::to_string(inSongOrResults));
 
@@ -1403,6 +1500,9 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         GetModifiers(gameplayModifiers, playerSpecificSettings);
         resetModifiers = false;
     } else {
+        audioRenderer.OpenFile("sdcard/"+songName+".wav");
+        // videoCapture.Init(1920, 1080, 30, 2, "sdcard/"+songName+".mp4");
+
         log("Entering a replay, camera mode is "+cameraToggleString);
 
         bs_utils::Submission::disable(modInfo);
@@ -1421,33 +1521,46 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         log("Setting modifiers to saved values");
         SetFieldValue(gameplayModifiers, "_disappearingArrows", replaySaveBools.disappearingArrows);
         SetFieldValue(gameplayModifiers, "_ghostNotes", replaySaveBools.ghostNotes);
-        SetFieldValue(gameplayModifiers, "_instaFail", replaySaveBools.instafail);
+        SetFieldValue(gameplayModifiers, "_instaFail", replaySaveBools.oneLife);
         SetFieldValue(gameplayModifiers, "_noArrows", replaySaveBools.noArrows);
         SetFieldValue(gameplayModifiers, "_noBombs", replaySaveBools.noBombs);
         SetFieldValue(gameplayModifiers, "_noFailOn0Energy", replaySaveBools.noFail);
+        SetFieldValue(gameplayModifiers, "_zenMode", false);
+        SetFieldValue(gameplayModifiers, "_proMode", replaySaveBools.proMode);
+        SetFieldValue(gameplayModifiers, "_strictAngles", replaySaveBools.strictAngles);
+        SetFieldValue(gameplayModifiers, "_smallCubes", replaySaveBools.smallNotes);
         SetFieldValue(playerSpecificSettings, "_leftHanded", replaySaveBools.leftHanded);
         
         reduceDebris = *GetFieldValue<bool>(playerSpecificSettings, "_reduceDebris");
 
-        if(replaySaveBools.batteryEnergy) {
+        if(replaySaveBools.fourLives) {
+            log("Turning on Four Lives");
             SetFieldValue(gameplayModifiers, "_energyType", 1);
         } else {
             SetFieldValue(gameplayModifiers, "_energyType", 0);
         }
 
         if(replaySaveBools.noObstacles) {
+            log("Turning on No Obstacles");
             SetFieldValue(gameplayModifiers, "_enabledObstacleType", 2);
         } else {
             SetFieldValue(gameplayModifiers, "_enabledObstacleType", 0);
         }
 
         if(replaySaveBools.fasterSong) {
-            SetFieldValue(gameplayModifiers, "_songSpeed", 1);
+            log("Setting to faster speed");
+            gameplayModifiers->songSpeed = (int)GameplayModifiers::SongSpeed::Faster;
         } else if(replaySaveBools.slowerSong) {
-            SetFieldValue(gameplayModifiers, "_songSpeed", 2);
+            log("Setting to slower speed");
+            gameplayModifiers->songSpeed = (int)GameplayModifiers::SongSpeed::Slower;
+        } else if(replaySaveBools.superFastSong) {
+            log("Setting to super speed");
+            gameplayModifiers->songSpeed = (int)GameplayModifiers::SongSpeed::SuperFast;
         } else {
-            SetFieldValue(gameplayModifiers, "_songSpeed", 0);
+            log("Setting to normal speed");
+            gameplayModifiers->songSpeed = (int)GameplayModifiers::SongSpeed::Normal;
         }
+        modifierSpeed = gameplayModifiers->get_songSpeedMul();
     
         replayText = nullptr;
         speedToggle = nullptr;
@@ -1464,7 +1577,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
 
     inPauseMenu = false;
 
-    SongStart(self, gameMode, difficultyBeatmap, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
+    SongStart(self, gameMode, difficultyBeatmap, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
 
     log("Finished song setup");
 }
@@ -1519,22 +1632,28 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
         rename(std::string(replayDirectory+songHash+oldExtension).c_str(), std::string(replayDirectory+songHash+fileExtensionName).c_str());
     }
 
-    if(warningText != nullptr) {
-        UnityEngine::GameObject::Destroy(warningText->get_gameObject());
-        warningText = nullptr;
+    log("Attempting to delete previous buttons");
+    if(warningTextGO != nullptr) {
+        log("Deleting warning text");
+        UnityEngine::GameObject::Destroy(warningTextGO);
+        warningTextGO = nullptr;
     }
-    if(failedTimeText != nullptr) {
-        UnityEngine::GameObject::Destroy(failedTimeText->get_gameObject());
-        failedTimeText = nullptr;
+    if(failedTimeTextGO != nullptr) {
+        log("Deleting failed time text");
+        UnityEngine::GameObject::Destroy(failedTimeTextGO);
+        failedTimeTextGO = nullptr;
     }
-    if(cameraToggle != nullptr) {
-        UnityEngine::GameObject::Destroy(cameraToggle->get_gameObject());
-        cameraToggle = nullptr;
+    if(cameraToggleGO != nullptr) {
+        log("Deleting camera toggle button");
+        UnityEngine::GameObject::Destroy(cameraToggleGO);
+        cameraToggleGO = nullptr;
     }
-    if(replayButton != nullptr) {
-        UnityEngine::GameObject::Destroy(replayButton->get_gameObject());
-        replayButton = nullptr;
+    if(replayButtonGO != nullptr) {
+        log("Deleting replay button");
+        UnityEngine::GameObject::Destroy(replayButtonGO);
+        replayButtonGO = nullptr;
     }
+    log("Successfully attempted to delete previous buttons");
 
     if(fileexists(replayDirectory+songHash+fileExtensionName) && !inMulti && *RunMethod<bool>(playButton, "get_interactable")) {
         log("Making Replay button");
@@ -1564,6 +1683,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
             failedTimeText->set_alignment(TMPro::TextAlignmentOptions::Left);
             failedTimeText->set_fontSize(3.4f);
             failedTimeText->set_lineSpacing(-45);
+            failedTimeTextGO = failedTimeText->get_gameObject();
         }
         failedSongTime = storedTime;
         failedInReplay = storedDidFail;
@@ -1577,6 +1697,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
         UnityEngine::Vector3 pos = warningText->get_transform()->get_position();
         pos.z -= 0.45f;
         warningText->get_transform()->set_position(pos);
+        warningTextGO = warningText->get_gameObject();
 
         std::string tempString;
         if(cameraToggleString == "hmd") {
@@ -1591,20 +1712,22 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
             parent, 
             tempString, 
             UnityEngine::Vector2{buttonsPosition.x-12.85f, buttonsPosition.y}, 
-            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, cameraToggleOnClick)
+            []() { cameraToggleOnClick(); }
         );
         cameraToggle->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
         cameraToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{30, 9});
+        cameraToggleGO = cameraToggle->get_gameObject();
 
         replayButton = BeatSaberUI::CreateUIButton(
             parent, 
             "Replay", 
             "OkButton", 
             UnityEngine::Vector2{buttonsPosition.x+13.2f, buttonsPosition.y-3.6f}, 
-            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, replayButtonOnClick)
+            []() { replayButtonOnClick(); }
         );
         replayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
         replayButton->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{30, 9});
+        replayButtonGO = replayButton->get_gameObject();
     } else {
         log("Not making Replay button");
         playButtonTransform->GetParent()->set_localPosition(UnityEngine::Vector3{-1.8f, -55, 0});
@@ -1671,7 +1794,7 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, Il2CppObject* self) {
 
     scoreMultiplier = *GetFieldValue<float>(self, "_gameplayModifiersScoreMultiplier");
 
-    modifiersModel = *GetFieldValue<GameplayModifiersModelSO*>(self, "_gameplayModifiersModel");
+    if(modifiersModel == nullptr) modifiersModel = *GetFieldValue<GameplayModifiersModelSO*>(self, "_gameplayModifiersModel");
 
     if(indexNum > 2 && !recording) {
         SetFieldValue(self, "_baseRawScore", replayData[indexNum+5].score);
@@ -1757,7 +1880,7 @@ MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, GlobalNamespace::SongProgressUIContro
             }
         }
 
-        if(inSong && replayText == nullptr) {
+        if(inSong && replayText == nullptr && createText) {
             log("Creating replay text");
 
             bool getLastIndex = false;
@@ -1765,16 +1888,24 @@ MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, GlobalNamespace::SongProgressUIContro
                 getLastIndex = true;
             }
             log("Get last index is %i", getLastIndex);
-            replayText = QuestUI::BeatSaberUI::CreateText(FindObject<ComboUIController*>("ComboPanel", false, getLastIndex)->get_transform(), textToSetTo, false, UnityEngine::Vector2{0, 110});
-            replayTextCurrent = textToSetTo;
-            replayText->get_gameObject()->GetComponent<TMPro::TextMeshProUGUI*>()->set_fontSize(25);
-            replayText->get_gameObject()->SetActive(true);
-            replayText->set_alignment(TMPro::TextAlignmentOptions::Center);
-            UnityEngine::Vector3 currentPosition = replayText->get_transform()->get_position();
-            currentPosition.x = 0;
-            replayText->get_transform()->set_position(currentPosition);
-            log("Finished creating replay text");
-        } else if(((inSong && replayTextCurrent != textToSetTo) || (inPauseMenu && !speedToggleBool)) && replayText != nullptr) {
+            
+            UnityEngine::GameObject* comboPanel = FindObject<ComboUIController*>("ComboPanel", false, getLastIndex);
+            
+            if(comboPanel != nullptr) {
+                foundComboPanel = true;
+                replayText = QuestUI::BeatSaberUI::CreateText(comboPanel->get_transform(), textToSetTo, false, UnityEngine::Vector2{0, 110});
+                replayTextCurrent = textToSetTo;
+                replayText->get_gameObject()->GetComponent<TMPro::TextMeshProUGUI*>()->set_fontSize(25);
+                replayText->get_gameObject()->SetActive(true);
+                replayText->set_alignment(TMPro::TextAlignmentOptions::Center);
+                UnityEngine::Vector3 currentPosition = replayText->get_transform()->get_position();
+                currentPosition.x = 0;
+                replayText->get_transform()->set_position(currentPosition);
+                log("Finished creating replay text");
+            } else {
+                createText = false;
+            }
+        } else if(((inSong && replayTextCurrent != textToSetTo) || (inPauseMenu && !speedToggleBool)) && replayText != nullptr && foundComboPanel) {
             replayText->get_gameObject()->GetComponent<TMPro::TextMeshProUGUI*>()->set_text(createcsstr(textToSetTo));
             replayTextCurrent = textToSetTo;
             replayText->get_gameObject()->SetActive(true);
@@ -1810,7 +1941,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
                 "Lock Speed",
                 speedToggleBool,
                 UnityEngine::Vector2{28.5f, -35},
-                il2cpp_utils::MakeDelegate<UnityEngine::Events::UnityAction_1<bool>*>(classof(UnityEngine::Events::UnityAction_1<bool>*), (Il2CppObject*)nullptr, speedToggleOnClick)
+                [](bool newValue) { speedToggleOnClick(newValue); }
             );
             UnityEngine::Object::DontDestroyOnLoad(speedToggle);
             UnityEngine::RectTransform* rts = speedToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>();
@@ -1904,8 +2035,6 @@ MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, bool removedFro
     ResultsScreenEnd(self, removedFromHierarchy, screenSystemDisabling);
 }
 
-UnityEngine::Vector3 lerpedAcc;
-
 MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) {
 
     // log("LightManager_OnWillRenderObject");
@@ -1940,8 +2069,13 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 smoothCameraPosition = UnityEngine::Vector3::Lerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, deltaTime * positionSmooth);
                 smoothCameraRotation = UnityEngine::Quaternion::Slerp(smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
 
-                cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, smoothCameraRotation);
-                cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::Self);
+                UnityEngine::Vector3 cameraRotation = smoothCameraRotation.get_eulerAngles();
+
+                headFollowTransform->SetPositionAndRotation(smoothCameraPosition, UnityEngine::Quaternion::Euler(cameraRotation.x, 0, cameraRotation.z));
+                
+                cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
+                cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
+                cameraGO->get_transform()->set_rotation(smoothCameraRotation);
             } else if(cameraToggleString == "thirdPerson") {
                 if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
                     float camX = sin((songTime/2)/5)*9;
@@ -1949,7 +2083,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                     float camZ = cos((songTime/2)/2.5f)*-3-2.5f;
                     cameraGO->get_transform()->set_position(UnityEngine::Vector3{camX, camY, camZ});
 
-                    // headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z});
+                    headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, 1.6f});
 
                     cameraGO->get_transform()->LookAt(headFollowTransform);
                 } else {
@@ -1966,7 +2100,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
                         cameraGO->get_transform()->set_position(newThirdPersonCamPos);
                         if(aButtonValue) {
-                            UnityEngine::Vector3 translation = (prevPos - basePrevPos) / 4.0f;
+                            UnityEngine::Vector3 translation = (prevPos - basePrevPos) * 18  * UnityEngine::Time::get_deltaTime();
                             cameraGO->get_transform()->Translate(UnityEngine::Quaternion::Euler(0, -prevRot.y, 0) * translation, UnityEngine::Space::Self);
                         }
 
@@ -1994,6 +2128,46 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
             set_cullingMatrix(camera, UnityEngine::Matrix4x4::Ortho(-99999, 99999, -99999, 99999, 0.001f, 99999) * MatrixTranslate(UnityEngine::Vector3::get_forward() * -99999 / 2) * camera->get_worldToCameraMatrix());
         }
+    }
+
+    if(inSong && songTime > 2) {
+        // if(recordedRenderTexture == nullptr) {
+        //     int width = 1920;
+        //     int height = 1080;
+        //     videoCapture.Init(width, height, 30, 2000, "ultrafast", "sdcard/test.h264");
+        //     rect = UnityEngine::Rect{0, 0, float(width), float(height)};
+        //     recordedRenderTexture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
+        //     recordedTexture = UnityEngine::Texture2D::New_ctor(width, height, (UnityEngine::TextureFormat)UnityEngine::TextureFormat::RGB24, false);
+        // }
+
+        UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
+        UnityEngine::Camera* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
+
+        // camera->set_targetTexture(recordedRenderTexture);
+
+        UnityEngine::RenderTexture* rt = camera->get_targetTexture();
+
+        
+        int width = 1920;
+        int height = 1080;
+        
+        GLuint textureObj = *reinterpret_cast<GLuint*>(rt->GetNativeTexturePtr());
+
+        glActiveTexture(textureObj);
+        glBindTexture(GL_TEXTURE_2D, textureObj);
+
+        int data_size = width * height * 4;
+        GLubyte* pixels = new GLubyte[width * height * 4];
+
+        GLuint fbo;
+        glGenFramebuffers(1, &fbo); 
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureObj, 0);
+
+        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &fbo);
     }
 
     LightManager_OnWillRenderObject(self);
@@ -2054,7 +2228,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, Il2CppObject* self
             "Replay", 
             "OkButton", 
             UnityEngine::Vector2{17.25f, -32},
-            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, failedReplayButtonOnClick)
+            [] { failedReplayButtonOnClick(); }
         );
         failedReplayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
         failedReplayButton->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{45, 10});
@@ -2071,7 +2245,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, Il2CppObject* self
             parent,
             tempString, 
             UnityEngine::Vector2{-20.75f, -28},
-            il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), (Il2CppObject*)nullptr, failedCameraToggleOnClick)
+            [] { failedCameraToggleOnClick(); }
         );
         failedCameraToggle->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
         failedCameraToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{45, 10});
@@ -2114,6 +2288,9 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, Il2CppObject* self, Globa
 
     SaveRecording(levelCompletionResults, practice);
 
+    audioRenderer.Save();
+    // videoCapture.Finish();
+
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }
 
@@ -2139,28 +2316,28 @@ MAKE_HOOK_OFFSETLESS(NoteWasMissed, void, Il2CppObject* self) {
     NoteWasMissed(self);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteWasCut, void, Il2CppObject* self, Il2CppObject* noteCutInfo) {
+MAKE_HOOK_OFFSETLESS(NoteWasCut, void, Il2CppObject* self, NoteCutInfo* noteCutInfo) {
 
-    bool allIsOk = *RunMethod<bool>(noteCutInfo, "get_allIsOK");
-    
-    if((deathReplay || failedReplay) && songTime < songStartTime+0.2f && !allIsOk) {
-        return;
-    }
+    if(!recording) {
+        bool allIsOk = noteCutInfo->get_allIsOK();
 
-    if(!recording && !allIsOk && HasFakeMiss()) {
-        return;
+        if((deathReplay || failedReplay) && songTime < songStartTime+0.2f && !allIsOk) {
+            return;
+        } else if(!allIsOk && HasFakeMiss()) {
+            return;
+        }
     }
 
     NoteWasCut(self, noteCutInfo);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteDebrisSpawner_SpawnDebris, void, Il2CppObject* self, UnityEngine::Vector3 cutPoint, UnityEngine::Vector3 cutNormal, float saberSpeed, UnityEngine::Vector3 saberDir, UnityEngine::Vector3 notePos, UnityEngine::Quaternion noteRotation, Il2CppObject* colorType, float timeToNextColorNote, UnityEngine::Vector3 moveVec) {
+MAKE_HOOK_OFFSETLESS(NoteDebrisSpawner_SpawnDebris, void, Il2CppObject* self, UnityEngine::Vector3 cutPoint, UnityEngine::Vector3 cutNormal, float saberSpeed, UnityEngine::Vector3 saberDir, UnityEngine::Vector3 notePos, UnityEngine::Quaternion noteRotation, UnityEngine::Vector3 noteScale, Il2CppObject* colorType, float timeToNextColorNote, UnityEngine::Vector3 moveVec) {
 
     if(!recording && reduceDebris) {
         return;
     }
 
-    NoteDebrisSpawner_SpawnDebris(self, cutPoint, cutNormal, saberSpeed, saberDir, notePos, noteRotation, colorType, timeToNextColorNote, moveVec);
+    NoteDebrisSpawner_SpawnDebris(self, cutPoint, cutNormal, saberSpeed, saberDir, notePos, noteRotation, noteScale, colorType, timeToNextColorNote, moveVec);
 }
 
 MAKE_HOOK_OFFSETLESS(MainFlowCoordinator_DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -2259,107 +2436,110 @@ MAKE_HOOK_OFFSETLESS(GameSongController_LateUpdate, void, GameSongController* se
 
     maxSongTime = self->get_songLength();
 
-    if(failedTimeSlider != nullptr && !inPauseMenu && !inResumeAnimation && !recording && setSongTime && songTime > 0.01f) {
-        if(songTime < 0.1f && !deathReplay) {
+    if(failedTimeSlider != nullptr && !inPauseMenu && !inResumeAnimation && !recording && setSongTime && songTime > 0.1f) {
+        log("Checking to set song time");
+        int sliderValue = failedTimeSlider->get_transform()->Find(createcsstr("LatencySlider"))->get_gameObject()->GetComponent<HMUI::TimeSlider*>()->get_value();
+
+        if(sliderValue == std::floor(oldSliderTime)) {
             setSongTime = false;
-        } else {
-            log("Checking to set song time");
-            int sliderValue = failedTimeSlider->get_transform()->Find(createcsstr("LatencySlider"))->get_gameObject()->GetComponent<HMUI::TimeSlider*>()->get_value();
+        }
 
-            if(sliderValue == std::floor(oldSliderTime)) {
-                setSongTime = false;
+        log("Slider is "+std::to_string(sliderValue)+", old slider is "+std::to_string(oldSliderTime));
+
+        if(setSongTime) {
+            setSongTime = false;
+            float previousSongTime = self->audioTimeSyncController->songTime;
+
+            if(sliderValue < songTime) {
+                BeatmapObjectManager* objectManager = GetFirstEnabledComponent<ScoreController*>()->beatmapObjectManager;
+
+                Array<NoteController*>* noteTRS = UnityEngine::Resources::FindObjectsOfTypeAll<NoteController*>();
+                for(int i = 0; i < noteTRS->Length(); i++) {
+                    UnityEngine::GameObject* go = noteTRS->values[i]->get_gameObject();
+                    if(go->get_activeInHierarchy() == true){
+                        objectManager->Despawn(noteTRS->values[i]);
+                    }
+                }
+
+                Array<ObstacleController*>* obstacleTRS = UnityEngine::Resources::FindObjectsOfTypeAll<ObstacleController*>();
+                for(int i = 0; i < obstacleTRS->Length(); i++) {
+                    UnityEngine::GameObject* go = obstacleTRS->values[i]->get_gameObject();
+                    if(go->get_activeInHierarchy() == true){
+                        objectManager->Despawn(obstacleTRS->values[i]);
+                    }
+                }
+            }
+            
+            log("Getting objects after skip time");
+            BeatmapObjectCallbackController* spawnController = reinterpret_cast<BeatmapObjectCallbackController*>(self->beatmapObjectCallbackController);
+
+            auto beatmapLinesData = spawnController->initData->beatmapData->get_beatmapLinesData();
+            auto linesCount = il2cpp_utils::RunMethod<int>(beatmapLinesData, "System.Collections.ICollection.get_Count").value();
+            for (int i = 0; i < linesCount; i++) {
+                auto lineData = il2cpp_utils::RunMethod<GlobalNamespace::IReadonlyBeatmapLineData*>(beatmapLinesData, "System.Collections.Generic.IReadOnlyList`1.get_Item", i).value();
+                auto beatmapObjectsInLine = lineData->get_beatmapObjectsData();
+                for (int j = 0; j < reinterpret_cast<System::Collections::Generic::List_1<BeatmapObjectData*>*>(beatmapObjectsInLine)->get_Count(); j++) {
+                    if (beatmapObjectsInLine->get_Item(j)->time >= sliderValue) {
+                        for (int k = 0; k < spawnController->beatmapObjectCallbackData->get_Count(); k++) {
+                            spawnController->beatmapObjectCallbackData->get_Item(k)->nextObjectIndexInLine->values[i] = j;
+                        }
+                        break;
+                    }
+                }
             }
 
-            log("Slider is "+std::to_string(sliderValue)+", old slider is "+std::to_string(oldSliderTime));
-
-            if(setSongTime) {
-                setSongTime = false;
-
-                if(sliderValue < songTime) {
-                    BeatmapObjectManager* objectManager = GetFirstEnabledComponent<ScoreController*>()->beatmapObjectManager;
-
-                    Array<NoteController*>* noteTRS = UnityEngine::Resources::FindObjectsOfTypeAll<NoteController*>();
-                    for(int i = 0; i < noteTRS->Length(); i++) {
-                        UnityEngine::GameObject* go = noteTRS->values[i]->get_gameObject();
-                        if(go->get_activeInHierarchy() == true){
-                            objectManager->Despawn(noteTRS->values[i]);
-                        }
+            log("Getting events after skip time");
+            auto events = spawnController->initData->beatmapData->get_beatmapEventsData();
+            for (int i = 0; i < reinterpret_cast<System::Collections::Generic::List_1<BeatmapEventData*>*>(events)->get_Count(); i++) {
+                auto event = events->get_Item(i);
+                if (event->time >= sliderValue) {
+                    for (int j = 0; j < spawnController->beatmapEventCallbackData->get_Count(); j++) {
+                        spawnController->beatmapEventCallbackData->get_Item(j)->nextEventIndex = i;
                     }
-
-                    Array<ObstacleController*>* obstacleTRS = UnityEngine::Resources::FindObjectsOfTypeAll<ObstacleController*>();
-                    for(int i = 0; i < obstacleTRS->Length(); i++) {
-                        UnityEngine::GameObject* go = obstacleTRS->values[i]->get_gameObject();
-                        if(go->get_activeInHierarchy() == true){
-                            objectManager->Despawn(obstacleTRS->values[i]);
-                        }
-                    }
+                    spawnController->nextEventIndex = i;
+                    break;
                 }
-                
-                log("Getting objects after skip time");
-                auto beatmapLinesData = self->beatmapObjectCallbackController->beatmapData->get_beatmapLinesData();
-                auto linesCount = il2cpp_utils::RunMethod<int>(beatmapLinesData, "System.Collections.ICollection.get_Count").value();
-                for (int i = 0; i < linesCount; i++) {
-                    auto lineData = il2cpp_utils::RunMethod<GlobalNamespace::IReadonlyBeatmapLineData*>(beatmapLinesData, "System.Collections.Generic.IReadOnlyList`1.get_Item", i).value();
-                    auto beatmapObjectsInLine = lineData->get_beatmapObjectsData();
-                    for (int j = 0; j < reinterpret_cast<System::Collections::Generic::List_1<BeatmapObjectData*>*>(beatmapObjectsInLine)->get_Count(); j++) {
-                        if (beatmapObjectsInLine->System_Collections_Generic_IReadOnlyList_1_get_Item(j)->time >= sliderValue) {
-                            for (int k = 0; k < self->beatmapObjectCallbackController->beatmapObjectCallbackData->get_Count(); k++) {
-                                self->beatmapObjectCallbackController->beatmapObjectCallbackData->get_Item(k)->nextObjectIndexInLine->values[i] = j;
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                log("Getting events after skip time");
-                auto events = self->beatmapObjectCallbackController->beatmapData->get_beatmapEventsData();
-                for (int i = 0; i < reinterpret_cast<System::Collections::Generic::List_1<BeatmapEventData*>*>(events)->get_Count(); i++) {
-                    auto event = events->System_Collections_Generic_IReadOnlyList_1_get_Item(i);
-                    if (event->time >= sliderValue) {
-                        for (int j = 0; j < self->beatmapObjectCallbackController->beatmapEventCallbackData->get_Count(); j++) {
-                            self->beatmapObjectCallbackController->beatmapEventCallbackData->get_Item(j)->nextEventIndex = i;
-                        }
-                        self->beatmapObjectCallbackController->nextEventIndex = i;
-                        break;
-                    }
-                }
-
-                log("Setting song time to skip time");
-                SetSongTimeTo(self->audioTimeSyncController, sliderValue);
-                if(sliderValue > songTime) self->audioTimeSyncController->audioSource->Play();
-                log("Successfully set time to skip time");
-
-                for(int i = 0; i < replayData.size(); i++) {
-                    if(sliderValue < replayData[0].time) {
-                        indexNum = 0;
-                        break;
-                    }
-                    float keyFrameTime = replayData[i].time;
-                    float nextKeyFrameTime = replayData[std::min(float(i+1), float(replayData.size()-1))].time;
-                    if(keyFrameTime <= sliderValue && nextKeyFrameTime > sliderValue) {
-                        indexNum = i;
-                        break;
-                    }
-                }
-
-                log("Setting energy level");
-                if(replayData[indexNum].energy != -1) {
-                    gameEnergyUIPanel = GetFirstEnabledComponent<GameEnergyUIPanel*>();
-                    if(!didReach0Energy || (didReach0Energy && sliderValue < reached0Time)) gameEnergyUIPanel->RefreshEnergyUI(replayData[indexNum].energy);
-                    SetEnergyState(sliderValue);
-                }
-
-                // Array<NoteCutSoundEffect*>* trs = UnityEngine::Resources::FindObjectsOfTypeAll<NoteCutSoundEffect*>();
-                // for(int i = 0; i < trs->Length(); i++) {
-                //     // trs->values[i]->set_enabled(true);
-                //     bool value = true;
-                //     // if(trs->values[i]->get_time() >= sliderValue) {
-                //     //     value = true;
-                //     // }
-                //     trs->values[i]->noteWasCut = !value;
-                //     trs->values[i]->set_enabled(value);
-                // }
             }
+
+            log("Setting song time to skip time");
+            SetSongTimeTo(self->audioTimeSyncController, sliderValue);
+            self->audioTimeSyncController->audioSource->Play();
+            log("Successfully set time to skip time");
+
+            for(int i = 0; i < replayData.size(); i++) {
+                if(sliderValue < replayData[0].time) {
+                    indexNum = 0;
+                    break;
+                }
+                float keyFrameTime = replayData[i].time;
+                float nextKeyFrameTime = replayData[std::min(float(i+1), float(replayData.size()-1))].time;
+                if(keyFrameTime <= sliderValue && nextKeyFrameTime > sliderValue) {
+                    indexNum = i;
+                    break;
+                }
+            }
+
+            log("Setting energy level");
+            if(replayData[indexNum].energy != -1) {
+                gameEnergyUIPanel = GetFirstEnabledComponent<GameEnergyUIPanel*>();
+                ComboUIController* comboUIController = GetFirstEnabledComponent<ComboUIController*>();
+                if((!didReach0Energy || (didReach0Energy && sliderValue < reached0Time)) && previousSongTime > 0.5f) {
+                    gameEnergyUIPanel->RefreshEnergyUI(replayData[indexNum].energy);
+                    comboUIController->HandleComboDidChange(replayData[indexNum+5].combo);
+                }
+                SetEnergyState(sliderValue);
+            }
+
+            // Array<NoteCutSoundEffect*>* trs = UnityEngine::Resources::FindObjectsOfTypeAll<NoteCutSoundEffect*>();
+            // for(int i = 0; i < trs->Length(); i++) {
+            //     // trs->values[i]->set_enabled(true);
+            //     bool value = true;
+            //     // if(trs->values[i]->get_time() >= sliderValue) {
+            //     //     value = true;
+            //     // }
+            //     trs->values[i]->noteWasCut = !value;
+            //     trs->values[i]->set_enabled(value);
+            // }
         }
     }
 }
@@ -2372,13 +2552,16 @@ MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel*
             energy = replayData[indexNum].energy;
         } else if(!doneFailedEffect && songTime < reached0Time+3) {
             log("Simulating a real no fail bail out");
-            gameEnergyUIPanel = FindObject<GameEnergyUIPanel*>("EnergyPanel")->GetComponent<GameEnergyUIPanel*>();
-            SetEnergyState(songTime);
-            failedEnergyEffect = UnityEngine::Object::Instantiate(gameEnergyUIPanel);
-            failedEnergyEffect->get_transform()->Find(createcsstr("BG"))->get_gameObject()->SetActive(false);
-            failedEnergyEffect->playableDirector->Play();
-            failedEffectTimer = 4;
-            doneFailedEffect = true;
+            UnityEngine::GameObject* tempGO = FindObject<GameEnergyUIPanel*>("EnergyPanel");
+            if(tempGO != nullptr) {
+                gameEnergyUIPanel = tempGO->GetComponent<GameEnergyUIPanel*>();
+                SetEnergyState(songTime);
+                failedEnergyEffect = UnityEngine::Object::Instantiate(gameEnergyUIPanel);
+                failedEnergyEffect->get_transform()->Find(createcsstr("BG"))->get_gameObject()->SetActive(false);
+                failedEnergyEffect->playableDirector->Play();
+                failedEffectTimer = 4;
+                doneFailedEffect = true;
+            }
         }
         if(energy < 0.01f) {
             energy = 0.01f;
@@ -2388,16 +2571,34 @@ MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel*
     GameEnergyUIPanel_RefreshEnergyUI(self, energy);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteCutSoundEffectManager_HandleNoteWasSpawned, void, Il2CppObject* self, NoteController* noteController) {
+MAKE_HOOK_OFFSETLESS(AutomaticSFXVolume_OnAudioFilterRead, void, Il2CppObject* self, Array<float> data, int channels) {
 
-    log("NoteCutSoundEffectManager_HandleNoteWasSpawned");
-    
-    NoteCutSoundEffectManager_HandleNoteWasSpawned(self, noteController);
+    if(!recording && !inPauseMenu && !inResumeAnimation) {
+        audioRenderer.OnAudioFilterRead(data, channels);
+    }
+
+    AutomaticSFXVolume_OnAudioFilterRead(self, data, channels);
+}
+
+MAKE_HOOK_OFFSETLESS(NoteCutSoundEffect_NoteWasCut, void, NoteCutSoundEffect* self, Il2CppObject* noteController, Il2CppObject* noteCutInfo) {
+
+    NoteCutSoundEffect_NoteWasCut(self, noteController, noteCutInfo);
+
+    if(!recording) {
+        UnityEngine::AudioSource* audioSource = self->audioSource;
+        Array<float> data;
+        // audioSource->get_clip()->GetData(&data, 0);
+        // for (int i = 0; i < data.Length(); i++) {
+        //     // write the short to the stream
+        //     short value = short(data.values[i] * float(32767));
+        //     audioRenderer.writer.write(reinterpret_cast<const char*>(&value), sizeof(short));
+        // }
+    }
 }
 
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
-    info.version = "0.5.0";
+    info.version = "0.6.0";
     modInfo = info;
     
     getConfig().Load();
@@ -2405,6 +2606,8 @@ extern "C" void setup(ModInfo& info) {
 }
 
 extern "C" void load() {
+    il2cpp_functions::Init();
+
     Modloader::requireMod("TrickSaber", "0.3.1");
 
     QuestUI::Init();
@@ -2413,44 +2616,44 @@ extern "C" void load() {
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
 
     log("Installing hooks...");
-    INSTALL_HOOK_OFFSETLESS(logger(), SongUpdate, il2cpp_utils::FindMethodUnsafe("", "AudioTimeSyncController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), SongStart, il2cpp_utils::FindMethodUnsafe("", "StandardLevelScenesTransitionSetupDataSO", "Init", 9));
-    INSTALL_HOOK_OFFSETLESS(logger(), BeatmapObjectSpawnMovementData_Update, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectSpawnMovementData", "Update", 2));
-    INSTALL_HOOK_OFFSETLESS(logger(), PlayerController_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), Saber_ManualUpdate, il2cpp_utils::FindMethodUnsafe("", "Saber", "ManualUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
-    INSTALL_HOOK_OFFSETLESS(logger(), StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), StandardLevelDetailViewController_DidActivate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "DidActivate", 3));
-    INSTALL_HOOK_OFFSETLESS(logger(), GameEnergyCounter_AddEnergy, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "ProcessEnergyChange", 1));
-    INSTALL_HOOK_OFFSETLESS(logger(), ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, il2cpp_utils::FindMethodUnsafe("", "RelativeScoreAndImmediateRankCounter", "UpdateRelativeScoreAndImmediateRank", 4));
-    INSTALL_HOOK_OFFSETLESS(logger(), Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
-    INSTALL_HOOK_OFFSETLESS(logger(), ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "ShowMenu", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "StartResumeAnimation", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), PauseAnimationFinish, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandlePauseMenuManagerDidFinishResumeAnimation", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), PauseMenuManager_MenuButtonPressed, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "MenuButtonPressed", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 2));
-    INSTALL_HOOK_OFFSETLESS(logger(), LightManager_OnWillRenderObject, il2cpp_utils::FindMethodUnsafe("", "LightManager", "OnWillRenderObject", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), HapticFeedbackController_Rumble, il2cpp_utils::FindMethodUnsafe("", "HapticFeedbackController", "PlayHapticFeedback", 2));
-    INSTALL_HOOK_OFFSETLESS(logger(), ResultsViewController_SetDataToUI, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "SetDataToUI", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), ResultsViewController_Init, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "Init", 4));
-    INSTALL_HOOK_OFFSETLESS(logger(), ResultsViewController_ContinueButtonPressed, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "ContinueButtonPressed", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent", 1));
-    INSTALL_HOOK_OFFSETLESS(logger(), NoteDebrisSpawner_SpawnDebris, il2cpp_utils::FindMethodUnsafe("", "NoteDebrisSpawner", "SpawnDebris", 9));
-    INSTALL_HOOK_OFFSETLESS(logger(), MainFlowCoordinator_DidActivate, il2cpp_utils::FindMethodUnsafe("", "MainFlowCoordinator", "DidActivate", 3));
-    INSTALL_HOOK_OFFSETLESS(logger(), MultiplayerLobbyController_ActivateMultiplayerLobby, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLobbyController", "ActivateMultiplayerLobby", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), MultiplayerSongStart, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLevelScenesTransitionSetupDataSO", "Init", 10));
-    INSTALL_HOOK_OFFSETLESS(logger(), MultiplayerLevelFinishedController_HandlePlayerDidFinish, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLevelFinishedController", "HandlePlayerDidFinish", 1));
-    INSTALL_HOOK_OFFSETLESS(logger(), LevelFailedTextEffect_ShowEffect, il2cpp_utils::FindMethodUnsafe("", "LevelFailedTextEffect", "ShowEffect", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), GameSongController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "GameSongController", "LateUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(logger(), GameEnergyUIPanel_RefreshEnergyUI, il2cpp_utils::FindMethodUnsafe("", "GameEnergyUIPanel", "RefreshEnergyUI", 1));
-    // INSTALL_HOOK_OFFSETLESS(logger(), NoteCutSoundEffectManager_HandleNoteWasSpawned, il2cpp_utils::FindMethodUnsafe("", "NoteCutSoundEffectManager", "HandleNoteWasSpawned", 1));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), SongUpdate, il2cpp_utils::FindMethodUnsafe("", "AudioTimeSyncController", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), SongStart, il2cpp_utils::FindMethodUnsafe("", "StandardLevelScenesTransitionSetupDataSO", "Init", 10));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), BeatmapObjectSpawnMovementData_Update, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectSpawnMovementData", "Update", 2));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PlayerController_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), Saber_ManualUpdate, il2cpp_utils::FindMethodUnsafe("", "Saber", "ManualUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), StandardLevelDetailViewController_DidActivate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "DidActivate", 3));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameEnergyCounter_AddEnergy, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "ProcessEnergyChange", 1));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, il2cpp_utils::FindMethodUnsafe("", "RelativeScoreAndImmediateRankCounter", "UpdateRelativeScoreAndImmediateRank", 4));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "ShowMenu", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "StartResumeAnimation", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseAnimationFinish, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandlePauseMenuManagerDidFinishResumeAnimation", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseMenuManager_MenuButtonPressed, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "MenuButtonPressed", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 2));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), LightManager_OnWillRenderObject, il2cpp_utils::FindMethodUnsafe("", "LightManager", "OnWillRenderObject", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), HapticFeedbackController_Rumble, il2cpp_utils::FindMethodUnsafe("", "HapticFeedbackController", "PlayHapticFeedback", 2));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsViewController_SetDataToUI, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "SetDataToUI", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsViewController_Init, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "Init", 4));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsViewController_ContinueButtonPressed, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "ContinueButtonPressed", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent", 1));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteDebrisSpawner_SpawnDebris, il2cpp_utils::FindMethodUnsafe("", "NoteDebrisSpawner", "SpawnDebris", 10));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MainFlowCoordinator_DidActivate, il2cpp_utils::FindMethodUnsafe("", "MainFlowCoordinator", "DidActivate", 3));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MultiplayerLobbyController_ActivateMultiplayerLobby, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLobbyController", "ActivateMultiplayerLobby", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MultiplayerSongStart, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLevelScenesTransitionSetupDataSO", "Init", 10));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MultiplayerLevelFinishedController_HandlePlayerDidFinish, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLevelFinishedController", "HandlePlayerDidFinish", 1));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), LevelFailedTextEffect_ShowEffect, il2cpp_utils::FindMethodUnsafe("", "LevelFailedTextEffect", "ShowEffect", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameSongController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "GameSongController", "LateUpdate", 0));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameEnergyUIPanel_RefreshEnergyUI, il2cpp_utils::FindMethodUnsafe("", "GameEnergyUIPanel", "RefreshEnergyUI", 1));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), AutomaticSFXVolume_OnAudioFilterRead, il2cpp_utils::FindMethodUnsafe("", "AutomaticSFXVolume", "OnAudioFilterRead", 2));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteCutSoundEffect_NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteCutSoundEffect", "NoteWasCut", 2));
     log("Installed all hooks!");
-    il2cpp_functions::Init();
 
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
     rotationSmooth = getConfig().config["RotationSmooth"].GetFloat();

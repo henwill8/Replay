@@ -45,5 +45,6 @@ ndkpath.txt
 *.zip
 *.txt
 ./extern/
+../extern/
 Android.mk.backup
 qpm.shared.json
