@@ -112,6 +112,12 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "*.tcc": "cpp",
+        "memory_resource": "cpp",
+        "ranges": "cpp",
+        "stop_token": "cpp"
     }
 }

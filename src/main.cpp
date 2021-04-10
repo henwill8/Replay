@@ -4,18 +4,18 @@
 #include "UI.hpp"
 #include "video_recorder.hpp"
 #include "audio_recorder.hpp"
-#include "../extern/beatsaber-hook/shared/utils/utils.h"
-#include "../extern/beatsaber-hook/shared/utils/logging.hpp"
-#include "../extern/modloader/shared/modloader.hpp"
-#include "../extern/beatsaber-hook/shared/utils/typedefs.h"
-#include "../extern/beatsaber-hook/shared/utils/il2cpp-utils.hpp"
-#include "../extern/beatsaber-hook/shared/utils/il2cpp-functions.hpp"
-#include "../extern/beatsaber-hook/shared/config/rapidjson-utils.hpp"
-#include "../extern/beatsaber-hook/shared/config/config-utils.hpp"
-#include "../extern/questui/shared/QuestUI.hpp"
-#include "../extern/questui/shared/BeatSaberUI.hpp"
-#include "../extern/bs-utils/shared/utils.hpp"
-#include "../extern/custom-types/shared/register.hpp"
+#include "beatsaber-hook/shared/utils/utils.h"
+#include "beatsaber-hook/shared/utils/logging.hpp"
+#include "modloader/shared/modloader.hpp"
+#include "beatsaber-hook/shared/utils/typedefs.h"
+#include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
+#include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
+#include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
+#include "beatsaber-hook/shared/config/config-utils.hpp"
+#include "questui/shared/QuestUI.hpp"
+#include "questui/shared/BeatSaberUI.hpp"
+#include "bs-utils/shared/utils.hpp"
+#include "custom-types/shared/register.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -33,8 +33,8 @@
 #include <filesystem>
 #include <experimental/coroutine>
 #include "custom-types/shared/coroutine.hpp"
-#include <GLES3/gl32.h>
-#include <GLES3/gl3ext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 using namespace il2cpp_utils;
 using namespace QuestUI;
@@ -2151,7 +2151,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         int width = 1920;
         int height = 1080;
         
-        GLuint textureObj = *reinterpret_cast<GLuint*>(rt->GetNativeTexturePtr());
+        GLuint textureObj = *reinterpret_cast<GLuint*>(rt->GetNativeTexturePtr().m_value);
 
         glActiveTexture(textureObj);
         glBindTexture(GL_TEXTURE_2D, textureObj);

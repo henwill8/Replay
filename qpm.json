@@ -15,25 +15,6 @@
       "additionalData": {}
     },
     {
-      "id": "beatsaber-hook",
-      "versionRange": "*",
-      "additionalData": {
-        "extraFiles": [
-          "src/inline-hook"
-        ]
-      }
-    },
-    {
-      "id": "codegen",
-      "versionRange": "*",
-      "additionalData": {}
-    },
-    {
-      "id": "custom-types",
-      "versionRange": "*",
-      "additionalData": {}
-    },
-    {
       "id": "questui",
       "versionRange": "*",
       "additionalData": {}

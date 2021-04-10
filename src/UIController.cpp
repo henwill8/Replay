@@ -8,7 +8,7 @@ using namespace QuestUI::BeatSaberUI;
 
 #define CreateToggleMacro(parent, boolConfigValue, name) CreateToggle(parent, name, boolConfigValue.GetBool(), [this](bool newValue) { boolConfigValue.SetBool(newValue);})
 
-DEFINE_CLASS(Replay::UIController);
+DEFINE_TYPE(Replay::UIController);
 
 void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 	if(firstActivation)
