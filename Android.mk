@@ -125,7 +125,7 @@ LOCAL_SHARED_LIBRARIES += mobileffmpeg
 LOCAL_SHARED_LIBRARIES += mobileffmpegabidetect
 LOCAL_LDLIBS += -llog -lGLESv2
 LOCAL_CPPFLAGS += -std=c++2a
-LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./include/ffmpeg
+LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./ffmpeg
 LOCAL_CPP_FEATURES += exceptions
 include $(BUILD_SHARED_LIBRARY)
 
