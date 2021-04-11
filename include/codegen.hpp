@@ -18,6 +18,8 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/RectTransform.hpp"
 #include "UnityEngine/Rect.hpp"
+#include "UnityEngine/HideFlags.hpp"
+#include "UnityEngine/DepthTextureMode.hpp"
 #include "UnityEngine/GameObject.hpp"
 #include "UnityEngine/Object.hpp"
 #include "UnityEngine/Resources.hpp"

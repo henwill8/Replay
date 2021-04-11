@@ -12,7 +12,8 @@
         "${workspaceFolder}/extern/**",
         "${workspaceFolder}/extern/codegen/include/**",
         "${workspaceFolder}/extern/ffmpeg/**",
-        "c:/Users/henwi/Desktop/ModdingBeatSaber/android-ndk-r21d/**"
+        "c:/Users/henwi/Desktop/ModdingBeatSaber/android-ndk-r21d/**",
+        "C:/Development/Tools/android-ndk-r21d/**"
       ],
       "name": "Quest",
       "cStandard": "c11",

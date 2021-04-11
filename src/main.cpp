@@ -2035,6 +2035,9 @@ MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, bool removedFro
     ResultsScreenEnd(self, removedFromHierarchy, screenSystemDisabling);
 }
 
+UnityEngine::RenderTexture* texture;
+
+#include "CustomTypes/CameraCapture.hpp"
 MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) {
 
     // log("LightManager_OnWillRenderObject");
@@ -2139,37 +2142,40 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         //     recordedRenderTexture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
         //     recordedTexture = UnityEngine::Texture2D::New_ctor(width, height, (UnityEngine::TextureFormat)UnityEngine::TextureFormat::RGB24, false);
         // }
-
-        UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
-        UnityEngine::Camera* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
-
-        // camera->set_targetTexture(recordedRenderTexture);
-
-        UnityEngine::RenderTexture* rt = camera->get_targetTexture();
-
-        
-        int width = 1920;
-        int height = 1080;
-        
-        GLuint textureObj = *reinterpret_cast<GLuint*>(rt->GetNativeTexturePtr().m_value);
-
-        glActiveTexture(textureObj);
-        glBindTexture(GL_TEXTURE_2D, textureObj);
-
-        int data_size = width * height * 4;
-        GLubyte* pixels = new GLubyte[width * height * 4];
-
-        GLuint fbo;
-        glGenFramebuffers(1, &fbo); 
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureObj, 0);
-
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(1, &fbo);
     }
+    static UnityEngine::GameObject* cameraGO = nullptr;
+    if(!cameraGO) {
+        auto mainCamera = UnityEngine::Camera::get_main();
 
+        cameraGO = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
+        UnityEngine::Object::DontDestroyOnLoad(cameraGO);
+        while (cameraGO->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGO->get_transform()->GetChild(0)->get_gameObject());
+		UnityEngine::Object::DestroyImmediate(cameraGO->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
+		UnityEngine::Object::DestroyImmediate(cameraGO->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
+		UnityEngine::Object::DestroyImmediate(cameraGO->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
+        
+        UnityEngine::Object::DontDestroyOnLoad(cameraGO);
+        auto camera = cameraGO->GetComponent<UnityEngine::Camera*>();
+		camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+        camera->set_fieldOfView(120.0f);
+        camera->set_clearFlags(mainCamera->get_clearFlags());
+        camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
+        camera->set_farClipPlane(mainCamera->get_farClipPlane());
+        camera->set_cullingMask(mainCamera->get_cullingMask());
+        camera->set_depth(mainCamera->get_depth());
+        camera->set_backgroundColor(mainCamera->get_backgroundColor());
+        camera->set_hideFlags(mainCamera->get_hideFlags());
+        camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
+        
+        camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
+        
+        cameraGO->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+        cameraGO->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
+        texture = UnityEngine::RenderTexture::New_ctor(1920, 1080, 24);
+        texture->Create();
+        camera->set_targetTexture(texture);
+        cameraGO->AddComponent<Replay::CameraCapture*>();
+    }
     LightManager_OnWillRenderObject(self);
 }
 
@@ -2612,7 +2618,7 @@ extern "C" void load() {
 
     QuestUI::Init();
 
-    custom_types::Register::RegisterType<Replay::UIController>();
+    custom_types::Register::RegisterTypes<Replay::UIController, Replay::CameraCapture, AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest>();
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
 
     log("Installing hooks...");
