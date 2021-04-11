@@ -62,54 +62,54 @@ include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - avcodec
 include $(CLEAR_VARS)
 LOCAL_MODULE := avcodec
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libavcodec
-LOCAL_SRC_FILES := extern/libavcodec.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libavcodec
+LOCAL_SRC_FILES := ffmpeg/libavcodec.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - avdevice
 include $(CLEAR_VARS)
 LOCAL_MODULE := avdevice
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libavdevice
-LOCAL_SRC_FILES := extern/libavdevice.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libavdevice
+LOCAL_SRC_FILES := ffmpeg/libavdevice.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - avfilter
 include $(CLEAR_VARS)
 LOCAL_MODULE := avfilter
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libavfilter
-LOCAL_SRC_FILES := extern/libavfilter.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libavfilter
+LOCAL_SRC_FILES := ffmpeg/libavfilter.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - avformat
 include $(CLEAR_VARS)
 LOCAL_MODULE := avformat
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libavformat
-LOCAL_SRC_FILES := extern/libavformat.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libavformat
+LOCAL_SRC_FILES := ffmpeg/libavformat.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - avutil
 include $(CLEAR_VARS)
 LOCAL_MODULE := avutil
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libavutil
-LOCAL_SRC_FILES := extern/libavutil.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libavutil
+LOCAL_SRC_FILES := ffmpeg/libavutil.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - swresample
 include $(CLEAR_VARS)
 LOCAL_MODULE := swresample
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libswresample
-LOCAL_SRC_FILES := extern/libswresample.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libswresample
+LOCAL_SRC_FILES := ffmpeg/libswresample.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - swscale
 include $(CLEAR_VARS)
 LOCAL_MODULE := swscale
-LOCAL_EXPORT_C_INCLUDES := extern/ffmpeg/libswscale
-LOCAL_SRC_FILES := extern/libswscale.so
+LOCAL_EXPORT_C_INCLUDES := ffmpeg/libswscale
+LOCAL_SRC_FILES := ffmpeg/libswscale.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - mobileffmpeg
 include $(CLEAR_VARS)
 LOCAL_MODULE := mobileffmpeg
-LOCAL_SRC_FILES := extern/libmobileffmpeg.so
+LOCAL_SRC_FILES := ffmpeg/libmobileffmpeg.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - mobileffmpegabidetect
 include $(CLEAR_VARS)
 LOCAL_MODULE := mobileffmpegabidetect
-LOCAL_SRC_FILES := extern/libmobileffmpeg_abidetect.so
+LOCAL_SRC_FILES := ffmpeg/libmobileffmpeg_abidetect.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 
