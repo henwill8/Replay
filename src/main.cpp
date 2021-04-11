@@ -1618,6 +1618,9 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
     std::string modeName = to_utf8(csstrtostr(*GetFieldValue<Il2CppString*>(beatmapCharacteristic, "_compoundIdPartName")));
 
     songHash = to_utf8(csstrtostr(LevelID))+std::to_string(Difficulty)+modeName;
+    std::for_each(songHash.begin(), songHash.end(), [](char & c){
+        c = ::tolower(c);
+    });
     if(songHash.find("custom_level_") != std::string::npos) {
         songHash.erase(songHash.begin(), songHash.begin()+13);
     }
@@ -2128,46 +2131,6 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
             set_cullingMatrix(camera, UnityEngine::Matrix4x4::Ortho(-99999, 99999, -99999, 99999, 0.001f, 99999) * MatrixTranslate(UnityEngine::Vector3::get_forward() * -99999 / 2) * camera->get_worldToCameraMatrix());
         }
-    }
-
-    if(inSong && songTime > 2) {
-        // if(recordedRenderTexture == nullptr) {
-        //     int width = 1920;
-        //     int height = 1080;
-        //     videoCapture.Init(width, height, 30, 2000, "ultrafast", "sdcard/test.h264");
-        //     rect = UnityEngine::Rect{0, 0, float(width), float(height)};
-        //     recordedRenderTexture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
-        //     recordedTexture = UnityEngine::Texture2D::New_ctor(width, height, (UnityEngine::TextureFormat)UnityEngine::TextureFormat::RGB24, false);
-        // }
-
-        UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
-        UnityEngine::Camera* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
-
-        // camera->set_targetTexture(recordedRenderTexture);
-
-        UnityEngine::RenderTexture* rt = camera->get_targetTexture();
-
-        
-        int width = 1920;
-        int height = 1080;
-        
-        GLuint textureObj = *reinterpret_cast<GLuint*>(rt->GetNativeTexturePtr().m_value);
-
-        glActiveTexture(textureObj);
-        glBindTexture(GL_TEXTURE_2D, textureObj);
-
-        int data_size = width * height * 4;
-        GLubyte* pixels = new GLubyte[width * height * 4];
-
-        GLuint fbo;
-        glGenFramebuffers(1, &fbo); 
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureObj, 0);
-
-        glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glDeleteFramebuffers(1, &fbo);
     }
 
     LightManager_OnWillRenderObject(self);
