@@ -21,13 +21,27 @@ struct rgb24 {
  
 class VideoCapture {
     public:
-        void Init(int width, int height, int fpsrate, int bitrate, std::string encodeSpeed, std::string filepath);
+        void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath);
  
         void AddFrame(rgb24 *data);
  
         void Finish();
 
-        static rgb24* UnityColorsToRGB24Array(Array<UnityEngine::Color>* colors);
+        int FrameCount() {
+            return frameCounter;
+        };
+
+        bool IsInitialized() {
+            return initialized;
+        };
+
+        float RecordingLength() {
+            return frameCounter * (1 / fps);
+        };
+
+        float TotalLength() {
+            return realTime;
+        };
  
     private:
         const AVCodec *codec;
@@ -37,6 +51,8 @@ class VideoCapture {
         AVPacket *pkt;
         AVFormatContext* ofctx = nullptr;
         AVOutputFormat* oformat = nullptr;
+
+        float realTime = 0;
  
         int frameCounter = 0;
  
@@ -46,9 +62,11 @@ class VideoCapture {
         int width;
         int height;
         int bitrate;
+
+        bool stabilizeFPS;
  
         const char* filename;
         FILE* f;
  
-        void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile);
+        void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite);
 };

@@ -1,24 +1,13 @@
 #include "include/video_recorder.hpp"
 
-rgb24* VideoCapture::UnityColorsToRGB24Array(Array<UnityEngine::Color>* colors) {
-    rgb24* rgbPixels = new rgb24[colors->Length()];
-    for(int i = 0; i < colors->Length(); i++) {
-        rgb24 rgb;
-        rgb.r = int(0);
-        rgb.g = int(0);
-        rgb.b = int(255);
-        rgbPixels[i] = rgb;
-        // log("R %i G %i B %i", rgb.r, rgb.g, colors->values[i].b);
-    }
-    return rgbPixels;
-}
+void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite = 1) {
+    if(framesToWrite == 0) return;
 
-void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile) {
     int ret;
  
     /* send the frame to the encoder */
     if (frame) {
-        log("Send frame %i at time %li", frameCounter, frame->pts);
+        // log("Send frame %i at time %li", frameCounter, frame->pts);
     }
  
     ret = avcodec_send_frame(enc_ctx, frame);
@@ -36,16 +25,27 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
             return;
         }
  
-        printf("Write packet %li (size=%i)\n", pkt->pts, pkt->size);
-        fwrite(pkt->data, 1, pkt->size, outfile);
+        // log("Write packet %li (size=%i)\n", pkt->pts, pkt->size);
+        for(int i = 0; i < framesToWrite; i++) {
+            fwrite(pkt->data, 1, pkt->size, outfile);
+        }
         av_packet_unref(pkt);
     }
 }
  
 void VideoCapture::AddFrame(rgb24* data) {
+    realTime += UnityEngine::Time::get_deltaTime();
+
+    int framesToWrite = 1;
+
+    if(stabilizeFPS) {
+        float timeDifference = realTime - RecordingLength();
+        framesToWrite = int(timeDifference / (1 / fps));
+    }
+
     fflush(stdout);
- 
-    frameCounter++;
+
+    frameCounter += framesToWrite;
  
     int ret;
  
@@ -65,7 +65,7 @@ void VideoCapture::AddFrame(rgb24* data) {
     frame->pts = frameCounter;
  
     /* encode the image */
-    Encode(c, frame, pkt, f);
+    Encode(c, frame, pkt, f, framesToWrite);
 }
  
 void VideoCapture::Finish() {
@@ -82,15 +82,20 @@ void VideoCapture::Finish() {
     avcodec_free_context(&c);
     av_frame_free(&frame);
     av_packet_free(&pkt);
+
+    initialized = false;
 }
  
-void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, std::string encodeSpeed, std::string filepath) {
+void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath) {
     log("Setting up video at path "+filepath);
     fps = fpsrate;
     width = videoWidth;
     height = videoHeight;
     bitrate = videoBitrate;
     filename = filepath.c_str();
+    stabilizeFPS = stabilizeFPS;
+
+    realTime = 0;
  
     int ret;
  
@@ -151,5 +156,5 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     }
 
     initialized = true;
-    log("Finished initialization");
+    log("Finished initializing video at path %s", filename);
 }

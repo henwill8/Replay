@@ -12,15 +12,18 @@ using namespace UnityEngine;
 DEFINE_TYPE(CameraCapture);
 
 VideoCapture capture;
+
 void CameraCapture::ctor() {
 	requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>::New_ctor();
-	capture.Init(1920, 1080, 12, 3000, "ultrafast", "/sdcard/test/vide.h264");
+	capture.Init(1920, 1080, 12, 3000, true, "ultrafast", "/sdcard/video.h264");
 }
+
 extern UnityEngine::RenderTexture* texture;
+
 void CameraCapture::Update() {
-	if(Time::get_frameCount() > 2000) {
-			loggingFunction().info("Finsihed file");
-			capture.Finish();
+	if(capture.FrameCount() > 2000 && capture.IsInitialized()) {
+        log("Finished file");
+        capture.Finish();
 	}
 	if (Time::get_frameCount() % 1 == 0) {
 		if(requests->get_Count() < 8)
@@ -36,7 +39,7 @@ void CameraCapture::Update() {
 			req->Dispose();
 			toRemove.push_back(req);
 		} else if (req->IsDone()) {
-			loggingFunction().info("Finsihed %d", i);
+			// log("Finished %d", i);
 			size_t length;
 			void* buffer;
 			req->GetRawData(buffer, length);
@@ -52,8 +55,8 @@ void CameraCapture::Update() {
 
 void CameraCapture::OnRenderImage(RenderTexture* source, RenderTexture* destination) {
     Graphics::Blit(source, destination);
-   	if (Time::get_frameCount() % 60 == 0) {
+   	// if (Time::get_frameCount() % 60 == 0) {
 		if(requests->get_Count() < 8)
 			requests->Add(AsyncGPUReadbackPlugin::Request(texture));
-    }
+    // }
 }

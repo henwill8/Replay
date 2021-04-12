@@ -426,10 +426,6 @@ UnityEngine::GameObject* rightTrickSaber = nullptr;
 UnityEngine::Transform* leftRealModel = nullptr;
 UnityEngine::Transform* rightRealModel = nullptr;
 
-UnityEngine::Rect rect;
-UnityEngine::RenderTexture* recordedRenderTexture = nullptr;
-UnityEngine::Texture2D* recordedTexture = nullptr;
-
 std::string songHash;
 std::string songName = "";
 std::string replayDirectory;
@@ -2132,30 +2128,19 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             set_cullingMatrix(camera, UnityEngine::Matrix4x4::Ortho(-99999, 99999, -99999, 99999, 0.001f, 99999) * MatrixTranslate(UnityEngine::Vector3::get_forward() * -99999 / 2) * camera->get_worldToCameraMatrix());
         }
     }
-
-    if(inSong && songTime > 2) {
-        // if(recordedRenderTexture == nullptr) {
-        //     int width = 1920;
-        //     int height = 1080;
-        //     videoCapture.Init(width, height, 30, 2000, "ultrafast", "sdcard/test.h264");
-        //     rect = UnityEngine::Rect{0, 0, float(width), float(height)};
-        //     recordedRenderTexture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
-        //     recordedTexture = UnityEngine::Texture2D::New_ctor(width, height, (UnityEngine::TextureFormat)UnityEngine::TextureFormat::RGB24, false);
-        // }
-    }
-    static UnityEngine::GameObject* cameraGO = nullptr;
-    if(!cameraGO) {
+    
+    static UnityEngine::GameObject* cameraGameObject = nullptr;
+    if(!cameraGameObject && inSong && !recording && songTime > 1) {
         auto mainCamera = UnityEngine::Camera::get_main();
 
-        cameraGO = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
-        UnityEngine::Object::DontDestroyOnLoad(cameraGO);
-        while (cameraGO->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGO->get_transform()->GetChild(0)->get_gameObject());
-		UnityEngine::Object::DestroyImmediate(cameraGO->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
-		UnityEngine::Object::DestroyImmediate(cameraGO->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
-		UnityEngine::Object::DestroyImmediate(cameraGO->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
+		cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
+        UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
+        while (cameraGameObject->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGameObject->get_transform()->GetChild(0)->get_gameObject());
+		UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
+		UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
+		UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
         
-        UnityEngine::Object::DontDestroyOnLoad(cameraGO);
-        auto camera = cameraGO->GetComponent<UnityEngine::Camera*>();
+        auto camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
 		camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
         camera->set_fieldOfView(120.0f);
         camera->set_clearFlags(mainCamera->get_clearFlags());
@@ -2169,13 +2154,16 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         
         camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
         
-        cameraGO->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-        cameraGO->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
+        cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+        cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
         texture = UnityEngine::RenderTexture::New_ctor(1920, 1080, 24);
         texture->Create();
         camera->set_targetTexture(texture);
-        cameraGO->AddComponent<Replay::CameraCapture*>();
+        cameraGameObject->AddComponent<Replay::CameraCapture*>();
+
+        // mainCamera->set_cullingMask(2147483647);
     }
+
     LightManager_OnWillRenderObject(self);
 }
 

@@ -24,7 +24,7 @@ struct Task {
 
 static std::map<int,std::shared_ptr<Task>> tasks;
 static std::mutex tasks_mutex;
-int next_event_id = 1;
+static int next_event_id = 1;
 
 extern "C" int makeRequest_mainThread(GLuint texture, int miplevel) {
 	// Create the task
@@ -48,7 +48,7 @@ static void create_ppm(int frame_id, unsigned int width, unsigned int height, un
        
         size_t i, j, k, cur;
         FILE *f = fopen(("/sdcard/test/img" + std::to_string(frame_id) + ".ppm").c_str(), "w");
-        fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);
+        log("P3\n%d %d\n%d\n", width, height, 255);
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
                 cur = pixel_nbytes * ((height - i - 1) * width + j);
@@ -106,7 +106,8 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	// Done init
 	task->initialized = true;
 	task->done = true; //
-    
+
+    // log("Finished initializing AsyncGPUReadbackRequest");
 }
 
 extern "C" void update_renderThread(int event_id) {
