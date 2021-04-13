@@ -1177,9 +1177,8 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
     // log("PlayerControllerUpdate");
 
     if(fpsCounter == nullptr) {
-        self->get_gameObject()->AddComponent<FPSCounter*>();
-        fpsCounter = self->get_gameObject()->GetComponent<FPSCounter*>();
-    } else if(fpsCounter->get_currentFPS() < gameFPS-2 && fpsCounter->get_currentFPS() > gameFPS+2 && songTime > 5 && !inPauseMenu) {
+        fpsCounter =self->get_gameObject()->AddComponent<FPSCounter*>();
+    } else if((fpsCounter->get_currentFPS() < gameFPS-2 || fpsCounter->get_currentFPS() > gameFPS+2) && songTime > 5 && !inPauseMenu) {
         gameFPS = fpsCounter->get_currentFPS();
         log("fps is "+std::to_string(gameFPS));
     }
@@ -2042,6 +2041,42 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraToggleString != "hmd") {
+            static UnityEngine::GameObject* cameraGameObject = nullptr;
+            if(!cameraGameObject && inSong && !recording) {
+                auto mainCamera = UnityEngine::Camera::get_main();
+
+                cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
+                UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
+                while (cameraGameObject->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGameObject->get_transform()->GetChild(0)->get_gameObject());
+                UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
+                UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
+                UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
+                
+                auto camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
+                camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+                camera->set_fieldOfView(120.0f);
+                camera->set_clearFlags(mainCamera->get_clearFlags());
+                camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
+                camera->set_farClipPlane(mainCamera->get_farClipPlane());
+                camera->set_cullingMask(mainCamera->get_cullingMask());
+                camera->set_depth(mainCamera->get_depth());
+                camera->set_backgroundColor(mainCamera->get_backgroundColor());
+                camera->set_hideFlags(mainCamera->get_hideFlags());
+                camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
+                
+                camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
+                
+                cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+                cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
+                texture = UnityEngine::RenderTexture::New_ctor(1920, 1080, 24);
+                texture->Create();
+                camera->set_targetTexture(texture);
+                cameraGameObject->AddComponent<Replay::CameraCapture*>();
+
+                mainCamera->set_cullingMask(0);
+            }
+            
+            cameraGO = cameraGameObject;
             // log("FOV before is "+std::to_string(camera->get_fieldOfView()));
             // typedef function_ptr_t<void, float> type;
             // auto method = *reinterpret_cast<type>(il2cpp_functions::resolve_icall("UnityEngine.XR.XRDevice::set_fovZoomFactor"));
@@ -2129,41 +2164,6 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         }
     }
     
-    static UnityEngine::GameObject* cameraGameObject = nullptr;
-    if(!cameraGameObject && inSong && !recording && songTime > 1) {
-        auto mainCamera = UnityEngine::Camera::get_main();
-
-		cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
-        UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
-        while (cameraGameObject->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGameObject->get_transform()->GetChild(0)->get_gameObject());
-		UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
-		UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
-		UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
-        
-        auto camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
-		camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
-        camera->set_fieldOfView(120.0f);
-        camera->set_clearFlags(mainCamera->get_clearFlags());
-        camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
-        camera->set_farClipPlane(mainCamera->get_farClipPlane());
-        camera->set_cullingMask(mainCamera->get_cullingMask());
-        camera->set_depth(mainCamera->get_depth());
-        camera->set_backgroundColor(mainCamera->get_backgroundColor());
-        camera->set_hideFlags(mainCamera->get_hideFlags());
-        camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
-        
-        camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
-        
-        cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-        cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
-        texture = UnityEngine::RenderTexture::New_ctor(1920, 1080, 24);
-        texture->Create();
-        camera->set_targetTexture(texture);
-        cameraGameObject->AddComponent<Replay::CameraCapture*>();
-
-        // mainCamera->set_cullingMask(2147483647);
-    }
-
     LightManager_OnWillRenderObject(self);
 }
 

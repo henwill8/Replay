@@ -48,11 +48,11 @@ void VideoCapture::AddFrame(rgb24 *data)
 
     int framesToWrite = 1;
 
-    if (stabilizeFPS)
-    {
-        float timeDifference = realTime - RecordingLength();
-        framesToWrite = int(timeDifference / (1 / fps));
-    }
+    // if (stabilizeFPS)
+    // {
+    //     float timeDifference = realTime - RecordingLength();
+    //     framesToWrite = int(timeDifference / (1 / fps));
+    // }
 
     fflush(stdout);
 

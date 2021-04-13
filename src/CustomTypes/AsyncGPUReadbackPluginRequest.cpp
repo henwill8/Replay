@@ -93,7 +93,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
 
-	//create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
+	create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
     
 	// Unbind buffers
 	//glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -196,7 +196,7 @@ extern "C" void dispose(int event_id) {
 	// Remove from tasks
 	tasks_mutex.lock();
 	std::shared_ptr<Task> task = tasks[event_id];
-	free(task->data);
+	// free(task->data);
 	tasks.erase(event_id);
 	tasks_mutex.unlock();
 }

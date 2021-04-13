@@ -27,8 +27,7 @@ void CameraCapture::Update()
     {
         log("Finished file");
         capture.Finish();
-    }
-    if (Time::get_frameCount() % 1 == 0)
+    } else if (Time::get_frameCount() % 1 == 0)
     {
         if (requests->get_Count() < 8)
             requests->Add(AsyncGPUReadbackPlugin::Request(texture));
@@ -47,11 +46,12 @@ void CameraCapture::Update()
         }
         else if (req->IsDone())
         {
-            log("Finished %d", i);
+            // log("Finished %d", i);
             size_t length;
             void *buffer;
             req->GetRawData(buffer, length);
             capture.queueFrame(buffer);
+            free(buffer);
             req->Dispose();
             toRemove.push_back(req);
         }
