@@ -6,6 +6,7 @@
 
 #include <GLES3/gl32.h>
 #include <GLES3/gl3ext.h>
+#include "video_recorder.hpp"
 
 struct Task {
 	GLuint texture;
@@ -146,6 +147,13 @@ extern "C" void update_renderThread(int event_id) {
 		// Map the buffer and copy it to data
 		void* ptr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT);
 		memcpy(task->data, ptr, task->size);
+
+		// Reverse the array to make the frame not upside down
+		auto rgbData = reinterpret_cast<rgb24*>(task->data);
+
+		for (int i = 0; i < (task->size/2) - 1; i++) {
+            std::swap(rgbData[i], rgbData[task->size - i - 1]);
+		}
 
 		// Unmap and unbind
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
