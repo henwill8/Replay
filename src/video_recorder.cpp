@@ -198,7 +198,9 @@ void VideoCapture::encodeFrames()
             while (!listCopy.empty()) {
                 // log("size is %i", framebuffers.size());
                 auto it = listCopy.begin();
-                this->AddFrame((rgb24 *) *it);
+                auto frameData = (rgb24 *) *it;
+                this->AddFrame(frameData);
+                free(frameData);
                 listCopy.erase(it);
             }
         }

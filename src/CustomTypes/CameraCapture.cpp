@@ -50,7 +50,7 @@ void CameraCapture::Update()
             void *buffer;
             req->GetRawData(buffer, length);
             capture.queueFrame(buffer);
-            free(buffer);
+
             req->Dispose();
             toRemove.push_back(req);
         }
