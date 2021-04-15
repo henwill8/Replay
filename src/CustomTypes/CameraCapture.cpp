@@ -23,14 +23,13 @@ extern UnityEngine::RenderTexture *texture;
 
 void CameraCapture::Update()
 {
-    if (capture.FrameCount() > 2000 && capture.IsInitialized())
-    {
+    if (capture.FrameCount() > 200 && capture.IsInitialized()) {
         log("Finished file");
-        capture.Finish();
-    } else if (Time::get_frameCount() % 1 == 0)
-    {
+        capture.CloseFile();
+    } else {
         if (requests->get_Count() < 8)
             requests->Add(AsyncGPUReadbackPlugin::Request(texture));
+        log("adding request");
     }
     std::vector<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *> toRemove;
     for (int i = 0; i < requests->get_Count(); i++)
@@ -62,11 +61,11 @@ void CameraCapture::Update()
     }
 }
 
-void CameraCapture::OnRenderImage(RenderTexture *source, RenderTexture *destination)
-{
-    Graphics::Blit(source, destination);
-    // if (Time::get_frameCount() % 60 == 0) {
-    if (requests->get_Count() < 8)
-        requests->Add(AsyncGPUReadbackPlugin::Request(texture));
-    // }
-}
+// void CameraCapture::OnRenderImage(RenderTexture *source, RenderTexture *destination)
+// {
+//     Graphics::Blit(source, destination);
+//     // if (Time::get_frameCount() % 60 == 0) {
+//     if (requests->get_Count() < 8)
+//         requests->Add(AsyncGPUReadbackPlugin::Request(texture));
+//     // }
+// }

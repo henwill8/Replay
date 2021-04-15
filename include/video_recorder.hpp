@@ -30,7 +30,7 @@ public:
     
     void queueFrame(void *frame);
 
-    void Finish();
+    void CloseFile();
 
     int FrameCount()
     {
@@ -85,4 +85,8 @@ private:
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite);
 
     void encodeFrames();
+    
+    void Finish();
+
+    void WaitForEndFrames();
 };

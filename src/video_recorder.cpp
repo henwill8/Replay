@@ -42,8 +42,8 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
     }
 }
 
-void VideoCapture::AddFrame(rgb24 *data)
-{
+void VideoCapture::AddFrame(rgb24 *data) {
+    if(!initialized) return;
     realTime += UnityEngine::Time::get_deltaTime();
 
     int framesToWrite = 1;
@@ -83,14 +83,10 @@ void VideoCapture::AddFrame(rgb24 *data)
 
 void VideoCapture::Finish()
 {
+    while(!framebuffers.empty()) {}
     //DELAYED FRAMES
-    Encode(c, NULL, pkt, f);
+    // Encode(c, NULL, pkt, f);
 
-    uint8_t endcode[] = {0, 0, 1, 0xb7};
-
-    /* add sequence end code to have a real MPEG file */
-    if (codec->id == AV_CODEC_ID_MPEG1VIDEO || codec->id == AV_CODEC_ID_MPEG2VIDEO)
-        fwrite(endcode, 1, sizeof(endcode), f);
     fclose(f);
 
     avcodec_free_context(&c);
@@ -194,7 +190,7 @@ void VideoCapture::encodeFrames()
         {
             // log("size is %i", framebuffers.size());
             auto it = framebuffers.begin();
-            AddFrame((rgb24 *)*it);
+            this->AddFrame((rgb24 *)*it);
             framebuffers.erase(it);
         }
     }
@@ -203,6 +199,11 @@ void VideoCapture::encodeFrames()
 
 void VideoCapture::queueFrame(void *frame) {
     framebuffers.push_back(frame);
+}
+
+void VideoCapture::CloseFile() {
+    std::thread closeThread = std::thread(&VideoCapture::Finish, this);
+    closeThread.join();
 }
 
 VideoCapture::~VideoCapture()

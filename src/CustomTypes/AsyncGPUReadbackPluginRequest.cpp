@@ -47,8 +47,8 @@ static void create_ppm(int frame_id, unsigned int width, unsigned int height, un
     //std::thread t([=]{
        
         size_t i, j, k, cur;
-        FILE *f = fopen(("/sdcard/test/img" + std::to_string(frame_id) + ".ppm").c_str(), "w");
-        log("P3\n%d %d\n%d\n", width, height, 255);
+        FILE *f = fopen(("/sdcard/img" + std::to_string(frame_id) + ".ppm").c_str(), "w");
+        fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);
         for (i = 0; i < height; i++) {
             for (j = 0; j < width; j++) {
                 cur = pixel_nbytes * ((height - i - 1) * width + j);
@@ -57,11 +57,12 @@ static void create_ppm(int frame_id, unsigned int width, unsigned int height, un
             fprintf(f, "\n");
         }
         fclose(f);
-        loggingFunction().info("File %s", ("/sdcard/test/img" + std::to_string(frame_id) + ".ppm").c_str());
+        // loggingFunction().info("File %s", ("/sdcard/img" + std::to_string(frame_id) + ".ppm").c_str());
         
     //});
     //t.detach();
 }
+
 extern "C" void makeRequest_renderThread(int event_id) {
 	// Get task back
 	tasks_mutex.lock();
@@ -93,7 +94,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
 
-	create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
+	// if(event_id == 100) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
     
 	// Unbind buffers
 	//glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
