@@ -151,7 +151,7 @@ extern "C" void update_renderThread(int event_id) {
 		// Reverse the array to make the frame not upside down
 		auto rgbData = reinterpret_cast<rgb24*>(task->data);
 
-		for (int i = 0; i < task->size/2; i++) {
+		for (int i = 0; i < (task->size/2) - 1; i++) {
             std::swap(rgbData[i], rgbData[task->size - i - 1]);
 		}
 
