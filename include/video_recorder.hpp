@@ -44,12 +44,12 @@ public:
 
     float RecordingLength()
     {
-        return frameCounter * (1 / fps);
+        return float(frameCounter) * (1.0f / float(fps));
     };
 
     float TotalLength()
     {
-        return realTime;
+        return UnityEngine::Time::get_time() - startTime;
     };
 
     ~VideoCapture();
@@ -63,7 +63,7 @@ private:
     AVFormatContext *ofctx = nullptr;
     AVOutputFormat *oformat = nullptr;
 
-    float realTime = 0;
+    float startTime = 0;
 
     int frameCounter = 0;
 

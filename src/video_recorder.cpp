@@ -2,16 +2,14 @@
 
 void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite = 1)
 {
-    if (framesToWrite == 0)
-        return;
 
     int ret;
 
     /* send the frame to the encoder */
-    if (frame)
-    {
+    // if (frame)
+    // {
         // log("Send frame %i at time %li", frameCounter, frame->pts);
-    }
+    // }
 
     ret = avcodec_send_frame(enc_ctx, frame);
     if (ret < 0)
@@ -44,16 +42,19 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
 
 void VideoCapture::AddFrame(rgb24 *data) {
     if(!initialized) return;
-    realTime += UnityEngine::Time::get_deltaTime();
+
+    if(startTime == 0) {
+        startTime = UnityEngine::Time::get_time();
+        log("Start time is %f", startTime);
+    }
 
     int framesToWrite = 1;
 
-    if (stabilizeFPS)
-    {
+    if (stabilizeFPS) {
         framesToWrite = std::max(0, int(TotalLength / (1 / fps)) - frameCounter);
     }
 
-    fflush(stdout);
+    if(framesToWrite == 0) return;
 
     frameCounter += framesToWrite;
 
@@ -100,11 +101,9 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     fps = fpsrate;
     width = videoWidth;
     height = videoHeight;
-    bitrate = videoBitrate;
+    bitrate = videoBitrate * 1000;
     filename = filepath.c_str();
     this->stabilizeFPS = stabilizeFPS;
-
-    realTime = 0;
 
     int ret;
 
