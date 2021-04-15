@@ -51,7 +51,8 @@ void VideoCapture::AddFrame(rgb24 *data) {
     int framesToWrite = 1;
 
     if (stabilizeFPS) {
-        framesToWrite = std::max(0, int(TotalLength / (1 / fps)) - frameCounter);
+        framesToWrite = std::max(0, int(TotalLength() / (1 / fps)) - frameCounter);
+        log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
     }
 
     if(framesToWrite == 0) return;
@@ -104,6 +105,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     bitrate = videoBitrate * 1000;
     filename = filepath.c_str();
     this->stabilizeFPS = stabilizeFPS;
+    frameCounter = 0;
 
     int ret;
 
@@ -197,8 +199,9 @@ void VideoCapture::encodeFrames()
                 auto it = listCopy.begin();
                 auto frameData = (rgb24 *) *it;
                 this->AddFrame(frameData);
-                listCopy.pop_front();
+                // free(*it);
                 free(frameData);
+                listCopy.pop_front();
             }
         }
     }
