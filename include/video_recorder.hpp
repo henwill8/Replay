@@ -26,7 +26,7 @@ class VideoCapture
 public:
     void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath);
 
-    void AddFrame(rgb24 *data);
+    void AddFrame(rgb24 data);
     
     void queueFrame(void *frame);
 
@@ -80,7 +80,7 @@ private:
     FILE *f;
 
     mutable std::shared_mutex framebuffer_mutex;
-    std::list<void *> framebuffers;
+    std::list<rgb24> frameBuffers;
     std::thread encodingThread;
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite);
