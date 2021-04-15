@@ -200,8 +200,8 @@ void VideoCapture::encodeFrames()
                 auto it = listCopy.begin();
                 auto frameData = (rgb24 *) *it;
                 this->AddFrame(frameData);
-                free(frameData);
                 listCopy.erase(it);
+                free(frameData);
             }
         }
     }
