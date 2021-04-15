@@ -42,7 +42,7 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
     }
 }
 
-void VideoCapture::AddFrame(rgb24 data) {
+void VideoCapture::AddFrame(rgb24 *data) {
     if(!initialized) return;
     realTime += UnityEngine::Time::get_deltaTime();
 
@@ -83,7 +83,7 @@ void VideoCapture::AddFrame(rgb24 data) {
 
 void VideoCapture::Finish()
 {
-    while(!frameBuffers.empty()) {}
+    while(!framebuffers.empty()) {}
     //DELAYED FRAMES
     // Encode(c, NULL, pkt, f);
 
@@ -184,21 +184,21 @@ void VideoCapture::encodeFrames()
 {
     log("Starting encoding thread");
 
-    while (initialized || !frameBuffers.empty())
+    while (initialized || !framebuffers.empty())
     {
-        if (!frameBuffers.empty())
+        if (!framebuffers.empty())
         {
             std::unique_lock lock(framebuffer_mutex);
-            std::list<rgb24> listCopy(frameBuffers); // copy the list
-            frameBuffers.clear();
+            std::list<void*> listCopy(framebuffers); // copy the list
+            framebuffers.clear();
             lock.unlock();
             // Unlock and use the copy
 
             // Now we use the copied list and it should be ours only
             while (!listCopy.empty()) {
-                // log("size is %i", frameBuffers.size());
+                // log("size is %i", framebuffers.size());
                 auto it = listCopy.begin();
-                this->AddFrame(*it);
+                this->AddFrame((rgb24 *) *it);
                 listCopy.erase(it);
             }
         }
@@ -208,11 +208,7 @@ void VideoCapture::encodeFrames()
 
 void VideoCapture::queueFrame(void *frame) {
     std::unique_lock lock(framebuffer_mutex);
-
-    auto frameDataCast = (rgb24*) frame;
-
-
-    frameBuffers.push_back(*frameDataCast); // Can we dereference? If not, we can just copy it to a stack value
+    framebuffers.push_back(frame);
 }
 
 void VideoCapture::CloseFile() {
