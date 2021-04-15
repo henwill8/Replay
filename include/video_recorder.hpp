@@ -79,6 +79,7 @@ private:
     const char *filename;
     FILE *f;
 
+    mutable std::shared_mutex framebuffer_mutex;
     std::list<void *> framebuffers;
     std::thread encodingThread;
 

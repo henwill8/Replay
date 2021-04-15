@@ -188,16 +188,26 @@ void VideoCapture::encodeFrames()
     {
         if (!framebuffers.empty())
         {
-            // log("size is %i", framebuffers.size());
-            auto it = framebuffers.begin();
-            this->AddFrame((rgb24 *)*it);
-            framebuffers.erase(it);
+            std::unique_lock lock(framebuffer_mutex);
+            std::list<void*> listCopy(framebuffers); // copy the list
+            framebuffers.clear();
+            lock.unlock();
+            // Unlock and use the copy
+
+            // Now we use the copied list and it should be ours only
+            while (!listCopy.empty()) {
+                // log("size is %i", framebuffers.size());
+                auto it = listCopy.begin();
+                this->AddFrame((rgb24 *) *it);
+                listCopy.erase(it);
+            }
         }
     }
     log("Ending encoding thread");
 }
 
 void VideoCapture::queueFrame(void *frame) {
+    std::unique_lock lock(framebuffer_mutex);
     framebuffers.push_back(frame);
 }
 
