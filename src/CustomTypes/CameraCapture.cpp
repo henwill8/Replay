@@ -15,6 +15,7 @@ VideoCapture capture;
 
 void CameraCapture::ctor()
 {
+    INVOKE_CTOR();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     capture.Init(1920, 1080, 12, 3000, true, "ultrafast", "/sdcard/video.h264");
 }

@@ -16,6 +16,7 @@ DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
     DECLARE_INSTANCE_FIELD(System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>*, requests);
  
     DECLARE_CTOR(ctor);
+    DECLARE_SIMPLE_DTOR();
  
     DECLARE_METHOD(void, Update);
     
@@ -25,6 +26,7 @@ DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
         REGISTER_FIELD(requests);
  
         REGISTER_METHOD(ctor);
+        REGISTER_SIMPLE_DTOR();
  
         REGISTER_METHOD(Update);
         //REGISTER_METHOD(OnRenderImage);
