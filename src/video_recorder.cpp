@@ -50,8 +50,7 @@ void VideoCapture::AddFrame(rgb24 *data) {
 
     if (stabilizeFPS)
     {
-        float timeDifference = realTime - RecordingLength();
-        framesToWrite = int(timeDifference / (1 / fps));
+        framesToWrite = std::max(0, int(TotalLength / (1 / fps)) - frameCounter);
     }
 
     fflush(stdout);
