@@ -2073,7 +2073,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
 
-                mainCamera->set_cullingMask(0);
+                // mainCamera->set_cullingMask(0);
             }
             
             cameraGO = cameraGameObject;

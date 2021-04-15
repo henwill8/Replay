@@ -24,13 +24,10 @@ extern UnityEngine::RenderTexture *texture;
 
 void CameraCapture::Update()
 {
-    if (capture.FrameCount() > 200 && capture.IsInitialized()) {
-        log("Finished file");
-        capture.CloseFile();
-    } else {
+    if(capture.IsInitialized()) {
         if (requests->get_Count() < 8)
             requests->Add(AsyncGPUReadbackPlugin::Request(texture));
-        log("adding request");
+        // log("adding request");
     }
     std::vector<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *> toRemove;
     for (int i = 0; i < requests->get_Count(); i++)

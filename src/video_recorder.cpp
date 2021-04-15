@@ -48,11 +48,11 @@ void VideoCapture::AddFrame(rgb24 *data) {
 
     int framesToWrite = 1;
 
-    // if (stabilizeFPS)
-    // {
-    //     float timeDifference = realTime - RecordingLength();
-    //     framesToWrite = int(timeDifference / (1 / fps));
-    // }
+    if (stabilizeFPS)
+    {
+        float timeDifference = realTime - RecordingLength();
+        framesToWrite = int(timeDifference / (1 / fps));
+    }
 
     fflush(stdout);
 
@@ -83,7 +83,6 @@ void VideoCapture::AddFrame(rgb24 *data) {
 
 void VideoCapture::Finish()
 {
-    while(!framebuffers.empty()) {}
     //DELAYED FRAMES
     // Encode(c, NULL, pkt, f);
 
@@ -104,7 +103,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     height = videoHeight;
     bitrate = videoBitrate;
     filename = filepath.c_str();
-    stabilizeFPS = stabilizeFPS;
+    this->stabilizeFPS = stabilizeFPS;
 
     realTime = 0;
 
@@ -200,7 +199,7 @@ void VideoCapture::encodeFrames()
                 auto it = listCopy.begin();
                 auto frameData = (rgb24 *) *it;
                 this->AddFrame(frameData);
-                listCopy.erase(it);
+                listCopy.pop_front();
                 free(frameData);
             }
         }
@@ -211,11 +210,6 @@ void VideoCapture::encodeFrames()
 void VideoCapture::queueFrame(void *frame) {
     std::unique_lock lock(framebuffer_mutex);
     framebuffers.push_back(frame);
-}
-
-void VideoCapture::CloseFile() {
-    std::thread closeThread = std::thread(&VideoCapture::Finish, this);
-    closeThread.join();
 }
 
 VideoCapture::~VideoCapture()
