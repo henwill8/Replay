@@ -1,8 +1,6 @@
 #include "include/video_recorder.hpp"
 
-void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite = 1)
-{
-
+void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite = 1) {
     int ret;
 
     /* send the frame to the encoder */
@@ -45,15 +43,15 @@ void VideoCapture::AddFrame(rgb24 *data) {
 
     if(startTime == 0) {
         startTime = UnityEngine::Time::get_time();
-        log("Start time is %f", startTime);
+        log("Video global time start is %f", startTime);
     }
 
     int framesToWrite = 1;
 
-    if (stabilizeFPS) {
-        framesToWrite = std::max(0, int(TotalLength() / (1 / fps)) - frameCounter);
-        log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
-    }
+    // if (stabilizeFPS) {
+    //     framesToWrite = std::max(0, int(TotalLength() / (1.0f / float(fps * 2))) - frameCounter);
+    //     log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
+    // }
 
     if(framesToWrite == 0) return;
 

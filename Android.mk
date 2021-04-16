@@ -96,13 +96,13 @@ LOCAL_SRC_FILES := ffmpeg/libswscale.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - mobileffmpeg
 include $(CLEAR_VARS)
-LOCAL_MODULE := mobileffmpeg
-LOCAL_SRC_FILES := ffmpeg/libmobileffmpeg.so
+LOCAL_MODULE := ffmpegkit
+LOCAL_SRC_FILES := ffmpeg/libffmpegkit.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: ffmpeg - mobileffmpegabidetect
 include $(CLEAR_VARS)
-LOCAL_MODULE := mobileffmpegabidetect
-LOCAL_SRC_FILES := ffmpeg/libmobileffmpeg_abidetect.so
+LOCAL_MODULE := ffmpegkitabidetect
+LOCAL_SRC_FILES := ffmpeg/libffmpegkit_abidetect.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 
@@ -121,8 +121,8 @@ LOCAL_SHARED_LIBRARIES += avcodec
 LOCAL_SHARED_LIBRARIES += avformat
 LOCAL_SHARED_LIBRARIES += avutil
 LOCAL_SHARED_LIBRARIES += swscale
-LOCAL_SHARED_LIBRARIES += mobileffmpeg
-LOCAL_SHARED_LIBRARIES += mobileffmpegabidetect
+LOCAL_SHARED_LIBRARIES += ffmpegkit
+LOCAL_SHARED_LIBRARIES += ffmpegkitabidetect
 LOCAL_LDLIBS += -llog -lGLESv3
 LOCAL_CPPFLAGS += -std=c++2a -O3
 LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./ffmpeg
