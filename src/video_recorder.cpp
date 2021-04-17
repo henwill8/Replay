@@ -214,7 +214,7 @@ void VideoCapture::queueFrame(void *frame) {
 
 VideoCapture::~VideoCapture()
 {
-    initialized = false; // should we force it to stop or force it to wait?
+    Finish();
 
     if (encodingThread.joinable())
         encodingThread.join();
