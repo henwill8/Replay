@@ -1616,6 +1616,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
     songHash = to_utf8(csstrtostr(LevelID))+std::to_string(Difficulty)+modeName;
     if(songHash.find("custom_level_") != std::string::npos) {
         songHash.erase(songHash.begin(), songHash.begin()+13);
+        transform(songHash.begin(), songHash.end(), songHash.begin(), ::tolower);
     }
     log("Song Hash is "+songHash);
     
