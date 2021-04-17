@@ -11,11 +11,9 @@ using namespace UnityEngine;
 
 DEFINE_TYPE(CameraCapture);
 
-VideoCapture capture;
 
 void CameraCapture::ctor()
 {
-    INVOKE_CTOR();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     capture.Init(1920, 1080, 30, 3000, true, "ultrafast", "/sdcard/video.h264");
 }
