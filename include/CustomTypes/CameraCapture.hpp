@@ -6,16 +6,12 @@
 #include "UnityEngine/RenderTexture.hpp"
  
 #include "System/Collections/Generic/List_1.hpp"
-
+ 
 #include "video_recorder.hpp"
  
 #include "custom-types/shared/macros.hpp"
  
 DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
-
-private:
-    VideoCapture capture;
-
 
     DECLARE_INSTANCE_FIELD(System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>*, requests);
  
