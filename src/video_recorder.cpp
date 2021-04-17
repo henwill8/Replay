@@ -196,8 +196,7 @@ void VideoCapture::encodeFrames()
             // Now we use the copied list and it should be ours only
             while (!listCopy.empty()) {
                 // log("size is %i", framebuffers.size());
-                auto it = listCopy.begin();
-                auto frameData = (rgb24 *) *it;
+                auto frameData = (rgb24 *) listCopy.front();
                 this->AddFrame(frameData);
                 // free(*it);
                 free(frameData);
