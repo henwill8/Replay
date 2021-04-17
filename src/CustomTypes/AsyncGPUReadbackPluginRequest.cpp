@@ -8,6 +8,8 @@
 #include <GLES3/gl3ext.h>
 #include "video_recorder.hpp"
 
+// Looks like this was from https://github.com/Alabate/AsyncGPUReadbackPlugin
+
 struct Task {
 	GLuint texture;
 	GLuint fbo;

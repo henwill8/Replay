@@ -21,9 +21,10 @@ void CameraCapture::ctor()
 
 extern UnityEngine::RenderTexture *texture;
 
+
+// https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
 void CameraCapture::Update()
 {
-    log("Starting camera capture update %d", requests->get_Count());
     if(capture->IsInitialized()) {
         if (requests->get_Count() < 8)
             requests->Add(AsyncGPUReadbackPlugin::Request(texture));
@@ -48,15 +49,15 @@ void CameraCapture::Update()
             void *buffer;
             req->GetRawData(buffer, length);
 
-            log("Flip!");
-            // Reverse the array to make the frame not upside down
-            auto rgbData = reinterpret_cast<rgb24*>(buffer);
+//            log("Flip!");
+//            // Reverse the array to make the frame not upside down
+//            auto rgbData = reinterpret_cast<rgb24*>(buffer);
+//
+//            for (int j = 0; j < (length/2) - 1; j++) {
+//                std::swap(rgbData[j], rgbData[length - j - 1]);
+//            }
 
-            for (int j = 0; j < (length/2) - 1; j++) {
-                std::swap(rgbData[j], rgbData[length - j - 1]);
-            }
 
-            log("Queuing frame");
             capture->queueFrame(buffer);
 
             req->Dispose();
