@@ -188,7 +188,9 @@ void VideoCapture::encodeFrames()
         if (!framebuffers.empty())
         {
             std::unique_lock lock(framebuffer_mutex);
-            std::list<void*> listCopy(framebuffers); // copy the list
+            std::list<void*> listCopy; // copy the list
+            listCopy.insert(listCopy.end(), std::make_move_iterator(framebuffers.begin()), std::make_move_iterator(framebuffers.end()));
+
             framebuffers.clear();
             lock.unlock();
             // Unlock and use the copy
