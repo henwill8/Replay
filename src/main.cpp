@@ -1178,7 +1178,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
 
     if(fpsCounter == nullptr) {
         fpsCounter =self->get_gameObject()->AddComponent<FPSCounter*>();
-    } else if((fpsCounter->get_currentFPS() < gameFPS-2 || fpsCounter->get_currentFPS() > gameFPS+2) && songTime > 5 && !inPauseMenu) {
+    } else if((fpsCounter->get_currentFPS() < gameFPS-4 || fpsCounter->get_currentFPS() > gameFPS+4) && songTime > 5 && !inPauseMenu) {
         gameFPS = fpsCounter->get_currentFPS();
         log("fps is "+std::to_string(gameFPS));
     }

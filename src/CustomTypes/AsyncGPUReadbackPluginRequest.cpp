@@ -96,25 +96,25 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
 
     // Reverse the array to make the frame not upside down
-    auto rgbData = reinterpret_cast<rgb24*>(task->data);
+    // auto rgbData = reinterpret_cast<rgb24*>(task->data);
 
-    for (int i = 0; i < (task->size/2) - 1; i++) {
-        std::swap(rgbData[i], rgbData[task->size - i - 1]);
-    }
+    // for (int i = 0; i < (task->size/2) - 1; i++) {
+    //     std::swap(rgbData[i], rgbData[task->size - i - 1]);
+    // }
 
 	// if(event_id == 100) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
     
 	// Unbind buffers
 	//glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteFramebuffers(1, &(task->fbo)); //
+	glDeleteFramebuffers(1, &(task->fbo));
 
 	// Fence to know when it's ready
 	//task->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 	
 	// Done init
 	task->initialized = true;
-	task->done = true; //
+	task->done = true;
 
     // log("Finished initializing AsyncGPUReadbackRequest");
 }
@@ -154,6 +154,8 @@ extern "C" void update_renderThread(int event_id) {
 		// Map the buffer and copy it to data
 		void* ptr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT);
 		memcpy(task->data, ptr, task->size);
+
+        free(ptr);
 
 		// Unmap and unbind
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
