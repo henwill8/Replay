@@ -11,20 +11,20 @@ using namespace UnityEngine;
 
 DEFINE_TYPE(CameraCapture);
 
-VideoCapture capture;
 
 void CameraCapture::ctor()
 {
-    INVOKE_CTOR();
+    capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
-    capture.Init(1920, 1080, 30, 3000, true, "ultrafast", "/sdcard/video.h264");
+    capture->Init(1920, 1080, 30, 3000, true, "ultrafast", "/sdcard/video.h264");
 }
 
 extern UnityEngine::RenderTexture *texture;
 
 void CameraCapture::Update()
 {
-    if(capture.IsInitialized()) {
+    log("Starting camera capture update %d", requests->get_Count());
+    if(capture->IsInitialized()) {
         if (requests->get_Count() < 8)
             requests->Add(AsyncGPUReadbackPlugin::Request(texture));
         // log("adding request");
@@ -47,7 +47,17 @@ void CameraCapture::Update()
             size_t length;
             void *buffer;
             req->GetRawData(buffer, length);
-            capture.queueFrame(buffer);
+
+            log("Flip!");
+            // Reverse the array to make the frame not upside down
+            auto rgbData = reinterpret_cast<rgb24*>(buffer);
+
+            for (int j = 0; j < (length/2) - 1; j++) {
+                std::swap(rgbData[j], rgbData[length - j - 1]);
+            }
+
+            log("Queuing frame");
+            capture->queueFrame(buffer);
 
             req->Dispose();
             toRemove.push_back(req);

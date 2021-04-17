@@ -123,7 +123,7 @@ LOCAL_SHARED_LIBRARIES += avutil
 LOCAL_SHARED_LIBRARIES += swscale
 LOCAL_SHARED_LIBRARIES += ffmpegkit
 LOCAL_SHARED_LIBRARIES += ffmpegkitabidetect
-LOCAL_LDLIBS += -llog -lGLESv3
+LOCAL_LDLIBS += -llog -lGLESv3 -lGLESv2
 LOCAL_CPPFLAGS += -std=c++2a -O3
 LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./ffmpeg
 LOCAL_CPP_FEATURES += exceptions

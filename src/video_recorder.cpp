@@ -187,10 +187,11 @@ void VideoCapture::encodeFrames()
     {
         if (!framebuffers.empty())
         {
-            std::unique_lock lock(framebuffer_mutex);
+            framebuffer_mutex.lock();
             std::list<void*> listCopy(framebuffers); // copy the list
             framebuffers.clear();
-            lock.unlock();
+            framebuffer_mutex.unlock();
+            log("Doing stuff with frame queue!");
             // Unlock and use the copy
 
             // Now we use the copied list and it should be ours only
@@ -208,8 +209,9 @@ void VideoCapture::encodeFrames()
 }
 
 void VideoCapture::queueFrame(void *frame) {
-    std::unique_lock lock(framebuffer_mutex);
+    framebuffer_mutex.lock();
     framebuffers.push_back(frame);
+    framebuffer_mutex.unlock();
 }
 
 VideoCapture::~VideoCapture()
