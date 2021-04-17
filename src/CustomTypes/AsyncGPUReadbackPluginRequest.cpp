@@ -114,6 +114,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
     // log("Finished initializing AsyncGPUReadbackRequest");
 }
 
+// TODO: Remove or use this method. It is never used as far as I can tell
 extern "C" void update_renderThread(int event_id) {
     // Get task back
 	tasks_mutex.lock();
@@ -149,8 +150,6 @@ extern "C" void update_renderThread(int event_id) {
 		// Map the buffer and copy it to data
 		void* ptr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT);
 		memcpy(task->data, ptr, task->size);
-
-        free(ptr);
 
 		// Unmap and unbind
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
