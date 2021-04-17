@@ -95,7 +95,12 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
 
+    // Reverse the array to make the frame not upside down
+    // auto rgbData = reinterpret_cast<rgb24*>(task->data);
 
+    // for (int i = 0; i < (task->size/2) - 1; i++) {
+    //     std::swap(rgbData[i], rgbData[task->size - i - 1]);
+    // }
 
 	// if(event_id == 100) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
     
@@ -106,7 +111,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Fence to know when it's ready
 	//task->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-
+	
 	// Done init
 	task->initialized = true;
 	task->done = true;

@@ -45,14 +45,6 @@ void CameraCapture::Update()
             size_t length;
             void *buffer;
             req->GetRawData(buffer, length);
-
-            // Reverse the array to make the frame not upside down
-            auto rgbData = reinterpret_cast<rgb24*>(buffer);
-
-            for (int j = 0; j < (length/2) - 1; j++) {
-                std::swap(rgbData[j], rgbData[length - j - 1]);
-            }
-
             capture.queueFrame(buffer);
 
             req->Dispose();
