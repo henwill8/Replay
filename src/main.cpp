@@ -2032,6 +2032,7 @@ MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, bool removedFro
 UnityEngine::RenderTexture* texture;
 
 #include "CustomTypes/CameraCapture.hpp"
+
 MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) {
 
     // log("LightManager_OnWillRenderObject");
@@ -2076,25 +2077,11 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             }
             
             cameraGO = cameraGameObject;
-            // log("FOV before is "+std::to_string(camera->get_fieldOfView()));
-            // typedef function_ptr_t<void, float> type;
-            // auto method = *reinterpret_cast<type>(il2cpp_functions::resolve_icall("UnityEngine.XR.XRDevice::set_fovZoomFactor"));
-            // if(method != nullptr) method(2.0f);
-            // log("FOV after is "+std::to_string(camer->get_fieldOfView()));
 
             auto* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
-
-            OVRPlugin::Vector3f vel = OVRPlugin::GetNodeAngularAcceleration(OVRPlugin::Node::Head, OVRPlugin::Step::Render);
-            UnityEngine::Vector3 acceloration = {vel.x, vel.y, vel.z};
-            // lerpedAcc = UnityEngine::Vector3::Slerp(lerpedAcc, acceloration * 2, UnityEngine::Time::get_deltaTime() * 10);
-
-            // log("%f %f %f", vel.x, vel.y, vel.z);
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
-            // UnityEngine::Vector3 rotDifference = (oldPrevRot - prevRot);
-            // oldPrevRot = prevRot;
-            // log("difference is", rotDifference);
             
             if(cameraToggleString == "smooth") {
                 float deltaTime = UnityEngine::Time::get_deltaTime();
@@ -2144,8 +2131,6 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                             thirdPersonCamPos = newThirdPersonCamPos;
                             thirdPersonCamRot = newThirdPersonCamRot;
                         }
-                        // UnityEngine::Vector3 noShakeRot = thirdPersonCamRot.get_eulerAngles() + rotDifference;
-                        // RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, UnityEngine::Quaternion::Euler(thirdPersonCamRot.get_eulerAngles() - (rotDifference*100)));
                         cameraGO->get_transform()->SetPositionAndRotation(thirdPersonCamPos, thirdPersonCamRot);
                         
                         basePrevPos = prevPos;
