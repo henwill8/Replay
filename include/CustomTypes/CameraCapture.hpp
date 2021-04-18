@@ -10,8 +10,12 @@
 #include "video_recorder.hpp"
  
 #include "custom-types/shared/macros.hpp"
+#include <experimental/coroutine>
+#include "custom-types/shared/coroutine.hpp"
 
 #include <memory>
+
+
 
 DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
 
@@ -25,6 +29,8 @@ private:
     DECLARE_SIMPLE_DTOR();
  
     DECLARE_METHOD(void, Update);
+
+    custom_types::Helpers::Coroutine RequestPixelsAtEndOfFrame();
     
     DECLARE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* source, UnityEngine::RenderTexture* destination);
  

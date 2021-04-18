@@ -3,9 +3,11 @@
 #include "main.hpp"
 
 #include <string>
+#include "UnityEngine/WaitForEndOfFrame.hpp"
 
 #include "UnityEngine/Graphics.hpp"
 
+using namespace custom_types::Helpers;
 using namespace Replay;
 using namespace UnityEngine;
 
@@ -21,10 +23,9 @@ void CameraCapture::ctor()
 
 extern UnityEngine::RenderTexture *texture;
 
+custom_types::Helpers::Coroutine CameraCapture::RequestPixelsAtEndOfFrame() {
+    co_yield reinterpret_cast<enumeratorT*>(WaitForEndOfFrame::New_ctor());
 
-// https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
-void CameraCapture::Update()
-{
     if(capture->IsInitialized()) {
         if (requests->get_Count() < 8)
             requests->Add(AsyncGPUReadbackPlugin::Request(texture));
@@ -68,6 +69,12 @@ void CameraCapture::Update()
     {
         requests->Remove(req);
     }
+}
+
+// https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
+void CameraCapture::Update()
+{
+    StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
 }
 
 // void CameraCapture::OnRenderImage(RenderTexture *source, RenderTexture *destination)
