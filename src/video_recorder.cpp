@@ -1,7 +1,5 @@
 #include "include/video_recorder.hpp"
 
-
-
 void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite = 1) {
     int ret;
 
@@ -205,7 +203,6 @@ void VideoCapture::encodeFrames()
                 free(frameData);
                 listCopy.pop_front();
             }
-            Encode(c, NULL, pkt, f);
         }
     }
     log("Ending encoding thread");
