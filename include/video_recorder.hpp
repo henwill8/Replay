@@ -12,7 +12,7 @@ extern "C"
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libavutil/avutil.h"
-#include <ctime>
+#include "libavutil/time.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
 #include "libswscale/swscale.h"
