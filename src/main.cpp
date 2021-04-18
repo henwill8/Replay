@@ -2054,7 +2054,8 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 
                 auto camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
                 camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
-                camera->set_fieldOfView(120.0f);
+                // camera->set_fieldOfView(120.0f);
+                camera->set_fieldOfView(mainCamera->get_fieldOfView());
                 camera->set_clearFlags(mainCamera->get_clearFlags());
                 camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
                 camera->set_farClipPlane(mainCamera->get_farClipPlane());

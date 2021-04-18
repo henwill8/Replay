@@ -14,18 +14,16 @@ using namespace UnityEngine;
 
 DEFINE_TYPE(CameraCapture);
 
+extern UnityEngine::RenderTexture *texture;
 
 void CameraCapture::ctor()
 {
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
-    capture->Init(1920, 1080, 30, 3000, true, "ultrafast", "/sdcard/video.h264");
+    capture->Init(texture->get_width(), texture->get_height(), 50, 100, true, "ultrafast", "/sdcard/video.h264");
 
     StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
 }
-
-extern UnityEngine::RenderTexture *texture;
-
 
 // This requests frames at a time interval since we don't want 90frames/s
 custom_types::Helpers::Coroutine CameraCapture::RequestPixelsAtEndOfFrame() {
