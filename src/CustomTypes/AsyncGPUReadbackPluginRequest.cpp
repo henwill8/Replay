@@ -18,7 +18,7 @@ struct Task {
 	bool initialized = false;
 	bool error = false;
 	bool done = false;
-	void* data;
+	std::vector<rgb24> data;
 	int miplevel;
 	int size;
 	int height;
@@ -78,9 +78,6 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
 	task->size = task->width * task->height * 3;
 
-	// Allocate the final data buffer !!! WARNING: free, will have to be done on script side !!!!
-	task->data = malloc(task->size);
-
 	// Create the fbo (frame buffer object) from the given texture
 	glGenFramebuffers(1, &(task->fbo));
 
@@ -95,7 +92,19 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Start the read request
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
+	std::vector<rgb24> rgb24Vec(task->size);
+	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, rgb24Vec.data());
+
+	// Flip the screen
+    for(int line = 0; line != task->height/2; ++line) {
+        std::swap_ranges(
+                rgb24Vec.begin() + 3 * task->width * line,
+                rgb24Vec.begin() + 3 * task->width * (line+1),
+                rgb24Vec.begin() + 3 * task->width * (task->height-line-1));
+    }
+
+    task->data = rgb24Vec;
+
 
 	// if(event_id == 100) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
     
@@ -149,7 +158,8 @@ extern "C" void update_renderThread(int event_id) {
 
 		// Map the buffer and copy it to data
 		void* ptr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT);
-		memcpy(task->data, ptr, task->size);
+		// TODO: Fix
+		//		memcpy(task->data, ptr, task->size);
 
 		// Unmap and unbind
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
@@ -165,7 +175,7 @@ extern "C" void update_renderThread(int event_id) {
 	}
 }
 
-extern "C" void getData_mainThread(int event_id, void*& buffer, size_t& length) {
+extern "C" void getData_mainThread(int event_id, std::vector<rgb24>& buffer, size_t& length) {
 	// Get task back
 	tasks_mutex.lock();
 	std::shared_ptr<Task> task = tasks[event_id];
@@ -240,7 +250,7 @@ void AsyncGPUReadbackPluginRequest::Dispose() {
     //UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
 }
 
-void AsyncGPUReadbackPluginRequest::GetRawData(void*& buffer, size_t& length) {
+void AsyncGPUReadbackPluginRequest::GetRawData(std::vector<rgb24>& buffer, size_t& length) {
     getData_mainThread(eventId, buffer, length);
 }
 

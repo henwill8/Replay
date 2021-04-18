@@ -46,7 +46,7 @@ void CameraCapture::Update()
         {
             // log("Finished %d", i);
             size_t length;
-            void *buffer;
+            std::vector<rgb24> buffer;
             req->GetRawData(buffer, length);
 
 //            log("Flip!");

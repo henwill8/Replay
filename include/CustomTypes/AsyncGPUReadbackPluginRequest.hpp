@@ -1,6 +1,15 @@
+#pragma once
+
 #include "UnityEngine/Texture.hpp"
 
 #include "custom-types/shared/macros.hpp"
+
+struct rgb24
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+};
 
 DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2CppObject,
 
@@ -16,7 +25,7 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
     DECLARE_METHOD(void, Dispose);
 
     public:
-        void GetRawData(void*& buffer, size_t& length);
+        void GetRawData(std::vector<rgb24>& buffer, size_t& length);
 
     REGISTER_FUNCTION(
         REGISTER_FIELD(eventId);

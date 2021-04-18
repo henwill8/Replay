@@ -38,7 +38,7 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
     }
 }
 
-void VideoCapture::AddFrame(rgb24 *data) {
+void VideoCapture::AddFrame(std::vector<rgb24>& data) {
     if(!initialized) return;
 
     if(startTime == 0) {
@@ -70,7 +70,7 @@ void VideoCapture::AddFrame(rgb24 *data) {
     // int inLinesize[1] = {3 * c->width};
     // sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
-    frame->data[0] = (uint8_t*) data;
+    frame->data[0] = (uint8_t*) data.data(); // TODO: This may cause a memory issue where the vector is freed too soon, hopefully not
     frame->pts = frameCounter;
 
     for(int i = 1; i < AV_NUM_DATA_POINTERS; i++) frame->data[i] = nullptr;
@@ -190,7 +190,7 @@ void VideoCapture::encodeFrames()
         if (!framebuffers.empty())
         {
             framebuffer_mutex.lock();
-            std::list<void*> listCopy(framebuffers); // copy the list
+            std::list<std::vector<rgb24>> listCopy(framebuffers); // copy the list
             framebuffers.clear();
             framebuffer_mutex.unlock();
             // Unlock and use the copy
@@ -198,9 +198,8 @@ void VideoCapture::encodeFrames()
             // Now we use the copied list and it should be ours only
             while (!listCopy.empty()) {
                 // log("size is %i", framebuffers.size());
-                auto frameData = (rgb24 *) listCopy.front();
+                auto frameData = listCopy.front();
                 this->AddFrame(frameData);
-                free(frameData);
                 listCopy.pop_front();
             }
         }
@@ -208,7 +207,7 @@ void VideoCapture::encodeFrames()
     log("Ending encoding thread");
 }
 
-void VideoCapture::queueFrame(void *frame) {
+void VideoCapture::queueFrame(std::vector<rgb24>& frame) {
     framebuffer_mutex.lock();
     framebuffers.push_back(frame);
     framebuffer_mutex.unlock();

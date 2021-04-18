@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main.hpp"
+#include "CustomTypes/AsyncGPUReadbackPluginRequest.hpp"
 
 #include <iostream>
 #include <iostream>
@@ -17,21 +18,14 @@ extern "C"
 #include "libswscale/swscale.h"
 }
 
-struct rgb24
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
-
 class VideoCapture
 {
 public:
     void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath);
 
-    void AddFrame(rgb24 *data);
+    void AddFrame(std::vector<rgb24>& data);
     
-    void queueFrame(void *frame);
+    void queueFrame(std::vector<rgb24>& frame);
 
     void Finish();
 
@@ -83,7 +77,7 @@ private:
     std::ofstream f;
 
     mutable std::mutex framebuffer_mutex;
-    std::list<void *> framebuffers;
+    std::list<std::vector<rgb24>> framebuffers;
     std::thread encodingThread;
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
