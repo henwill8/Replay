@@ -94,7 +94,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	task->data = std::vector<rgb24>(task->size);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
+	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data.data());
 
 
 
