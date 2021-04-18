@@ -1759,7 +1759,7 @@ MAKE_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, void, GameEnergyCounter* self,
 
     if(!recording) {
         if(self->get_energy()+value < 0.01f && !replaySaveBools.noFail) {
-            if((!failedReplay && !deathReplay) || songTime < failedSongTime-1) {
+            if((!failedReplay && !deathReplay) || (songTime < failedSongTime-1 && !(failedReplay && !deathReplay))) {
                 log("Stopping energy from being added to stop fail");
                 return;
             }
