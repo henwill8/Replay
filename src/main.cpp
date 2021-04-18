@@ -1603,7 +1603,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
     UnityEngine::Transform* playButtonTransform = playButton->get_transform();
     
     auto* Level = reinterpret_cast<BeatmapLevelSO*>(self->level);
-    Il2CppString* LevelID = Level->levelID;
+    Il2CppString* LevelID = Level->get_levelID();
 
     auto* SelectedBeatmapDifficulty = self->selectedDifficultyBeatmap;
     int Difficulty = SelectedBeatmapDifficulty->get_difficulty();
