@@ -18,11 +18,12 @@ struct Task {
 	bool initialized = false;
 	bool error = false;
 	bool done = false;
-	std::vector<rgb24> data;
+	std::shared_ptr<std::vector<rgb24>> data;
 	int miplevel;
 	int size;
 	int height;
 	int width;
+
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;
@@ -92,11 +93,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Start the read request
 
-	task->data = std::vector<rgb24>(task->size/3);
+	task->data = std::make_shared<std::vector<rgb24>>(task->size/3);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data.data());
-
-
+	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data->data());
 
 
 
@@ -106,6 +105,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	//glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &(task->fbo));
+    glDeleteBuffers(1, &(task->pbo));
 
 	// Fence to know when it's ready
 	//task->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
@@ -169,7 +169,7 @@ extern "C" void update_renderThread(int event_id) {
 	}
 }
 
-extern "C" void getData_mainThread(int event_id, std::vector<rgb24>& buffer, size_t& length) {
+extern "C" void getData_mainThread(int event_id, std::shared_ptr<std::vector<rgb24>>& buffer, size_t& length) {
 	// Get task back
 	tasks_mutex.lock();
 	std::shared_ptr<Task> task = tasks[event_id];
@@ -244,7 +244,7 @@ void AsyncGPUReadbackPluginRequest::Dispose() {
     //UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
 }
 
-void AsyncGPUReadbackPluginRequest::GetRawData(std::vector<rgb24>& buffer, size_t& length) {
+void AsyncGPUReadbackPluginRequest::GetRawData(std::shared_ptr<std::vector<rgb24>>& buffer, size_t& length) {
     getData_mainThread(eventId, buffer, length);
 }
 

@@ -23,9 +23,9 @@ class VideoCapture
 public:
     void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath);
 
-    void AddFrame(std::vector<rgb24>& data);
+    void AddFrame(std::shared_ptr<std::vector<rgb24>>& data);
     
-    void queueFrame(std::vector<rgb24>& frame);
+    void queueFrame(std::shared_ptr<std::vector<rgb24>> frame);
 
     void Finish();
 
@@ -48,6 +48,10 @@ public:
     {
         return UnityEngine::Time::get_time() - startTime;
     };
+
+    float getFpsrate() {
+        return fps;
+    }
 
     ~VideoCapture();
 
@@ -77,7 +81,7 @@ private:
     std::ofstream f;
 
     mutable std::mutex framebuffer_mutex;
-    std::list<std::vector<rgb24>> framebuffers;
+    std::list<std::shared_ptr<std::vector<rgb24>>> framebuffers;
     std::thread encodingThread;
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);

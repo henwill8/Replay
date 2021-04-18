@@ -29,6 +29,8 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
             return;
         }
 
+        getLogger().info("Writing replay frames %d", pkt->size);
+
         // log("Write packet %li (size=%i)\n", pkt->pts, pkt->size);
         for (int i = 0; i < framesToWrite; i++)
         {
@@ -38,7 +40,7 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
     }
 }
 
-void VideoCapture::AddFrame(std::vector<rgb24>& data) {
+void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
     if(!initialized) return;
 
     if(startTime == 0) {
@@ -70,7 +72,7 @@ void VideoCapture::AddFrame(std::vector<rgb24>& data) {
     // int inLinesize[1] = {3 * c->width};
     // sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
-    frame->data[0] = (uint8_t*) data.data(); // TODO: This may cause a memory issue where the vector is freed too soon, hopefully not
+    frame->data[0] = (uint8_t*) data->data(); // TODO: This may cause a memory issue where the vector is freed too soon, hopefully not
     frame->pts = frameCounter;
 
     for(int i = 1; i < AV_NUM_DATA_POINTERS; i++) frame->data[i] = nullptr;
@@ -190,7 +192,7 @@ void VideoCapture::encodeFrames()
         if (!framebuffers.empty())
         {
             framebuffer_mutex.lock();
-            std::list<std::vector<rgb24>> listCopy(framebuffers); // copy the list
+            std::list<std::shared_ptr<std::vector<rgb24>>> listCopy(framebuffers); // copy the list
             framebuffers.clear();
             framebuffer_mutex.unlock();
             // Unlock and use the copy
@@ -203,9 +205,9 @@ void VideoCapture::encodeFrames()
                 // Flip the screen
                 for(int line = 0; line != height/2; ++line) {
                     std::swap_ranges(
-                            frameData.begin() + width * line,
-                            frameData.begin() + width * (line+1),
-                            frameData.begin() + width * (height-line-1));
+                            frameData->begin() + width * line,
+                            frameData->begin() + width * (line+1),
+                            frameData->begin() + width * (height-line-1));
                 }
 
                 this->AddFrame(frameData);
@@ -216,7 +218,7 @@ void VideoCapture::encodeFrames()
     log("Ending encoding thread");
 }
 
-void VideoCapture::queueFrame(std::vector<rgb24>& frame) {
+void VideoCapture::queueFrame(std::shared_ptr<std::vector<rgb24>> frame) {
     framebuffer_mutex.lock();
     framebuffers.push_back(frame);
     framebuffer_mutex.unlock();
