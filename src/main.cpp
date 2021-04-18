@@ -1665,7 +1665,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
         if(failedInReplay) {
             log("Creating failed replay text");
             int minutes = (int) std::floor(failedSongTime / 60.0f);
-            int seconds = (int) std::floor(failedSongTime - (float) minutes*60.0f);
+            int seconds = (int) std::floor(failedSongTime - (float(minutes) * 60.0f));
 
             std::string minutesString = std::to_string(minutes);
             std::string secondsString = std::to_string(seconds);
