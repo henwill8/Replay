@@ -84,7 +84,7 @@ void VideoCapture::AddFrame(rgb24 *data) {
 void VideoCapture::Finish()
 {
     //DELAYED FRAMES
-    // Encode(c, NULL, pkt, f);
+    Encode(c, NULL, pkt, f);
 
     f.close();
 
@@ -202,10 +202,10 @@ void VideoCapture::encodeFrames()
                 // log("size is %i", framebuffers.size());
                 auto frameData = (rgb24 *) listCopy.front();
                 this->AddFrame(frameData);
-                // free(*it);
                 free(frameData);
                 listCopy.pop_front();
             }
+            Encode(c, NULL, pkt, f);
         }
     }
     log("Ending encoding thread");
