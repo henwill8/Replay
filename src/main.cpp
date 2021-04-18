@@ -2462,12 +2462,12 @@ MAKE_HOOK_OFFSETLESS(GameSongController_LateUpdate, void, GameSongController* se
             }
             
             log("Getting objects after skip time");
-            auto* spawnController = reinterpret_cast<BeatmapObjectCallbackController*>(self->beatmapObjectCallbackController);
+            BeatmapObjectCallbackController* spawnController = reinterpret_cast<BeatmapObjectCallbackController*>(self->beatmapObjectCallbackController);
 
             auto beatmapLinesData = spawnController->initData->beatmapData->get_beatmapLinesData();
-            auto linesCount = reinterpret_cast<System::Collections::ICollection*>(beatmapLinesData)->get_Count();
+            auto linesCount = il2cpp_utils::RunMethod<int>(beatmapLinesData, "System.Collections.ICollection.get_Count").value();
             for (int i = 0; i < linesCount; i++) {
-                auto lineData = beatmapLinesData->get_Item(i);
+                auto lineData = il2cpp_utils::RunMethod<GlobalNamespace::IReadonlyBeatmapLineData*>(beatmapLinesData, "System.Collections.Generic.IReadOnlyList`1.get_Item", i).value();
                 auto beatmapObjectsInLine = lineData->get_beatmapObjectsData();
                 for (int j = 0; j < reinterpret_cast<System::Collections::Generic::List_1<BeatmapObjectData*>*>(beatmapObjectsInLine)->get_Count(); j++) {
                     if (beatmapObjectsInLine->get_Item(j)->time >= sliderValue) {
@@ -2536,7 +2536,6 @@ MAKE_HOOK_OFFSETLESS(GameSongController_LateUpdate, void, GameSongController* se
 }
 
 MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel* self, float energy) {
-
     if(!recording && didReach0Energy && replaySaveBools.noFail) {
         if(songTime < reached0Time) {
             doneFailedEffect = false;
