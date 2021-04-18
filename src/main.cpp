@@ -1962,7 +1962,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, PauseMenuManager* self) {
         auto* slider = sliderTransform->get_gameObject()->GetComponent<HMUI::TimeSlider*>();
 
         slider->timeType = HMUI::TimeSlider::TimeType::Default;
-        float flooredTime = std::floor(songTime);
+        int flooredTime = std::floor(songTime);
         slider->set_minValue(std::floor(std::max(0.0f, practiceStartTime)));
         if(failedReplay || deathReplay) {
             slider->set_maxValue(std::max(0.0f, std::floor(failedSongTime-5)));
