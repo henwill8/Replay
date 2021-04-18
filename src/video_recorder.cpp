@@ -1,6 +1,8 @@
 #include "include/video_recorder.hpp"
 
-void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite = 1) {
+
+
+void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite = 1) {
     int ret;
 
     /* send the frame to the encoder */
@@ -32,7 +34,7 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
         // log("Write packet %li (size=%i)\n", pkt->pts, pkt->size);
         for (int i = 0; i < framesToWrite; i++)
         {
-            fwrite(pkt->data, 1, pkt->size, outfile);
+            outfile.write(reinterpret_cast<const char *>(pkt->data), pkt->size);
         }
         av_packet_unref(pkt);
     }
@@ -82,7 +84,7 @@ void VideoCapture::Finish()
     //DELAYED FRAMES
     // Encode(c, NULL, pkt, f);
 
-    fclose(f);
+    f.close();
 
     avcodec_free_context(&c);
     av_frame_free(&frame);
@@ -147,7 +149,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     log("Successfully opened codec");
 
-    f = fopen(filename, "wb");
+    f = std::ofstream(filename);
     if (!f)
     {
         log("Could not open %s\n", filename);

@@ -3,6 +3,9 @@
 #include "main.hpp"
 
 #include <iostream>
+#include <iostream>
+#include <fstream>
+
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -77,13 +80,13 @@ private:
     bool stabilizeFPS;
 
     const char *filename;
-    FILE *f;
+    std::ofstream f;
 
     mutable std::mutex framebuffer_mutex;
     std::list<void *> framebuffers;
     std::thread encodingThread;
 
-    void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, FILE *outfile, int framesToWrite);
+    void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
 
     void encodeFrames();
 
