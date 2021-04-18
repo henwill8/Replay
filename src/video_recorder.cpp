@@ -199,6 +199,15 @@ void VideoCapture::encodeFrames()
             while (!listCopy.empty()) {
                 // log("size is %i", framebuffers.size());
                 auto frameData = listCopy.front();
+
+                // Flip the screen
+                for(int line = 0; line != height/2; ++line) {
+                    std::swap_ranges(
+                            frameData.begin() + width * line,
+                            frameData.begin() + width * (line+1),
+                            frameData.begin() + width * (height-line-1));
+                }
+
                 this->AddFrame(frameData);
                 listCopy.pop_front();
             }

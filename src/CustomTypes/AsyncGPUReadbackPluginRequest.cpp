@@ -91,21 +91,13 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glBufferData(GL_PIXEL_PACK_BUFFER, task->size, 0, GL_DYNAMIC_READ);*/
 
 	// Start the read request
+
+	task->data = std::vector<rgb24>(task->size);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	std::vector<uint8_t> rgb24Vec(task->size);
-	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, rgb24Vec.data());
+	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data);
 
-	// Flip the screen
-    for(int line = 0; line != task->height/2; ++line) {
-        std::swap_ranges(
-                rgb24Vec.begin() + 3 * task->width * line,
-                rgb24Vec.begin() + 3 * task->width * (line+1),
-                rgb24Vec.begin() + 3 * task->width * (task->height-line-1));
-    }
 
-    auto vectorData = reinterpret_cast<rgb24*>(rgb24Vec.data());
 
-    task->data = std::vector<rgb24>(vectorData, vectorData + task->size);
 
 
 	// if(event_id == 100) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
