@@ -2104,7 +2104,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 int height = 1080;
 
                 // Set aspect ratio accordingly
-                camera->set_aspect((float) width / (float) height);
+                camera->set_aspect(float(width) / float(height));
                 
                 camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
                 
@@ -2125,8 +2125,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
             
-            switch cameraAngle {
-                case SMOOTH:
+            if(cameraAngle == SMOOTH) {
                     float deltaTime = UnityEngine::Time::get_deltaTime();
 
                     smoothCameraPosition = EaseLerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, UnityEngine::Time::get_time(), deltaTime * positionSmooth);
@@ -2139,51 +2138,49 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                     cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
                     cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
                     cameraGO->get_transform()->set_rotation(smoothCameraRotation);
-                    break;
-                case THIRDPERSON:
-                    if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
-                        float camX = sin((songTime/2)/5)*9;
-                        float camY = 2.5f;
-                        float camZ = cos((songTime/2)/2.5f)*-3-2.5f;
-                        cameraGO->get_transform()->set_position(UnityEngine::Vector3{camX, camY, camZ});
+            } else {
+                if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
+                    float camX = sin((songTime/2)/5)*9;
+                    float camY = 2.5f;
+                    float camZ = cos((songTime/2)/2.5f)*-3-2.5f;
+                    cameraGO->get_transform()->set_position(UnityEngine::Vector3{camX, camY, camZ});
 
-                        headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, 1.6f});
+                    headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, 1.6f});
 
-                        cameraGO->get_transform()->LookAt(headFollowTransform);
-                    } else {
-                        bool aButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
-                        bool bButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::Two, GlobalNamespace::OVRInput::Controller::RTouch);
+                    cameraGO->get_transform()->LookAt(headFollowTransform);
+                } else {
+                    bool aButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
+                    bool bButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::Two, GlobalNamespace::OVRInput::Controller::RTouch);
 
-                        if(aButtonValue || bButtonValue) {
-                            pressedThirdPersonMoveButton = true;
+                    if(aButtonValue || bButtonValue) {
+                        pressedThirdPersonMoveButton = true;
 
-                            UnityEngine::Vector3 camRotEuler = prevRot - basePrevRot;
+                        UnityEngine::Vector3 camRotEuler = prevRot - basePrevRot;
 
-                            cameraGO->get_transform()->set_localRotation(thirdPersonCamRot);
-                            cameraGO->get_transform()->Rotate(camRotEuler);
+                        cameraGO->get_transform()->set_localRotation(thirdPersonCamRot);
+                        cameraGO->get_transform()->Rotate(camRotEuler);
 
-                            cameraGO->get_transform()->set_position(newThirdPersonCamPos);
-                            if(aButtonValue) {
-                                UnityEngine::Vector3 translation = (prevPos - basePrevPos) * 18  * UnityEngine::Time::get_deltaTime();
-                                cameraGO->get_transform()->Translate(UnityEngine::Quaternion::Euler(0, -prevRot.y, 0) * translation, UnityEngine::Space::Self);
-                            }
-
-                            newThirdPersonCamPos = cameraGO->get_transform()->get_position();
-                            newThirdPersonCamRot = cameraGO->get_transform()->get_rotation();
-                        } else {
-                            if(pressedThirdPersonMoveButton) {
-                                thirdPersonCamPos = newThirdPersonCamPos;
-                                thirdPersonCamRot = newThirdPersonCamRot;
-                            }
-                            cameraGO->get_transform()->SetPositionAndRotation(thirdPersonCamPos, thirdPersonCamRot);
-                            
-                            basePrevPos = prevPos;
-                            basePrevRot = prevRot;
-
-                            newThirdPersonCamPos = cameraGO->get_transform()->get_position();
+                        cameraGO->get_transform()->set_position(newThirdPersonCamPos);
+                        if(aButtonValue) {
+                            UnityEngine::Vector3 translation = (prevPos - basePrevPos) * 18  * UnityEngine::Time::get_deltaTime();
+                            cameraGO->get_transform()->Translate(UnityEngine::Quaternion::Euler(0, -prevRot.y, 0) * translation, UnityEngine::Space::Self);
                         }
+
+                        newThirdPersonCamPos = cameraGO->get_transform()->get_position();
+                        newThirdPersonCamRot = cameraGO->get_transform()->get_rotation();
+                    } else {
+                        if(pressedThirdPersonMoveButton) {
+                            thirdPersonCamPos = newThirdPersonCamPos;
+                            thirdPersonCamRot = newThirdPersonCamRot;
+                        }
+                        cameraGO->get_transform()->SetPositionAndRotation(thirdPersonCamPos, thirdPersonCamRot);
+                        
+                        basePrevPos = prevPos;
+                        basePrevRot = prevRot;
+
+                        newThirdPersonCamPos = cameraGO->get_transform()->get_position();
                     }
-                    break;
+                }
             }
 
             typedef function_ptr_t<void, UnityEngine::Camera*, UnityEngine::Matrix4x4> cullingMatrixType;
