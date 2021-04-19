@@ -23,7 +23,6 @@ struct Task {
 	int size;
 	int height;
 	int width;
-
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;

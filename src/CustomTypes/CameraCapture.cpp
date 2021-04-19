@@ -20,7 +20,7 @@ void CameraCapture::ctor()
 {
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
-    capture->Init(texture->get_width(), texture->get_height(), 50, 100, true, "ultrafast", "/sdcard/video.h264");
+    capture->Init(texture->get_width(), texture->get_height(), 30, 100, true, "ultrafast", "/sdcard/video.h264");
 
     StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
 }

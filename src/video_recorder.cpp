@@ -72,8 +72,8 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
     // int inLinesize[1] = {3 * c->width};
     // sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
-    frame->data[0] = (uint8_t*) data->data(); // TODO: This may cause a memory issue where the vector is freed too soon, hopefully not
-    frame->pts = frameCounter;
+    frame->data[0] = (uint8_t*) data->data();
+    frame->pts = TotalLength();
 
     for(int i = 1; i < AV_NUM_DATA_POINTERS; i++) frame->data[i] = nullptr;
 
@@ -131,7 +131,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     c->bit_rate = bitrate * 1000;
     c->width = width;
     c->height = height;
-    c->time_base = (AVRational){1, fps};
+    c->time_base = (AVRational){1, 1};
     c->framerate = (AVRational){fps, 1};
 
     c->gop_size = 10;
