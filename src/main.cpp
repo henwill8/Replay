@@ -198,10 +198,16 @@ struct v6replayBools {
     }
 };
 
-Il2CppObject* playButton = nullptr;
-Il2CppObject* restartButton = nullptr;
+enum cameraAngles {
+    HEADSET,
+    SMOOTH,
+    THIRDPERSON
+};
 
-std::string cameraToggleString = "hmd";
+UnityEngine::UI::Button* playButton = nullptr;
+UnityEngine::UI::Button* restartButton = nullptr;
+
+cameraAngles cameraAngle = HEADSET;
 
 Button* replayButton = nullptr;
 UnityEngine::GameObject* replayButtonGO = nullptr;
@@ -271,21 +277,29 @@ void failedReplayButtonOnClick() {
 void cameraToggleOnClick() {
     TMPro::TextMeshProUGUI* buttonTMP = cameraToggle->get_gameObject()->GetComponentInChildren<TMPro::TextMeshProUGUI*>();
     if(buttonTMP != nullptr) {
-        if(cameraToggleString == "hmd") {
-            log("setting text to smooth camera");
-            cameraToggleString = "smooth";
-            buttonTMP->set_text(createcsstr("Smooth Camera"));
-            warningText->get_gameObject()->SetActive(true);
-        } else if(cameraToggleString == "smooth") {
-            log("setting text to third person");
-            cameraToggleString = "thirdPerson";
-            buttonTMP->set_text(createcsstr("Third Person"));
-            warningText->get_gameObject()->SetActive(true);
-        } else if(cameraToggleString == "thirdPerson") {
-            log("setting text to normal");
-            cameraToggleString = "hmd";
-            buttonTMP->set_text(createcsstr("Normal"));
-            warningText->get_gameObject()->SetActive(false);
+        warningText->get_gameObject()->SetActive(true);
+        switch(cameraAngle) {
+            case HEADSET:
+                log("Setting button text to smooth camera");
+
+                cameraAngle = SMOOTH;
+                buttonTMP->set_text(createcsstr("Smooth Camera"));
+                break;
+
+            case SMOOTH:
+                log("Setting button text to third person");
+
+                cameraAngle = THIRDPERSON;
+                buttonTMP->set_text(createcsstr("Third Person"));
+                break;
+
+            case THIRDPERSON:
+                log("Setting button text to normal");
+
+                cameraAngle = HEADSET;
+                buttonTMP->set_text(createcsstr("Normal"));
+                warningText->get_gameObject()->SetActive(false);
+                break;
         }
     }
 }
@@ -293,18 +307,27 @@ void cameraToggleOnClick() {
 void failedCameraToggleOnClick() {
     TMPro::TextMeshProUGUI* buttonTMP = failedCameraToggle->get_gameObject()->GetComponentInChildren<TMPro::TextMeshProUGUI*>();
     if(buttonTMP != nullptr) {
-        if(cameraToggleString == "hmd") {
-            log("setting text to smooth camera");
-            cameraToggleString = "smooth";
-            buttonTMP->set_text(createcsstr("Smooth Camera"));
-        } else if(cameraToggleString == "smooth") {
-            log("setting text to third person");
-            cameraToggleString = "thirdPerson";
-            buttonTMP->set_text(createcsstr("Third Person"));
-        } else if(cameraToggleString == "thirdPerson") {
-            log("setting text to normal");
-            cameraToggleString = "hmd";
-            buttonTMP->set_text(createcsstr("Normal"));
+        switch(cameraAngle) {
+            case HEADSET:
+                log("Setting button text to smooth camera");
+
+                cameraAngle = SMOOTH;
+                buttonTMP->set_text(createcsstr("Smooth Camera"));
+                break;
+
+            case SMOOTH:
+                log("Setting button text to third person");
+
+                cameraAngle = THIRDPERSON;
+                buttonTMP->set_text(createcsstr("Third Person"));
+                break;
+
+            case THIRDPERSON:
+                log("Setting button text to normal");
+
+                cameraAngle = HEADSET;
+                buttonTMP->set_text(createcsstr("Normal"));
+                break;
         }
     }
 }
@@ -1337,7 +1360,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
             rightSaberTransformCache = self->get_transform();
         }
-        if(customAvatar != nullptr && cameraToggleString == "thirdPerson" && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
+        if(customAvatar != nullptr && (cameraAngle == THIRDPERSON || cameraAngle == HEADSET) && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
             customAvatar->get_transform()->SetParent(self->get_transform()->GetParent()->GetParent()->GetParent());
             customAvatar->get_transform()->set_position(UnityEngine::Vector3{0, 0, 0});
             customAvatar->get_transform()->set_localScale(UnityEngine::Vector3{1, 1, 1});
@@ -1503,7 +1526,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         audioRenderer.OpenFile("sdcard/"+songName+".wav");
         // videoCapture.Init(1920, 1080, 30, 2, "sdcard/"+songName+".mp4");
 
-        log("Entering a replay, camera mode is "+cameraToggleString);
+        log("Entering a replay, camera mode is %i", cameraAngle);
 
         bs_utils::Submission::disable(modInfo);
         setenv("ViewingReplay", "true", 1);
@@ -1566,7 +1589,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         speedToggle = nullptr;
         continueButton = nullptr;
 
-        if(cameraToggleString == "thirdPerson" && getConfig().config["Avatars"].GetBool()) {
+        if((cameraAngle == THIRDPERSON || cameraAngle == HEADSET) && getConfig().config["Avatars"].GetBool()) {
             log("Instantiating customAvatar");
             customAvatar = UnityEngine::Object::Instantiate(playerAvatar);
             customAvatar->SetActive(false);
@@ -1703,13 +1726,17 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, Il2CppObject*
         warningTextGO = warningText->get_gameObject();
 
         std::string tempString;
-        if(cameraToggleString == "hmd") {
-            tempString = "Normal";
-            warningText->get_gameObject()->SetActive(false);
-        } else if(cameraToggleString == "smooth") {
-            tempString = "Smooth Camera";
-        } else if(cameraToggleString == "thirdPerson") {
-            tempString = "Third Person";
+        switch(cameraAngle) {
+            case HEADSET:
+                tempString = "Normal";
+                warningText->get_gameObject()->SetActive(false);
+                break;
+            case SMOOTH:
+                tempString = "Smooth Camera";
+                break;
+            case THIRDPERSON:
+                tempString = "Third Person";
+                break;
         }
         cameraToggle = BeatSaberUI::CreateUIButton(
             parent, 
@@ -1985,7 +2012,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, Il2CppObject* self) {
 
         oldSliderTime = slider->get_value();
 
-        if(customAvatar != nullptr && cameraToggleString == "thirdPerson") customAvatar->SetActive(false);
+        if(customAvatar != nullptr && cameraAngle == THIRDPERSON) customAvatar->SetActive(false);
 
         GetFirstEnabledComponent<AudioTimeSyncController*>()->Pause();
     }
@@ -2045,19 +2072,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
 
-        if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraToggleString != "hmd") {
-            // log("FOV before is "+std::to_string(camera->get_fieldOfView()));
-            // typedef function_ptr_t<void, float> type;
-            // auto method = *reinterpret_cast<type>(il2cpp_functions::resolve_icall("UnityEngine.XR.XRDevice::set_fovZoomFactor"));
-            // if(method != nullptr) method(2.0f);
-            // log("FOV after is "+std::to_string(camer->get_fieldOfView()));
-
-            UnityEngine::Camera* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
-
-            OVRPlugin::Vector3f vel = OVRPlugin::GetNodeAngularAcceleration(OVRPlugin::Node::Head, OVRPlugin::Step::Render);
-            UnityEngine::Vector3 acceloration = {vel.x, vel.y, vel.z};
-            // lerpedAcc = UnityEngine::Vector3::Slerp(lerpedAcc, acceloration * 2, UnityEngine::Time::get_deltaTime() * 10);
-
+        if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
             // log("%f %f %f", vel.x, vel.y, vel.z);
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
@@ -2066,64 +2081,65 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             // oldPrevRot = prevRot;
             // log("difference is", rotDifference);
             
-            if(cameraToggleString == "smooth") {
-                float deltaTime = *RunMethod<float>("UnityEngine", "Time", "get_deltaTime");
+            switch cameraAngle {
+                case SMOOTH:
+                    float deltaTime = UnityEngine::Time::get_deltaTime();
 
-                smoothCameraPosition = UnityEngine::Vector3::Lerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, deltaTime * positionSmooth);
-                smoothCameraRotation = UnityEngine::Quaternion::Slerp(smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
+                    smoothCameraPosition = EaseLerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, UnityEngine::Time::get_time(), deltaTime * positionSmooth);
+                    smoothCameraRotation = Slerp(smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
 
-                UnityEngine::Vector3 cameraRotation = smoothCameraRotation.get_eulerAngles();
+                    UnityEngine::Vector3 cameraRotation = smoothCameraRotation.get_eulerAngles();
 
-                headFollowTransform->SetPositionAndRotation(smoothCameraPosition, UnityEngine::Quaternion::Euler(cameraRotation.x, 0, cameraRotation.z));
-                
-                cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
-                cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
-                cameraGO->get_transform()->set_rotation(smoothCameraRotation);
-            } else if(cameraToggleString == "thirdPerson") {
-                if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
-                    float camX = sin((songTime/2)/5)*9;
-                    float camY = 2.5f;
-                    float camZ = cos((songTime/2)/2.5f)*-3-2.5f;
-                    cameraGO->get_transform()->set_position(UnityEngine::Vector3{camX, camY, camZ});
+                    headFollowTransform->SetPositionAndRotation(smoothCameraPosition, UnityEngine::Quaternion::Euler(cameraRotation.x, 0, cameraRotation.z));
+                    
+                    cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
+                    cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
+                    cameraGO->get_transform()->set_rotation(smoothCameraRotation);
+                    break;
+                case THIRDPERSON:
+                    if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
+                        float camX = sin((songTime/2)/5)*9;
+                        float camY = 2.5f;
+                        float camZ = cos((songTime/2)/2.5f)*-3-2.5f;
+                        cameraGO->get_transform()->set_position(UnityEngine::Vector3{camX, camY, camZ});
 
-                    headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, 1.6f});
+                        headFollowTransform->set_position(UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, 1.6f});
 
-                    cameraGO->get_transform()->LookAt(headFollowTransform);
-                } else {
-                    bool aButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
-                    bool bButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::Two, GlobalNamespace::OVRInput::Controller::RTouch);
-
-                    if(aButtonValue || bButtonValue) {
-                        pressedThirdPersonMoveButton = true;
-
-                        UnityEngine::Vector3 camRotEuler = prevRot - basePrevRot;
-
-                        cameraGO->get_transform()->set_localRotation(thirdPersonCamRot);
-                        cameraGO->get_transform()->Rotate(camRotEuler);
-
-                        cameraGO->get_transform()->set_position(newThirdPersonCamPos);
-                        if(aButtonValue) {
-                            UnityEngine::Vector3 translation = (prevPos - basePrevPos) * 18  * UnityEngine::Time::get_deltaTime();
-                            cameraGO->get_transform()->Translate(UnityEngine::Quaternion::Euler(0, -prevRot.y, 0) * translation, UnityEngine::Space::Self);
-                        }
-
-                        newThirdPersonCamPos = cameraGO->get_transform()->get_position();
-                        newThirdPersonCamRot = cameraGO->get_transform()->get_rotation();
+                        cameraGO->get_transform()->LookAt(headFollowTransform);
                     } else {
-                        if(pressedThirdPersonMoveButton) {
-                            thirdPersonCamPos = newThirdPersonCamPos;
-                            thirdPersonCamRot = newThirdPersonCamRot;
-                        }
-                        // UnityEngine::Vector3 noShakeRot = thirdPersonCamRot.get_eulerAngles() + rotDifference;
-                        // RunMethod(mainCameraTransform, "SetPositionAndRotation", thirdPersonCamPos, UnityEngine::Quaternion::Euler(thirdPersonCamRot.get_eulerAngles() - (rotDifference*100)));
-                        cameraGO->get_transform()->SetPositionAndRotation(thirdPersonCamPos, thirdPersonCamRot);
-                        
-                        basePrevPos = prevPos;
-                        basePrevRot = prevRot;
+                        bool aButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::One, GlobalNamespace::OVRInput::Controller::RTouch);
+                        bool bButtonValue = GlobalNamespace::OVRInput::Get(GlobalNamespace::OVRInput::Button::Two, GlobalNamespace::OVRInput::Controller::RTouch);
 
-                        newThirdPersonCamPos = cameraGO->get_transform()->get_position();
+                        if(aButtonValue || bButtonValue) {
+                            pressedThirdPersonMoveButton = true;
+
+                            UnityEngine::Vector3 camRotEuler = prevRot - basePrevRot;
+
+                            cameraGO->get_transform()->set_localRotation(thirdPersonCamRot);
+                            cameraGO->get_transform()->Rotate(camRotEuler);
+
+                            cameraGO->get_transform()->set_position(newThirdPersonCamPos);
+                            if(aButtonValue) {
+                                UnityEngine::Vector3 translation = (prevPos - basePrevPos) * 18  * UnityEngine::Time::get_deltaTime();
+                                cameraGO->get_transform()->Translate(UnityEngine::Quaternion::Euler(0, -prevRot.y, 0) * translation, UnityEngine::Space::Self);
+                            }
+
+                            newThirdPersonCamPos = cameraGO->get_transform()->get_position();
+                            newThirdPersonCamRot = cameraGO->get_transform()->get_rotation();
+                        } else {
+                            if(pressedThirdPersonMoveButton) {
+                                thirdPersonCamPos = newThirdPersonCamPos;
+                                thirdPersonCamRot = newThirdPersonCamRot;
+                            }
+                            cameraGO->get_transform()->SetPositionAndRotation(thirdPersonCamPos, thirdPersonCamRot);
+                            
+                            basePrevPos = prevPos;
+                            basePrevRot = prevRot;
+
+                            newThirdPersonCamPos = cameraGO->get_transform()->get_position();
+                        }
                     }
-                }
+                    break;
             }
 
             typedef function_ptr_t<void, UnityEngine::Camera*, UnityEngine::Matrix4x4> cullingMatrixType;
@@ -2197,12 +2213,16 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, Il2CppObject* self
         failedReplayButton->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{45, 10});
         
         std::string tempString;
-        if(cameraToggleString == "hmd") {
-            tempString = "Normal";
-        } else if(cameraToggleString == "smooth") {
-            tempString = "Smooth Camera";
-        } else if(cameraToggleString == "thirdPerson") {
-            tempString = "Third Person";
+        switch(cameraAngle) {
+            case HEADSET:
+                tempString = "Normal";
+                break;
+            case SMOOTH:
+                tempString = "Smooth Camera";
+                break;
+            case THIRDPERSON:
+                tempString = "Third Person";
+                break;
         }
         failedCameraToggle = BeatSaberUI::CreateUIButton(
             parent,
