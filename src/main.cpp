@@ -2081,22 +2081,36 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 
                 auto camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
                 camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
-                // camera->set_fieldOfView(120.0f);
-                camera->set_fieldOfView(mainCamera->get_fieldOfView());
+
+                // Idk what this does
+                camera->set_orthographic(false);
+
+                camera->set_fieldOfView(90.0f);
+
+                // Force it to render into texture
+                camera->set_forceIntoRenderTexture(true);
+//                camera->set_fieldOfView(mainCamera->get_fieldOfView());
                 camera->set_clearFlags(mainCamera->get_clearFlags());
                 camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
                 camera->set_farClipPlane(mainCamera->get_farClipPlane());
                 camera->set_cullingMask(mainCamera->get_cullingMask());
-                camera->set_depth(mainCamera->get_depth());
+                // Makes the camera render before the main
+                camera->set_depth(mainCamera->get_depth() - 1);
                 camera->set_backgroundColor(mainCamera->get_backgroundColor());
                 camera->set_hideFlags(mainCamera->get_hideFlags());
                 camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
+
+                int width = 1920;
+                int height = 1080;
+
+                // Set aspect ratio accordingly
+                camera->set_aspect((float) width / (float) height);
                 
                 camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
                 
                 cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
-                texture = UnityEngine::RenderTexture::New_ctor(1920, 1080, 24);
+                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
                 texture->Create();
                 camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
