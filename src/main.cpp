@@ -2117,7 +2117,11 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
                 // mainCamera->set_cullingMask(0);
             }
-            
+	
+	    cameraGameObject->GetComponent<UnityEngine::Camera*>()->set_targetTexture(texture);
+	    cameraGameObject->GetComponent<UnityEngine::Camera*>()->Render();
+	    UnityEngine::RenderTexture::set_active(texture);
+	    
             cameraGO = cameraGameObject;
 
             auto* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
