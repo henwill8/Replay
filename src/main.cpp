@@ -2068,20 +2068,24 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
+        
+        int width = 1920;
+        int height = 1080;
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
             static UnityEngine::GameObject* cameraGameObject = nullptr;
+            UnityEngine::Camera* camera = nullptr;
             if(!cameraGameObject && inSong && !recording) {
                 auto mainCamera = UnityEngine::Camera::get_main();
 
                 cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
+                camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
                 UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
                 while (cameraGameObject->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGameObject->get_transform()->GetChild(0)->get_gameObject());
                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
                 
-                auto camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
                 camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
 
                 // Idk what this does
@@ -2102,9 +2106,6 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 camera->set_hideFlags(mainCamera->get_hideFlags());
                 camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
 
-                int width = 1920;
-                int height = 1080;
-
                 // Set aspect ratio accordingly
                 camera->set_aspect(float(width) / float(height));
                 
@@ -2123,27 +2124,30 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 log("Cam width: %i, cam height: %i", camera->get_pixelWidth(), camera->get_pixelHeight());
                 log("Tex width: %i, tex height: %i", texture->get_width(), texture->get_height());
             }
-            
-            cameraGO = cameraGameObject;
+	
+            camera = cameraGO->GetComponent<UnityEngine::Camera*>();
 
-            auto* camera = cameraGO->GetComponent<UnityEngine::Camera*>();
+            camera->set_targetTexture(texture);
+            camera->set_aspect(float(width) / float(height));
+	    
+            cameraGO = cameraGameObject;
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
             
             if(cameraAngle == SMOOTH) {
-                    float deltaTime = UnityEngine::Time::get_deltaTime();
+                float deltaTime = UnityEngine::Time::get_deltaTime();
 
-                    smoothCameraPosition = EaseLerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, UnityEngine::Time::get_time(), deltaTime * positionSmooth);
-                    smoothCameraRotation = Slerp(smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
+                smoothCameraPosition = EaseLerp(smoothCameraPosition, UnityEngine::Vector3{replayData[indexNum].playerData.head.pos.x, replayData[indexNum].playerData.head.pos.y, replayData[indexNum].playerData.head.pos.z}, UnityEngine::Time::get_time(), deltaTime * positionSmooth);
+                smoothCameraRotation = Slerp(smoothCameraRotation, UnityEngine::Quaternion::Euler(replayData[indexNum].playerData.head.rot.x, replayData[indexNum].playerData.head.rot.y, replayData[indexNum].playerData.head.rot.z), deltaTime * rotationSmooth);
 
-                    UnityEngine::Vector3 cameraRotation = smoothCameraRotation.get_eulerAngles();
+                UnityEngine::Vector3 cameraRotation = smoothCameraRotation.get_eulerAngles();
 
-                    headFollowTransform->SetPositionAndRotation(smoothCameraPosition, UnityEngine::Quaternion::Euler(cameraRotation.x, 0, cameraRotation.z));
-                    
-                    cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
-                    cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
-                    cameraGO->get_transform()->set_rotation(smoothCameraRotation);
+                headFollowTransform->SetPositionAndRotation(smoothCameraPosition, UnityEngine::Quaternion::Euler(cameraRotation.x, 0, cameraRotation.z));
+                
+                cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
+                cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
+                cameraGO->get_transform()->set_rotation(smoothCameraRotation);
             } else {
                 if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
                     float camX = sin((songTime/2)/5)*9;
