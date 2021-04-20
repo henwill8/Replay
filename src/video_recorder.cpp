@@ -69,8 +69,8 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
         return;
     }
 
-    // int inLinesize[1] = {3 * c->width};
-    // sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
+    int inLinesize[1] = {3 * c->width};
+    sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
     frame->data[0] = (uint8_t*) data->data();
     frame->pts = TotalLength();
@@ -91,7 +91,7 @@ void VideoCapture::Finish()
     avcodec_free_context(&c);
     av_frame_free(&frame);
     av_packet_free(&pkt);
-    // sws_freeContext(swsCtx);
+    sws_freeContext(swsCtx);
 
     initialized = false;
 }
@@ -109,8 +109,8 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     int ret;
 
-    codec = avcodec_find_encoder_by_name("libx264rgb");
-    // codec = avcodec_find_encoder(AV_CODEC_ID_H264);
+    // codec = avcodec_find_encoder_by_name("libx264rgb");
+    codec = avcodec_find_encoder(AV_CODEC_ID_HEVC);
     if (!codec)
     {
         log("Codec not found");
@@ -136,8 +136,8 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     c->gop_size = 10;
     c->max_b_frames = 1;
-    c->pix_fmt = AV_PIX_FMT_RGB24;
-    // c->pix_fmt = AV_PIX_FMT_YUV420P;
+    // c->pix_fmt = AV_PIX_FMT_RGB24;
+    c->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if (codec->id == AV_CODEC_ID_H264)
         av_opt_set(c->priv_data, "preset", encodeSpeed.c_str(), 0);
@@ -175,7 +175,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
         return;
     }
 
-    // swsCtx = sws_getContext(c->width, c->height, AV_PIX_FMT_RGB24, c->width, c->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, 0, 0, 0);
+    swsCtx = sws_getContext(c->width, c->height, AV_PIX_FMT_RGB24, c->width, c->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, 0, 0, 0);
 
     initialized = true;
     log("Finished initializing video at path %s", filename);
