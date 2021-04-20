@@ -131,7 +131,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     c->bit_rate = bitrate * 1000;
     c->width = width;
     c->height = height;
-    c->time_base = (AVRational){1, 1};
+    c->time_base = (AVRational){1, fps};
     c->framerate = (AVRational){fps, 1};
 
     c->gop_size = 10;

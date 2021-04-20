@@ -96,9 +96,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data->data());
 
-
-
-	// if(event_id == 100) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data));
+	// if(event_id == 500) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data->data()));
     
 	// Unbind buffers
 	//glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);

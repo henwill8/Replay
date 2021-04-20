@@ -34,6 +34,7 @@ custom_types::Helpers::Coroutine CameraCapture::RequestPixelsAtEndOfFrame() {
         if (capture->IsInitialized()) {
             if (requests->get_Count() < 3)
                 requests->Add(AsyncGPUReadbackPlugin::Request(texture));
+
             // log("adding request");
         }
 
@@ -57,15 +58,6 @@ void CameraCapture::Update()
             size_t length;
             std::shared_ptr<std::vector<rgb24>> buffer;
             req->GetRawData(buffer, length);
-
-//            log("Flip!");
-//            // Reverse the array to make the frame not upside down
-//            auto rgbData = reinterpret_cast<rgb24*>(buffer);
-//
-//            for (int j = 0; j < (length/2) - 1; j++) {
-//                std::swap(rgbData[j], rgbData[length - j - 1]);
-//            }
-
 
             capture->queueFrame(buffer);
 

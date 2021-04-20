@@ -2042,6 +2042,8 @@ MAKE_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, void, Il2CppObject* sel
     failedReplay = false;
     deathReplay = false;
 
+    audioRenderer.Save();
+
     log("Set inSongOrResults to false 1 "+std::to_string(inSongOrResults));
 }
 
@@ -2112,10 +2114,14 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
                 texture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
                 texture->Create();
+                UnityEngine::RenderTexture::set_active(texture);
                 camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
 
-                // mainCamera->set_cullingMask(0);
+                mainCamera->set_cullingMask(0);
+
+                log("Cam width: %i, cam height: %i", camera->get_pixelWidth(), camera->get_pixelHeight());
+                log("Tex width: %i, tex height: %i", texture->get_width(), texture->get_height());
             }
             
             cameraGO = cameraGameObject;
@@ -2214,19 +2220,19 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, GlobalNamespace::R
 
     if(failedReplayButton != nullptr) {
         log("Destroying failed replay button");
-        UnityEngine::Object::Destroy(failedReplayButton->get_gameObject());
+        UnityEngine::Object::Destroy(*RunMethod<UnityEngine::GameObject*>(failedReplayButton, "get_gameObject"));
         failedReplayButton = nullptr;
     }
 
     if(failedCameraToggle != nullptr) {
         log("Destroying failed camera toggle");
-        UnityEngine::GameObject::Destroy(failedCameraToggle->get_gameObject());
+        UnityEngine::GameObject::Destroy(*RunMethod<UnityEngine::GameObject*>(failedCameraToggle, "get_gameObject"));
         failedCameraToggle = nullptr;
     }
     
     if(failedTimeSlider != nullptr) {
         log("Destroying failed time slider");
-        UnityEngine::Object::Destroy(failedTimeSlider->get_gameObject());
+        UnityEngine::Object::Destroy(*RunMethod<UnityEngine::GameObject*>(failedTimeSlider, "get_gameObject"));
         failedTimeSlider = nullptr;
     }
 
@@ -2594,27 +2600,24 @@ MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel*
 
 MAKE_HOOK_OFFSETLESS(AutomaticSFXVolume_OnAudioFilterRead, void, Il2CppObject* self, Array<float> data, int channels) {
 
+    AutomaticSFXVolume_OnAudioFilterRead(self, data, channels);
+
     if(!recording && !inPauseMenu && !inResumeAnimation) {
         audioRenderer.OnAudioFilterRead(data, channels);
     }
-
-    AutomaticSFXVolume_OnAudioFilterRead(self, data, channels);
 }
 
 MAKE_HOOK_OFFSETLESS(NoteCutSoundEffect_NoteWasCut, void, NoteCutSoundEffect* self, Il2CppObject* noteController, Il2CppObject* noteCutInfo) {
-
     NoteCutSoundEffect_NoteWasCut(self, noteController, noteCutInfo);
 
-    if(!recording) {
-        UnityEngine::AudioSource* audioSource = self->audioSource;
-        Array<float> data;
-        // audioSource->get_clip()->GetData(&data, 0);
-        // for (int i = 0; i < data.Length(); i++) {
-        //     // write the short to the stream
-        //     short value = short(data.values[i] * float(32767));
-        //     audioRenderer.writer.write(reinterpret_cast<const char*>(&value), sizeof(short));
-        // }
-    }
+    // if(!recording) {
+    //     UnityEngine::AudioSource* audioSource = self->audioSource;
+    //     UnityEngine::AudioClip* audioClip = audioSource->get_clip();
+        
+    //     Array<float> data = Array<float>::NewLength(audioClip->get_samples() * audioClip->get_channels());
+    //     audioClip->GetData(&data, 0);
+    //     audioRenderer.OnAudioFilterRead(data);
+    // }
 }
 
 extern "C" void setup(ModInfo& info) {

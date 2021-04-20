@@ -24,10 +24,10 @@ void AudioRenderer::Write(Array<float>& audioData) {
 }
 
 // write the incoming audio to the output string
-void AudioRenderer::OnAudioFilterRead(Array<float>& data, int channels) {
+void AudioRenderer::OnAudioFilterRead(Array<float>& data, int audioChannels) {
     if(Rendering) {
         // store the number of channels we are rendering
-        channels = channels;
+        if(audioChannels > 0) channels = audioChannels;
 
         // store the data stream
         Write(data);

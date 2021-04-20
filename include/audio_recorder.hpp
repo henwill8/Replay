@@ -19,7 +19,7 @@ class AudioRenderer {
 
         void Save();
 
-        void OnAudioFilterRead(Array<float>& data, int channels);
+        void OnAudioFilterRead(Array<float>& data, int audioChannels = -1);
 
         void OpenFile(std::string fileName);
 
