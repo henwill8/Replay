@@ -72,10 +72,10 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
     int inLinesize[1] = {3 * c->width};
     sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
-    frame->data[0] = (uint8_t*) data->data();
+    // frame->data[0] = (uint8_t*) data->data();
     frame->pts = TotalLength();
 
-    for(int i = 1; i < AV_NUM_DATA_POINTERS; i++) frame->data[i] = nullptr;
+    // for(int i = 1; i < AV_NUM_DATA_POINTERS; i++) frame->data[i] = nullptr;
 
     /* encode the image */
     Encode(c, frame, pkt, f, framesToWrite);
