@@ -16,6 +16,9 @@
 #include "questui/shared/BeatSaberUI.hpp"
 #include "bs-utils/shared/utils.hpp"
 #include "custom-types/shared/register.hpp"
+
+#include "qraphicsplus/shared/qraphics_api.hpp"
+
 #include "MathUtils.hpp"
 
 #include <sstream>
@@ -2076,6 +2079,9 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             static UnityEngine::GameObject* cameraGameObject = nullptr;
             UnityEngine::Camera* camera = nullptr;
             if(!cameraGameObject && inSong && !recording) {
+                // Set to 60 hz
+                Qraphics::QraphicsAPI::setRefreshRate(std::make_optional(60.0f));
+
                 auto mainCamera = UnityEngine::Camera::get_main();
 
                 mainCamera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);

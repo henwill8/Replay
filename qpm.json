@@ -18,6 +18,11 @@
       "id": "questui",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "qraphicsplus",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}
