@@ -9,36 +9,34 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
         // log("Send frame %i at time %li", frameCounter, frame->pts);
     // }
 
-    bool gotOutput;
+    ret = avcodec_send_frame(enc_ctx, frame);
+    if (ret < 0)
+    {
+        log("Error sending a frame for encoding\n");
+        return;
+    }
 
-    if(frame != NULL) {
-        ret = avcodec_encode_video2(enc_ctx, &pkt, frame, &gotOutput);
-        if (ret < 0)
+    while (ret >= 0)
+    {
+        ret = avcodec_receive_packet(enc_ctx, pkt);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
         {
-            log("Error sending a frame for encoding\n");
             return;
         }
-        if(gotOutput) {
-            for (int i = 0; i < framesToWrite; i++)
-            {
-                outfile.write(reinterpret_cast<const char *>(pkt->data), pkt->size);
-            }
-            av_packet_unref(pkt);
+        else if (ret < 0)
+        {
+            log("Error during encoding\n");
+            return;
         }
-    } else if(frame == NULL) {
-        for (got_output = 1; got_output; i++) {
-            ret = avcodec_encode_video2(enc_ctx, &pkt, frame, &gotOutput);
-            if (ret < 0)
-            {
-                log("Error sending a frame for encoding\n");
-                return;
-            }
 
-            if (got_output) {
-                outfile.write(reinterpret_cast<const char *>(pkt->data), pkt->size);
-                av_packet_unref(pkt);
-            }
+        getLogger().info("Writing replay frames %d", pkt->size);
+
+        // log("Write packet %li (size=%i)\n", pkt->pts, pkt->size);
+        for (int i = 0; i < framesToWrite; i++)
+        {
+            outfile.write(reinterpret_cast<const char *>(pkt->data), pkt->size);
         }
+        av_packet_unref(pkt);
     }
 }
 
