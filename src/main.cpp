@@ -2128,6 +2128,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 UnityEngine::RenderTexture::set_active(texture);
                 camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
+                cameraGameObject->AddComponent<Replay::AudioCapture*>();
 
                 // mainCamera->set_cullingMask(0);
             }
@@ -2609,13 +2610,13 @@ MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel*
     GameEnergyUIPanel_RefreshEnergyUI(self, energy);
 }
 
-MAKE_HOOK_OFFSETLESS(AutomaticSFXVolume_OnAudioFilterRead, void, Il2CppObject* self, Array<float> data, int channels) {
+MAKE_HOOK_OFFSETLESS(AutomaticSFXVolume_OnAudioFilterRead, void, Il2CppObject* self, Array<float>* data, int channels) {
 
     AutomaticSFXVolume_OnAudioFilterRead(self, data, channels);
 
-    if(!recording && !inPauseMenu && !inResumeAnimation) {
-        audioRenderer.OnAudioFilterRead(data, channels);
-    }
+    // if(!recording && !inPauseMenu && !inResumeAnimation) {
+    //     audioRenderer.OnAudioFilterRead(data, channels);
+    // }
 }
 
 MAKE_HOOK_OFFSETLESS(NoteCutSoundEffect_NoteWasCut, void, NoteCutSoundEffect* self, Il2CppObject* noteController, Il2CppObject* noteCutInfo) {
@@ -2647,7 +2648,7 @@ extern "C" void load() {
 
     QuestUI::Init();
 
-    custom_types::Register::RegisterTypes<Replay::UIController, Replay::CameraCapture, AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest>();
+    custom_types::Register::RegisterTypes<Replay::UIController, Replay::CameraCapture, Replay::AudioCapture, AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest>();
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
 
     log("Installing hooks...");

@@ -15,8 +15,6 @@
 
 #include <memory>
 
-
-
 DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
 
 private:

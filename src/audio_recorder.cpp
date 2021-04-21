@@ -1,5 +1,9 @@
 #include "../include/audio_recorder.hpp"
 
+using namespace Replay;
+
+DEFINE_TYPE(AudioCapture);
+
 void AudioRenderer::OpenFile(std::string filename) {
     Rendering = true;
     
@@ -13,18 +17,18 @@ void AudioRenderer::OpenFile(std::string filename) {
 }
 
 /// Write a chunk of data to the output stream.
-void AudioRenderer::Write(Array<float>& audioData) {
+void AudioRenderer::Write(Array<float>* audioData) {
     if(Rendering) {
-        for (int i = 0; i < audioData.Length(); i++) {
+        for (int i = 0; i < audioData->Length(); i++) {
             // write the short to the stream
-            short value = short(audioData.values[i] * float(32767));
+            short value = short(audioData->values[i] * float(32767));
             writer.write(reinterpret_cast<const char*>(&value), sizeof(short));
         }
     }
 }
 
 // write the incoming audio to the output string
-void AudioRenderer::OnAudioFilterRead(Array<float>& data, int audioChannels) {
+void AudioRenderer::OnAudioFilterRead(Array<float>* data, int audioChannels) {
     if(Rendering) {
         // store the number of channels we are rendering
         if(audioChannels > 0) channels = audioChannels;
@@ -91,4 +95,9 @@ void AudioRenderer::AddHeader() {
         intValue = (int)(samples * BITS_PER_SAMPLE * channels / 8);
         writer.write(reinterpret_cast<const char*>(&intValue), sizeof(int));
     }
+}
+
+void AudioCapture::OnAudioFilterRead(Array<float>* data, int channels) {
+    OnAudioFilterRead(data, channels);
+    log("TESTING AUDIO");
 }

@@ -19,7 +19,7 @@ class AudioRenderer {
 
         void Save();
 
-        void OnAudioFilterRead(Array<float>& data, int audioChannels = -1);
+        void OnAudioFilterRead(Array<float>* data, int audioChannels = -1);
 
         void OpenFile(std::string fileName);
 
@@ -33,7 +33,16 @@ class AudioRenderer {
 
         void AddHeader();
 
-        void Write(Array<float>& audioData);
+        void Write(Array<float>* audioData);
         
         bool Rendering = false;
 };
+
+DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
+    
+    DECLARE_METHOD(void, OnAudioFilterRead, Array<float>* data, int channels);
+
+    REGISTER_FUNCTION(
+        REGISTER_METHOD(OnAudioFilterRead);
+    )
+)
