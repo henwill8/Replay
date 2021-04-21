@@ -2083,7 +2083,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 // Idk what this does
                 mainCamera->set_orthographic(false);
 
-                mainCamera->set_fieldOfView(150.0f);
+                mainCamera->set_fieldOfView(110.0f);
 
                 // Force it to render into texture
                 mainCamera->set_forceIntoRenderTexture(true);
@@ -2095,16 +2095,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
-                
-                camera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
 
-                // Idk what this does
-                camera->set_orthographic(false);
-
-                camera->set_fieldOfView(150.0f);
-
-                // Force it to render into texture
-                camera->set_forceIntoRenderTexture(true);
 //                camera->set_fieldOfView(mainCamera->get_fieldOfView());
                 camera->set_clearFlags(mainCamera->get_clearFlags());
                 camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
@@ -2126,7 +2117,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 texture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
-                camera->set_targetTexture(texture);
+                // camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
                 cameraGameObject->AddComponent<Replay::AudioCapture*>();
 
