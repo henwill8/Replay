@@ -69,6 +69,10 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
         return;
     }
 
+    if (!swsCtx)
+    {
+        swsCtx = sws_getContext(c->width, c->height, AV_PIX_FMT_RGB24, c->width, c->height, AV_PIX_FMT_YUV420P, SWS_POINT, 0, 0, 0);
+    }
     int inLinesize[1] = {3 * c->width};
     sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
@@ -91,7 +95,7 @@ void VideoCapture::Finish()
     avcodec_free_context(&c);
     av_frame_free(&frame);
     av_packet_free(&pkt);
-    sws_freeContext(swsCtx);
+    // sws_freeContext(swsCtx);
 
     initialized = false;
 }
@@ -174,8 +178,6 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
         log("Could not allocate the video frame data\n");
         return;
     }
-
-    swsCtx = sws_getContext(c->width, c->height, AV_PIX_FMT_RGB24, c->width, c->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, 0, 0, 0);
 
     initialized = true;
     log("Finished initializing video at path %s", filename);
