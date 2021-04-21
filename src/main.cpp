@@ -2078,6 +2078,16 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             if(!cameraGameObject && inSong && !recording) {
                 auto mainCamera = UnityEngine::Camera::get_main();
 
+                mainCamera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+
+                // Idk what this does
+                mainCamera->set_orthographic(false);
+
+                mainCamera->set_fieldOfView(150.0f);
+
+                // Force it to render into texture
+                mainCamera->set_forceIntoRenderTexture(true);
+
                 cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
                 camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
                 UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
@@ -2091,7 +2101,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 // Idk what this does
                 camera->set_orthographic(false);
 
-                camera->set_fieldOfView(90.0f);
+                camera->set_fieldOfView(150.0f);
 
                 // Force it to render into texture
                 camera->set_forceIntoRenderTexture(true);
@@ -2119,10 +2129,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
 
-                mainCamera->set_cullingMask(0);
-
-                log("Cam width: %i, cam height: %i", camera->get_pixelWidth(), camera->get_pixelHeight());
-                log("Tex width: %i, tex height: %i", texture->get_width(), texture->get_height());
+                // mainCamera->set_cullingMask(0);
             }
 	
             camera = cameraGO->GetComponent<UnityEngine::Camera*>();
@@ -2130,7 +2137,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
 	    
-            cameraGO = cameraGameObject;
+            // cameraGO = cameraGameObject;
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
