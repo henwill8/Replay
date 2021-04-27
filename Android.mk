@@ -20,13 +20,13 @@ TARGET_ARCH_ABI := arm64-v8a
 include $(CLEAR_VARS)
 LOCAL_MODULE := hook
 rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
-# Creating prebuilt for dependency: modloader - version: 1.1.0
+# Creating prebuilt for dependency: modloader - version: 1.0.4
 include $(CLEAR_VARS)
 LOCAL_MODULE := modloader
 LOCAL_EXPORT_C_INCLUDES := extern/modloader
 LOCAL_SRC_FILES := extern/libmodloader.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: questui - version: 0.6.7
+# Creating prebuilt for dependency: questui - version: 0.6.8
 include $(CLEAR_VARS)
 LOCAL_MODULE := questui
 LOCAL_EXPORT_C_INCLUDES := extern/questui

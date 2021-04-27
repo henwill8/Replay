@@ -23,6 +23,11 @@
       "id": "qraphicsplus",
       "versionRange": "*",
       "additionalData": {}
+    },
+    {
+      "id": "TrickSaber",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

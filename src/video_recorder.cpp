@@ -51,8 +51,8 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
     int framesToWrite = 1;
 
     // if (stabilizeFPS) {
-    //     framesToWrite = std::max(0, int(TotalLength() / (1.0f / float(fps * 2))) - frameCounter);
-    //     log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
+    //     framesToWrite = std::max(0, int(TotalLength() / (1.0f / float(fps))) - frameCounter);
+    //     // log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
     // }
 
     if(framesToWrite == 0) return;

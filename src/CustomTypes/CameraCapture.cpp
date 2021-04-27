@@ -20,7 +20,7 @@ void CameraCapture::ctor()
 {
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
-    capture->Init(texture->get_width(), texture->get_height(), 30, 1000, true, "ultrafast", "/sdcard/video.h264");
+    capture->Init(texture->get_width(), texture->get_height(), 30, 500, true, "ultrafast", "/sdcard/video.h264");
 
     StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
 }
@@ -32,7 +32,7 @@ custom_types::Helpers::Coroutine CameraCapture::RequestPixelsAtEndOfFrame() {
 //        co_yield reinterpret_cast<enumeratorT *>(WaitForEndOfFrame::New_ctor()); TODO: Do we need this?
 
         if (capture->IsInitialized()) {
-            if (requests->get_Count() < 3)
+            if (requests->get_Count() <= 10)
                 requests->Add(AsyncGPUReadbackPlugin::Request(texture));
 
             // log("adding request");

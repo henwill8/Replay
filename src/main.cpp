@@ -1205,7 +1205,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
 
     if(fpsCounter == nullptr) {
         fpsCounter =self->get_gameObject()->AddComponent<FPSCounter*>();
-    } else if((fpsCounter->get_currentFPS() < gameFPS-4 || fpsCounter->get_currentFPS() > gameFPS+4) && songTime > 5 && !inPauseMenu) {
+    } else if((fpsCounter->get_currentFPS() < gameFPS-9 || fpsCounter->get_currentFPS() > gameFPS+9) && songTime > 5 && !inPauseMenu) {
         gameFPS = fpsCounter->get_currentFPS();
         log("fps is "+std::to_string(gameFPS));
     }
@@ -1950,7 +1950,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, PauseMenuManager* self) {
 
     if(!recording) {
         if(failedTimeSlider != nullptr) {
-            UnityEngine::Object::Destroy(failedTimeSlider->get_gameObject());
+            UnityEngine::Object::Destroy(*RunMethod<UnityEngine::GameObject*>(failedTimeSlider, "get_gameObject"));
             failedTimeSlider = nullptr;
         }
 
@@ -2072,8 +2072,8 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
         
-        int width = 1920;
-        int height = 1080;
+        int width = 1080;
+        int height = 1920;
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
             static UnityEngine::GameObject* cameraGameObject = nullptr;
@@ -2611,9 +2611,9 @@ MAKE_HOOK_OFFSETLESS(AutomaticSFXVolume_OnAudioFilterRead, void, Il2CppObject* s
 
     AutomaticSFXVolume_OnAudioFilterRead(self, data, channels);
 
-    // if(!recording && !inPauseMenu && !inResumeAnimation) {
-    //     audioRenderer.OnAudioFilterRead(data, channels);
-    // }
+    if(!recording && !inPauseMenu && !inResumeAnimation) {
+        audioRenderer.OnAudioFilterRead(data, channels);
+    }
 }
 
 MAKE_HOOK_OFFSETLESS(NoteCutSoundEffect_NoteWasCut, void, NoteCutSoundEffect* self, Il2CppObject* noteController, Il2CppObject* noteCutInfo) {
