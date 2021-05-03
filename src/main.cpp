@@ -2072,8 +2072,8 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
         
-        int width = 1080;
-        int height = 1920;
+        int width = 1920;
+        int height = 1080;
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
             static UnityEngine::GameObject* cameraGameObject = nullptr;
@@ -2123,8 +2123,9 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 texture = UnityEngine::RenderTexture::New_ctor(width, height, 24);
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
+                UnityEngine::Object::DontDestroyOnLoad(texture);
                 // camera->set_targetTexture(texture);
-                cameraGameObject->AddComponent<Replay::CameraCapture*>();
+                // cameraGameObject->AddComponent<Replay::CameraCapture*>();
                 cameraGameObject->AddComponent<Replay::AudioCapture*>();
 
                 // mainCamera->set_cullingMask(0);
@@ -2328,7 +2329,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, ResultsViewController* se
     SaveRecording(levelCompletionResults, practice);
 
     audioRenderer.Save();
-    // videoCapture.Finish();
+    videoCapture.Finish();
 
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }

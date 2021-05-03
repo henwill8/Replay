@@ -16,6 +16,8 @@ DEFINE_TYPE(CameraCapture);
 
 extern UnityEngine::RenderTexture *texture;
 
+extern bool inSong;
+
 void CameraCapture::ctor()
 {
     capture = std::make_shared<VideoCapture>();
@@ -31,7 +33,7 @@ custom_types::Helpers::Coroutine CameraCapture::RequestPixelsAtEndOfFrame() {
         co_yield reinterpret_cast<enumeratorT *>(WaitForSecondsRealtime::New_ctor(1.0f/capture->getFpsrate()));
 //        co_yield reinterpret_cast<enumeratorT *>(WaitForEndOfFrame::New_ctor()); TODO: Do we need this?
 
-        if (capture->IsInitialized()) {
+        if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             if (requests->get_Count() <= 10)
                 requests->Add(AsyncGPUReadbackPlugin::Request(texture));
 
@@ -44,23 +46,30 @@ custom_types::Helpers::Coroutine CameraCapture::RequestPixelsAtEndOfFrame() {
 // https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
 void CameraCapture::Update()
 {
+    
     std::vector<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *> toRemove;
+
     for (int i = 0; i < requests->get_Count(); i++) {
         auto req = requests->get_Item(i);
 
-//        req->Update();
+        if(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+            if (req->HasError()) {
+                req->Dispose();
+                toRemove.push_back(req);
+            } else if (req->IsDone()) {
+                // log("Finished %d", i);
+                size_t length;
+                std::shared_ptr<std::vector<rgb24>> buffer;
+                req->GetRawData(buffer, length);
 
-        if (req->HasError()) {
-            req->Dispose();
-            toRemove.push_back(req);
-        } else if (req->IsDone()) {
-            // log("Finished %d", i);
-            size_t length;
-            std::shared_ptr<std::vector<rgb24>> buffer;
-            req->GetRawData(buffer, length);
+                capture->queueFrame(buffer);
 
-            capture->queueFrame(buffer);
-
+                req->Dispose();
+                toRemove.push_back(req);
+            }
+        } else {
+            AsyncGPUReadbackPlugin::ReadPixels = false;
+            
             req->Dispose();
             toRemove.push_back(req);
         }
