@@ -140,7 +140,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     // c->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if (codec->id == AV_CODEC_ID_H264)
-        av_opt_set(c->priv_data, "preset", encodeSpeed.c_str(), 0);
+        av_opt_set(c, "preset", encodeSpeed.c_str(), 0);
 
     ret = avcodec_open2(c, codec, NULL);
     if (ret < 0)
