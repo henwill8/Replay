@@ -2125,7 +2125,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 UnityEngine::RenderTexture::set_active(texture);
                 UnityEngine::Object::DontDestroyOnLoad(texture);
                 // camera->set_targetTexture(texture);
-                // cameraGameObject->AddComponent<Replay::CameraCapture*>();
+                cameraGameObject->AddComponent<Replay::CameraCapture*>();
                 cameraGameObject->AddComponent<Replay::AudioCapture*>();
 
                 // mainCamera->set_cullingMask(0);
