@@ -2120,7 +2120,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 
                 cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
-                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, UnityEngine::RenderTextureFormat::Default, UnityEngine::RenderTextureReadWrite::sRGB);
+                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::ARGB32, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Linear);
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
                 UnityEngine::Object::DontDestroyOnLoad(texture);
