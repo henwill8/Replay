@@ -1309,11 +1309,6 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
     } else {
         if(!checkedForQosmetics && !installedQosmeticsHook) {
             checkedForQosmetics = true;
-            // try {
-
-            // } catch(Il2CppUtilsException& exception) {
-                
-            // }
             if(il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0) != nullptr) {
                 log("Installing Qosmetics hook");
                 INSTALL_HOOK_OFFSETLESS(loggingFunction(), QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
@@ -2126,7 +2121,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 UnityEngine::Object::DontDestroyOnLoad(texture);
                 // camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
-                cameraGameObject->AddComponent<Replay::AudioCapture*>();
+                GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
 
                 // mainCamera->set_cullingMask(0);
             }
@@ -2608,26 +2603,13 @@ MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel*
     GameEnergyUIPanel_RefreshEnergyUI(self, energy);
 }
 
-MAKE_HOOK_OFFSETLESS(AutomaticSFXVolume_OnAudioFilterRead, void, Il2CppObject* self, Array<float>* data, int channels) {
+MAKE_HOOK_OFFSETLESS(AudioCapture_OnAudioFilterRead, void, Il2CppObject* self, Array<float>* data, int channels) {
 
-    AutomaticSFXVolume_OnAudioFilterRead(self, data, channels);
+    AudioCapture_OnAudioFilterRead(self, data, channels);
 
     if(!recording && !inPauseMenu && !inResumeAnimation) {
         audioRenderer.OnAudioFilterRead(data, channels);
     }
-}
-
-MAKE_HOOK_OFFSETLESS(NoteCutSoundEffect_NoteWasCut, void, NoteCutSoundEffect* self, Il2CppObject* noteController, Il2CppObject* noteCutInfo) {
-    NoteCutSoundEffect_NoteWasCut(self, noteController, noteCutInfo);
-
-    // if(!recording) {
-    //     UnityEngine::AudioSource* audioSource = self->audioSource;
-    //     UnityEngine::AudioClip* audioClip = audioSource->get_clip();
-        
-    //     Array<float> data = Array<float>::NewLength(audioClip->get_samples() * audioClip->get_channels());
-    //     audioClip->GetData(&data, 0);
-    //     audioRenderer.OnAudioFilterRead(data);
-    // }
 }
 
 extern "C" void setup(ModInfo& info) {
@@ -2685,8 +2667,7 @@ extern "C" void load() {
     INSTALL_HOOK_OFFSETLESS(loggingFunction(), LevelFailedTextEffect_ShowEffect, il2cpp_utils::FindMethodUnsafe("", "LevelFailedTextEffect", "ShowEffect", 0));
     INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameSongController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "GameSongController", "LateUpdate", 0));
     INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameEnergyUIPanel_RefreshEnergyUI, il2cpp_utils::FindMethodUnsafe("", "GameEnergyUIPanel", "RefreshEnergyUI", 1));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), AutomaticSFXVolume_OnAudioFilterRead, il2cpp_utils::FindMethodUnsafe("", "AutomaticSFXVolume", "OnAudioFilterRead", 2));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteCutSoundEffect_NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteCutSoundEffect", "NoteWasCut", 2));
+    INSTALL_HOOK_OFFSETLESS(loggingFunction(), AudioCapture_OnAudioFilterRead, il2cpp_utils::FindMethodUnsafe("Replay", "AudioCapture", "OnAudioFilterRead", 2));
     log("Installed all hooks!");
 
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();

@@ -128,6 +128,7 @@
 #include "UnityEngine/RectOffset.hpp"
 #include "UnityEngine/Object.hpp"
 #include "UnityEngine/AudioSettings.hpp"
+#include "UnityEngine/AudioListener.hpp"
 #include "UnityEngine/Time.hpp"
 #include "UnityEngine/UI/Selectable.hpp"
 #include "UnityEngine/UI/Selectable_SelectionState.hpp"
