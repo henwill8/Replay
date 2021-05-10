@@ -128,7 +128,7 @@ struct v4replayKeyFrame {
     float jumpYOffset;
 };
 
-struct replayKeyFrame {
+struct ReplayKeyFrame {
     playerTransformData playerData;
 
     int score;
@@ -250,8 +250,8 @@ float songTime = 0.0f;
 float failedSongTime;
 bool failedInReplay;
 
-std::vector<replayKeyFrame> dataToSave;
-std::vector<replayKeyFrame> replayData;
+std::vector<ReplayKeyFrame> dataToSave;
+std::vector<ReplayKeyFrame> replayData;
 
 bool setSongTime = false;
 float oldSliderTime;
@@ -692,6 +692,13 @@ void CreateReplayFile(const std::string& songHashID) {
     }
 }
 
+// Returns the std::thread so you can decide if you want to
+// .join or detach the thread.
+// This decision is mandatory
+std::thread CreateReplayFileAsync(const std::string& songHashID) {
+    return std::thread(CreateReplayFile, songHashID);
+}
+
 void GetReplayValues(const std::string& songHashID) {
     replayData.clear();
 
@@ -717,7 +724,7 @@ void GetReplayValues(const std::string& songHashID) {
 
         log("File version is "+std::to_string(openedFileVersion));
 
-        replayKeyFrame keyFrameData;
+        ReplayKeyFrame keyFrameData;
 
         v1replayBools v1bools;
         
@@ -789,7 +796,7 @@ void GetReplayValues(const std::string& songHashID) {
             input.read(reinterpret_cast<char*>(&didReach0Energy), sizeof(bool));
             input.read(reinterpret_cast<char*>(&reached0Time), sizeof(float));
 
-            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(replayKeyFrame))) {
+            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(ReplayKeyFrame))) {
                 replayData.push_back(keyFrameData);
             }
         } else if(openedFileVersion == 6) {
@@ -801,7 +808,7 @@ void GetReplayValues(const std::string& songHashID) {
             input.read(reinterpret_cast<char*>(&didReach0Energy), sizeof(bool));
             input.read(reinterpret_cast<char*>(&reached0Time), sizeof(float));
 
-            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(replayKeyFrame))) {
+            while(input.read(reinterpret_cast<char*>(&keyFrameData), sizeof(ReplayKeyFrame))) {
                 replayData.push_back(keyFrameData);
             }
         } else {
