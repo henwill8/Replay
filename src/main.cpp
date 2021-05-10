@@ -2080,63 +2080,63 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
             static UnityEngine::GameObject* cameraGameObject = nullptr;
             UnityEngine::Camera* camera = nullptr;
-            if(!cameraGameObject && inSong && !recording) {
-                // Set to 60 hz
-                Qraphics::QraphicsAPI::setRefreshRate(std::make_optional(60.0f));
+//             if(!cameraGameObject && inSong && !recording) {
+//                 // Set to 60 hz
+//                 Qraphics::QraphicsAPI::setRefreshRate(std::make_optional(60.0f));
 
-                auto mainCamera = UnityEngine::Camera::get_main();
+//                 auto mainCamera = UnityEngine::Camera::get_main();
 
-                mainCamera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
+//                 mainCamera->set_stereoTargetEye(UnityEngine::StereoTargetEyeMask::None);
 
-                // Idk what this does
-                mainCamera->set_orthographic(false);
+//                 // Idk what this does
+//                 mainCamera->set_orthographic(false);
 
-                mainCamera->set_fieldOfView(110.0f);
+//                 mainCamera->set_fieldOfView(110.0f);
 
-                // Force it to render into texture
-                mainCamera->set_forceIntoRenderTexture(true);
+//                 // Force it to render into texture
+//                 mainCamera->set_forceIntoRenderTexture(true);
 
-                cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
-                camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
-                UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
-                while (cameraGameObject->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGameObject->get_transform()->GetChild(0)->get_gameObject());
-                UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
-                UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
-                UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
+//                 cameraGameObject = UnityEngine::Object::Instantiate(mainCamera->get_gameObject());
+//                 camera = cameraGameObject->GetComponent<UnityEngine::Camera*>();
+//                 UnityEngine::Object::DontDestroyOnLoad(cameraGameObject);
+//                 while (cameraGameObject->get_transform()->get_childCount() > 0) UnityEngine::Object::DestroyImmediate(cameraGameObject->get_transform()->GetChild(0)->get_gameObject());
+//                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("CameraRenderCallbacksManager")));
+//                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("AudioListener")));
+//                 UnityEngine::Object::DestroyImmediate(cameraGameObject->GetComponent(il2cpp_utils::newcsstr("MeshCollider")));
 
-//                camera->set_fieldOfView(mainCamera->get_fieldOfView());
-                camera->set_clearFlags(mainCamera->get_clearFlags());
-                camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
-                camera->set_farClipPlane(mainCamera->get_farClipPlane());
-                camera->set_cullingMask(mainCamera->get_cullingMask());
-                // Makes the camera render before the main
-                camera->set_depth(mainCamera->get_depth() - 1);
-                camera->set_backgroundColor(mainCamera->get_backgroundColor());
-                camera->set_hideFlags(mainCamera->get_hideFlags());
-                camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
+// //                camera->set_fieldOfView(mainCamera->get_fieldOfView());
+//                 camera->set_clearFlags(mainCamera->get_clearFlags());
+//                 camera->set_nearClipPlane(mainCamera->get_nearClipPlane());
+//                 camera->set_farClipPlane(mainCamera->get_farClipPlane());
+//                 camera->set_cullingMask(mainCamera->get_cullingMask());
+//                 // Makes the camera render before the main
+//                 camera->set_depth(mainCamera->get_depth() - 1);
+//                 camera->set_backgroundColor(mainCamera->get_backgroundColor());
+//                 camera->set_hideFlags(mainCamera->get_hideFlags());
+//                 camera->set_depthTextureMode(mainCamera->get_depthTextureMode());
 
-                // Set aspect ratio accordingly
-                camera->set_aspect(float(width) / float(height));
+//                 // Set aspect ratio accordingly
+//                 camera->set_aspect(float(width) / float(height));
                 
-                camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
+//                 camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
                 
-                cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
-                cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
-                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::ARGB32, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Linear);
-                texture->Create();
-                UnityEngine::RenderTexture::set_active(texture);
-                UnityEngine::Object::DontDestroyOnLoad(texture);
-                // camera->set_targetTexture(texture);
-                cameraGameObject->AddComponent<Replay::CameraCapture*>();
-                GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
+//                 cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
+//                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
+//                 texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Default);
+//                 texture->Create();
+//                 UnityEngine::RenderTexture::set_active(texture);
+//                 UnityEngine::Object::DontDestroyOnLoad(texture);
+//                 // camera->set_targetTexture(texture);
+//                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
+//                 GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
 
-                // mainCamera->set_cullingMask(0);
-            }
+//                 // mainCamera->set_cullingMask(0);
+//             }
 	
             camera = cameraGO->GetComponent<UnityEngine::Camera*>();
 
-            camera->set_targetTexture(texture);
-            camera->set_aspect(float(width) / float(height));
+            // camera->set_targetTexture(texture);
+            // camera->set_aspect(float(width) / float(height));
 	    
             // cameraGO = cameraGameObject;
             
@@ -2331,7 +2331,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, ResultsViewController* se
     SaveRecording(levelCompletionResults, practice);
 
     audioRenderer.Save();
-    videoCapture.Finish();
+    // videoCapture.Finish();
 
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }

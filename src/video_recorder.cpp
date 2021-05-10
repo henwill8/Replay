@@ -50,10 +50,10 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
 
     int framesToWrite = 1;
 
-    if (stabilizeFPS) {
-        framesToWrite = std::max(0, int(TotalLength() / (1.0f / float(fps))) - frameCounter);
-        log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
-    }
+    // if (stabilizeFPS) {
+    //     framesToWrite = std::max(0, int(TotalLength() / (1.0f / float(fps))) - frameCounter);
+    //     log("Frames to write: %i, equation is int(%f / (1 / %i)) - %i", framesToWrite, TotalLength(), fps, frameCounter);
+    // }
 
     if(framesToWrite == 0) return;
 
@@ -141,7 +141,6 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     if (codec->id == AV_CODEC_ID_H264) {
         av_opt_set(c->priv_data, "preset", encodeSpeed.c_str(), 0);
-        av_opt_set(c->priv_data, "cfr", "51", 0);
         // av_opt_set(c->priv_data, "tune", "zerolatency", 0);
     }
 
