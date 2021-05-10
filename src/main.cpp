@@ -693,7 +693,7 @@ void CreateReplayFile(const std::string& songHashID) {
 }
 
 // Returns the std::thread so you can decide if you want to
-// .join or detach the thread.
+// .join (syncronous, dont do this) or detach the thread.
 // This decision is mandatory
 std::thread CreateReplayFileAsync(const std::string& songHashID) {
     return std::thread(CreateReplayFile, songHashID);
