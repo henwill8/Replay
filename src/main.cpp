@@ -694,8 +694,8 @@ void CreateReplayFile(const std::string& songHashID) {
 // Returns the std::thread so you can decide if you want to
 // .join (syncronous, dont do this) or detach the thread.
 // This decision is mandatory
-std::thread CreateReplayFileAsync(const std::string& songHashID) {
-    return std::thread(CreateReplayFile, songHashID);
+void CreateReplayFileAsync(const std::string& songHashID) {
+    std::thread(CreateReplayFile, songHashID).detach();
 }
 
 void GetReplayValues(const std::string& songHashID) {
@@ -943,14 +943,14 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                 log("Creating replay as there are no existing replays");
                 failedSongTime = -1;
                 failedInReplay = false;
-                CreateReplayFile(songHash);
+                CreateReplayFileAsync(songHash);
                 return true;
             } else {
                 failedSongTime = storedFailedSongTime;
                 failedInReplay = storedFailedInReplay;
                 if(GetNoFail(songHash) && getConfig().config["OverwriteNFPlays"].GetBool()) {
                     log("Previous replay uses no fail, overwriting");
-                    CreateReplayFile(songHash);
+                    CreateReplayFileAsync(songHash);
                     return true;
                 }
 
@@ -995,7 +995,7 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                 log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
                 if(newModifiedScore > oldModifiedScore) {
                     replaySaveBools = tempBools;
-                    CreateReplayFile(songHash);
+                    CreateReplayFileAsync(songHash);
                     return true;
                 } else {
                     return false;
@@ -1006,13 +1006,13 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
             if(!fileexists(replayDirectory+songHash+fileExtensionName)) {
                 log("Creating replay as there are no existing replays");
                 failedInReplay = true;
-                CreateReplayFile(songHash);
+                CreateReplayFileAsync(songHash);
                 return true;
             } else {
                 if(GetNoFail(songHash) && getConfig().config["OverwriteNFPlays"].GetBool()) {
                     log("Previous replay uses no fail, overwriting");
                     failedInReplay = true;
-                    CreateReplayFile(songHash);
+                    CreateReplayFileAsync(songHash);
                     return true;
                 }
                 float storedTime = failedSongTime;
@@ -1031,7 +1031,7 @@ bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                     failedSongTime = storedTime;
                     failedInReplay = true;
                     log("All requirenments are met, creating failed replay");
-                    CreateReplayFile(songHash);
+                    CreateReplayFileAsync(songHash);
                 }
             }
         }
