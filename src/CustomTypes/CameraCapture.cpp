@@ -50,7 +50,7 @@ void CameraCapture::OnPostRender() {
 
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 
-        log("Took %dms to create request, remaining requests to process", duration, frameRequestCount);
+        log("Took %dms to create request, remaining requests to process %d", duration, frameRequestCount);
 
         frameRequestCount--;
     }
