@@ -83,6 +83,10 @@ void VideoCapture::AddFrame(std::shared_ptr<std::vector<rgb24>>& data) {
 
 void VideoCapture::Finish()
 {
+    if(!initialized) {
+        log("Attempted to finish video capture when capture wasn't initialized, returning");
+        return;
+    }
     //DELAYED FRAMES
     Encode(c, NULL, pkt, f);
 
@@ -228,7 +232,7 @@ void VideoCapture::queueFrame(std::shared_ptr<std::vector<rgb24>> frame) {
 
 VideoCapture::~VideoCapture()
 {
-    Finish();
+    if(initialized) Finish();
 
     if (encodingThread.joinable())
         encodingThread.join();

@@ -24,9 +24,11 @@ private:
     DECLARE_INSTANCE_FIELD(System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>*, requests);
  
     DECLARE_CTOR(ctor);
-    DECLARE_SIMPLE_DTOR();
+    DECLARE_DTOR(dtor);
  
     DECLARE_METHOD(void, Update);
+
+    DECLARE_METHOD(void, AddFrame);
 
     custom_types::Helpers::Coroutine RequestPixelsAtEndOfFrame();
     
@@ -36,9 +38,10 @@ private:
         REGISTER_FIELD(requests);
  
         REGISTER_METHOD(ctor);
-        REGISTER_SIMPLE_DTOR();
+        REGISTER_METHOD(dtor);
  
         REGISTER_METHOD(Update);
+        REGISTER_METHOD(AddFrame);
         //REGISTER_METHOD(OnRenderImage);
     )
 )
