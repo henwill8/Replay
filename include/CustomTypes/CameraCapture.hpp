@@ -31,8 +31,6 @@ private:
 
     DECLARE_METHOD(void, RequestFrame);
 
-    custom_types::Helpers::Coroutine RequestPixelsAtEndOfFrame();
-
     DECLARE_METHOD(void, OnPostRender);
     DECLARE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* source, UnityEngine::RenderTexture* destination);
  

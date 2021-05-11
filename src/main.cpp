@@ -1360,7 +1360,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
 
             rightSaberTransformCache = self->get_transform();
         }
-        if(customAvatar != nullptr && (cameraAngle == THIRDPERSON || cameraAngle == HEADSET) && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
+        if(customAvatar != nullptr && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
             customAvatar->get_transform()->SetParent(self->get_transform()->GetParent()->GetParent()->GetParent());
             customAvatar->get_transform()->set_position(UnityEngine::Vector3{0, 0, 0});
             customAvatar->get_transform()->set_localScale(UnityEngine::Vector3{1, 1, 1});
@@ -1588,7 +1588,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         speedToggle = nullptr;
         continueButton = nullptr;
 
-        if((cameraAngle == THIRDPERSON || cameraAngle == HEADSET) && getConfig().config["Avatars"].GetBool()) {
+        if(getConfig().config["Avatars"].GetBool()) {
             log("Instantiating customAvatar");
             customAvatar = UnityEngine::Object::Instantiate(playerAvatar);
             customAvatar->SetActive(false);

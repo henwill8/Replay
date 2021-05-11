@@ -27,7 +27,7 @@ void Replay::UIController::DidActivate(bool firstActivation, bool addedToHierarc
 		AddHoverHint(CreateToggleMacro(Parent1, getConfig().config["FullComboOverwrites"], "Enable FC Overwrite")->get_gameObject(), "Full combo-ing a map will overwrite any existing replay");
 		AddHoverHint(CreateToggleMacro(Parent1, getConfig().config["OverwriteNFPlays"], "Overwrite No Fail Plays")->get_gameObject(), "When enabled, this will overwrite any replays that use no fail");
 		AddHoverHint(CreateToggleMacro(Parent1, getConfig().config["ThirdPersonCircularMovement"], "Enable Third Person Circular Movement")->get_gameObject(), "Third person camera will be on a camera rig");
-		AddHoverHint(CreateToggleMacro(Parent1, getConfig().config["Avatars"], "Enable Replay Avatars")->get_gameObject(), "An avatar will show in third person camera");
+		AddHoverHint(CreateToggleMacro(Parent1, getConfig().config["Avatars"], "Enable Replay Avatars")->get_gameObject(), "Your multiplayer avatar will show when in a replay");
         AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["PositionSmooth"], "Position Smooth", 1, 0.1f, true, false, 0.1f, 0.0f)->get_gameObject(), "This is only used for smooth camera, smaller is smoother");
         AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["RotationSmooth"], "Rotation Smooth", 1, 0.1f, true, false, 0.1f, 0.0f)->get_gameObject(), "This is only used for smooth camera, smaller is smoother");
         AddHoverHint(CreateIncrementMacro(Parent1, getConfig().config["SmoothCameraOffset"]["y"], "Smooth Camera Y Offset", 1, 0.1f, false, false, 0.1f, 0.0f)->get_gameObject(), "This adds an offset to the Y position for the smooth camera");
