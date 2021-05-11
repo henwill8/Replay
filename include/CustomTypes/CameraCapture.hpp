@@ -20,6 +20,7 @@ DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
 private:
 
     std::shared_ptr<VideoCapture> capture;
+    int frameRequestCount = 0;
 
     DECLARE_INSTANCE_FIELD(System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>*, requests);
  
@@ -28,10 +29,11 @@ private:
  
     DECLARE_METHOD(void, Update);
 
-    DECLARE_METHOD(void, AddFrame);
+    DECLARE_METHOD(void, RequestFrame);
 
     custom_types::Helpers::Coroutine RequestPixelsAtEndOfFrame();
-    
+
+    DECLARE_METHOD(void, OnPostRender);
     DECLARE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* source, UnityEngine::RenderTexture* destination);
  
     REGISTER_FUNCTION(
@@ -41,7 +43,8 @@ private:
         REGISTER_METHOD(dtor);
  
         REGISTER_METHOD(Update);
-        REGISTER_METHOD(AddFrame);
+        REGISTER_METHOD(RequestFrame);
+        REGISTER_METHOD(OnPostRender);
         //REGISTER_METHOD(OnRenderImage);
     )
 )

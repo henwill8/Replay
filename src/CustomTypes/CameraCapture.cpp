@@ -25,16 +25,34 @@ void CameraCapture::ctor()
     capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "ultrafast", "/sdcard/video.h264");
 
     // StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
-    UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("AddFrame"), 1.0f, 1.0f/capture->getFpsrate());
+    UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("RequestFrame"), 1.0f, 1.0f/capture->getFpsrate());
 }
 
-void CameraCapture::AddFrame() {
-    if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
-        if (requests->get_Count() <= 10) {
-            requests->Add(AsyncGPUReadbackPlugin::Request(texture));
-        } else {
-            log("Too many requests currently, not adding more");
+void CameraCapture::RequestFrame() {
+    frameRequestCount++;
+}
+
+void CameraCapture::OnPostRender() {
+    if (frameRequestCount > 0) {
+
+        auto startTime = std::chrono::high_resolution_clock::now();
+
+
+        if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+            if (requests->get_Count() <= 10) {
+                requests->Add(AsyncGPUReadbackPlugin::Request(texture));
+            } else {
+                log("Too many requests currently, not adding more");
+            }
         }
+
+        auto endTime = std::chrono::high_resolution_clock::now();
+
+        int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+
+        log("Took %dms to create request, remaining requests to process", duration, frameRequestCount);
+
+        frameRequestCount--;
     }
 }
 
