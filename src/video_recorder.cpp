@@ -29,7 +29,7 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
             return;
         }
 
-        getLogger().info("Writing replay frames %d", pkt->size);
+        // log("Writing replay frames %d", pkt->size);
 
         // log("Write packet %li (size=%i)\n", pkt->pts, pkt->size);
         for (int i = 0; i < framesToWrite; i++)
@@ -171,8 +171,8 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
         return;
     }
     frame->format = c->pix_fmt;
-    frame->width = c->width;
-    frame->height = c->height;
+    frame->width = width;
+    frame->height = height;
 
     ret = av_frame_get_buffer(frame, 0);
     if (ret < 0)
@@ -208,7 +208,7 @@ void VideoCapture::encodeFrames()
                 // log("size is %i", framebuffers.size());
                 auto frameData = listCopy.front();
 
-                // Flip the screen
+                Flip the screen
                 for(int line = 0; line != height/2; ++line) {
                     std::swap_ranges(
                             frameData->begin() + width * line,

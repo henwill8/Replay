@@ -81,7 +81,7 @@ void CameraCapture::Update()
                 toRemove.push_back(req);
             }
         } else {
-            AsyncGPUReadbackPlugin::ReadPixels = false;
+            AsyncGPUReadbackPlugin::ReadPixels = false;// Bad attempt to stop song end crashes in makeRequest_renderThread
             
             req->Dispose();
             toRemove.push_back(req);
