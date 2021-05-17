@@ -2076,6 +2076,8 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
         int height = 1080;
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
+
+            #ifdef DO_FPS_RECORD
             static UnityEngine::GameObject* cameraGameObject = nullptr;
             UnityEngine::Camera* camera = nullptr;
             if(!cameraGameObject && inSong && !recording) {
@@ -2135,6 +2137,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
+            #endif
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
