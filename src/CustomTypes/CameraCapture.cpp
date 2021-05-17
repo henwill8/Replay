@@ -35,8 +35,7 @@ void CameraCapture::RequestFrame() {
 void CameraCapture::OnPostRender() {
     if (frameRequestCount > 0) {
 
-        auto startTime = std::chrono::high_resolution_clock::now();
-
+        // auto startTime = std::chrono::high_resolution_clock::now();
 
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             if (requests->get_Count() <= 10) {
@@ -46,11 +45,11 @@ void CameraCapture::OnPostRender() {
             }
         }
 
-        auto endTime = std::chrono::high_resolution_clock::now();
+        // auto endTime = std::chrono::high_resolution_clock::now();
 
-        int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+        // int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 
-        log("Took %dms to create request, remaining requests to process %d", duration, frameRequestCount);
+        // log("Took %dms to create request, remaining requests to process %d", duration, frameRequestCount);
 
         frameRequestCount--;
     }

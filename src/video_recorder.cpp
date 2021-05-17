@@ -208,13 +208,20 @@ void VideoCapture::encodeFrames()
                 // log("size is %i", framebuffers.size());
                 auto frameData = listCopy.front();
 
-                Flip the screen
+                auto startTime = std::chrono::high_resolution_clock::now();
+
                 for(int line = 0; line != height/2; ++line) {
                     std::swap_ranges(
                             frameData->begin() + width * line,
                             frameData->begin() + width * (line+1),
                             frameData->begin() + width * (height-line-1));
                 }
+
+                auto endTime = std::chrono::high_resolution_clock::now();
+
+                int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+
+                log("Took %dms to create request", duration);
 
                 this->AddFrame(frameData);
                 listCopy.pop_front();

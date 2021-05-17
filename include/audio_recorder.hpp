@@ -25,6 +25,10 @@ class AudioRenderer {
 
         std::ofstream writer;
 
+        bool IsRendering() {
+            return Rendering;
+        }
+
     private:
         const int HEADER_SIZE = 44;
         const short BITS_PER_SAMPLE = 16;

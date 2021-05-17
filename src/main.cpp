@@ -1451,7 +1451,9 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, AudioTimeSyncController* self) {
     if(!inPauseMenu) {
         songTime = *GetFieldValue<float>(self, "_songTime");
         if(((!failedReplay && !deathReplay) || recording) && songTime != 0 && !levelFailedTextEffect) failedSongTime = songTime;
-        if(practiceStartTime == -1 && songTime != 0 && recording) practiceStartTime = songTime;
+        if(practiceStartTime == -1 && songTime != 0 && recording) {
+            practiceStartTime = songTime;
+        }
         if(!recording && replaySaveBools.noFail && didReach0Energy) {
             if(failedEffectTimer <= 0) {
                 failedEffectTimer = 10;
@@ -1523,8 +1525,6 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
         GetModifiers(gameplayModifiers, playerSpecificSettings);
         resetModifiers = false;
     } else {
-        audioRenderer.OpenFile("sdcard/"+songName+".wav");
-
         log("Entering a replay, camera mode is %i", cameraAngle);
 
         bs_utils::Submission::disable(modInfo);
@@ -1617,21 +1617,24 @@ MAKE_HOOK_OFFSETLESS(ScoreChanged, void, Il2CppObject* self, int rawScore, int m
 }
 
 MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevelDetailView* self) {
-    
-    log("Refreshing Content, in song or results is "+std::to_string(inSongOrResults));
 
     StandardLevelDetailView_RefreshContent(self);
 
+    log("Refreshing Content, in song or results is "+std::to_string(inSongOrResults));
+    
     if(!inSongOrResults) {
         recording = true;
     }
 
+    log("Getting play button transform");
     playButton = self->actionButton;
     UnityEngine::Transform* playButtonTransform = playButton->get_transform();
     
+    log("Getting songHash");
     auto* Level = reinterpret_cast<BeatmapLevelSO*>(self->level);
     Il2CppString* LevelID = Level->get_levelID();
 
+    log("Getting difficulty and mode");
     auto* SelectedBeatmapDifficulty = self->selectedDifficultyBeatmap;
     int Difficulty = SelectedBeatmapDifficulty->get_difficulty();
     auto* beatMapData = SelectedBeatmapDifficulty->get_beatmapData();
@@ -2080,7 +2083,11 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             #ifdef DO_FPS_RECORD
             static UnityEngine::GameObject* cameraGameObject = nullptr;
             UnityEngine::Camera* camera = nullptr;
-            if(!cameraGameObject && inSong && !recording) {
+            if(!audioRenderer.IsRendering()) {
+                audioRenderer.OpenFile("sdcard/"+songName+".wav");
+                GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
+            }
+            if(!cameraGameObject) {
                 // Set to 60 hz
                 Qraphics::QraphicsAPI::setRefreshRate(std::make_optional(60.0f));
 
@@ -2128,16 +2135,17 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 UnityEngine::Object::DontDestroyOnLoad(texture);
                 // camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
-                GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
 
-                // mainCamera->set_cullingMask(0);
+                mainCamera->set_cullingMask(0);
             }
+            #endif
 
+            camera = cameraGO->GetComponent<UnityEngine::Camera*>();
+
+            #ifdef DO_FPS_RECORD
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
             #endif
-	
-            camera = cameraGO->GetComponent<UnityEngine::Camera*>();
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
