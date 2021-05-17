@@ -2132,12 +2132,12 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
                 // mainCamera->set_cullingMask(0);
             }
-	
-            camera = cameraGO->GetComponent<UnityEngine::Camera*>();
 
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
             #endif
+	
+            camera = cameraGO->GetComponent<UnityEngine::Camera*>();
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
