@@ -1621,7 +1621,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
     StandardLevelDetailView_RefreshContent(self);
 
     log("Refreshing Content, in song or results is "+std::to_string(inSongOrResults));
-    
+
     if(!inSongOrResults) {
         recording = true;
     }
@@ -2080,9 +2080,11 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
 
-            #ifdef DO_FPS_RECORD
+
             static UnityEngine::GameObject* cameraGameObject = nullptr;
             UnityEngine::Camera* camera = nullptr;
+
+            #ifdef DO_FPS_RECORD
             if(!audioRenderer.IsRendering()) {
                 audioRenderer.OpenFile("sdcard/"+songName+".wav");
                 GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
@@ -2139,13 +2141,14 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 mainCamera->set_cullingMask(0);
             }
             #endif
-
             camera = cameraGO->GetComponent<UnityEngine::Camera*>();
 
             #ifdef DO_FPS_RECORD
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
             #endif
+	
+
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
@@ -2207,11 +2210,12 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                     }
                 }
             }
-
+            #ifdef DO_FPS_RECORD
             typedef function_ptr_t<void, UnityEngine::Camera*, UnityEngine::Matrix4x4> cullingMatrixType;
             auto set_cullingMatrix = *reinterpret_cast<cullingMatrixType>(il2cpp_functions::resolve_icall("UnityEngine.Camera::set_cullingMatrix_Injected"));
 
             set_cullingMatrix(camera, UnityEngine::Matrix4x4::Ortho(-99999, 99999, -99999, 99999, 0.001f, 99999) * MatrixTranslate(UnityEngine::Vector3::get_forward() * -99999 / 2) * camera->get_worldToCameraMatrix());
+            #endif
         }
     }
     
