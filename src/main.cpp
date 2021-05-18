@@ -2210,12 +2210,11 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                     }
                 }
             }
-            #ifdef DO_FPS_RECORD
+            
             typedef function_ptr_t<void, UnityEngine::Camera*, UnityEngine::Matrix4x4> cullingMatrixType;
             auto set_cullingMatrix = *reinterpret_cast<cullingMatrixType>(il2cpp_functions::resolve_icall("UnityEngine.Camera::set_cullingMatrix_Injected"));
 
             set_cullingMatrix(camera, UnityEngine::Matrix4x4::Ortho(-99999, 99999, -99999, 99999, 0.001f, 99999) * MatrixTranslate(UnityEngine::Vector3::get_forward() * -99999 / 2) * camera->get_worldToCameraMatrix());
-            #endif
         }
     }
     
