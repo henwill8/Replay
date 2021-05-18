@@ -74,13 +74,26 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	std::shared_ptr<Task> task = tasks[event_id];
 	tasks_mutex.unlock();
 
-	// Get texture informations
-	glBindTexture(GL_TEXTURE_2D, task->texture);
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
-	task->size = task->width * task->height * 3;
+    // Get texture informations
+    glBindTexture(GL_TEXTURE_2D, task->texture);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
+    task->size = task->width * task->height * 3;
 
-	// Create the fbo (frame buffer object) from the given texture
+    // Check for errors
+    if (task->size == 0
+        // TODO: do we need?
+        //|| getFormatFromInternalFormat(task->internal_format) == 0
+        //|| getTypeFromInternalFormat(task->internal_format) == 0
+        ) {
+        task->error = true;
+        return;
+    }
+
+    // Start the read request
+
+
+    // Create the fbo (frame buffer object) from the given texture
 	glGenFramebuffers(1, &(task->fbo));
 
 	// Bind the texture to the fbo
@@ -88,35 +101,30 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, task->texture, 0);
 
 	// Create and bind pbo (pixel buffer object) to fbo
-	/*glGenBuffers(1, &(task->pbo));
+	glGenBuffers(1, &(task->pbo));
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, task->pbo);
-	glBufferData(GL_PIXEL_PACK_BUFFER, task->size, 0, GL_DYNAMIC_READ);*/
+	glBufferData(GL_PIXEL_PACK_BUFFER, task->size, 0, GL_DYNAMIC_READ);
 
-	// Start the read request
 
-	task->data = std::make_shared<std::vector<rgb24>>(task->size/3);
+    // Start the read request
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, task->data->data());
+	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
 	// if(event_id == 500) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data->data()));
     
 	// Unbind buffers
-	//glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDeleteFramebuffers(1, &(task->fbo));
-    glDeleteBuffers(1, &(task->pbo));
 
 	// Fence to know when it's ready
-	//task->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	task->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 
 	// Done init
 	task->initialized = true;
-	task->done = true;
-
     // log("Finished initializing AsyncGPUReadbackRequest");
 }
 
-// TODO: Remove or use this method. It is never used as far as I can tell
+
 extern "C" void update_renderThread(int event_id) {
     // Get task back
 	tasks_mutex.lock();
@@ -150,9 +158,9 @@ extern "C" void update_renderThread(int event_id) {
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, task->pbo);
 
 		// Map the buffer and copy it to data
-		void* ptr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT);
-		// TODO: Fix
-		//		memcpy(task->data, ptr, task->size);
+		auto* ptr = reinterpret_cast<rgb24*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT));
+        task->data = std::make_shared<std::vector<rgb24>>(task->size / 3);
+        memcpy(task->data->data(), ptr, task->size);
 
 		// Unmap and unbind
 		glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
@@ -235,7 +243,7 @@ bool AsyncGPUReadbackPluginRequest::HasError() {
 }
 
 void AsyncGPUReadbackPluginRequest::Update() {
-    //GetGLIssuePluginEvent()(reinterpret_cast<void*>(update_renderThread), eventId);
+    GetGLIssuePluginEvent()(reinterpret_cast<void*>(update_renderThread), eventId);
 }
 
 void AsyncGPUReadbackPluginRequest::Dispose() {
@@ -243,7 +251,7 @@ void AsyncGPUReadbackPluginRequest::Dispose() {
     //UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
 }
 
-void AsyncGPUReadbackPluginRequest::GetRawData(std::shared_ptr<std::vector<rgb24>>& buffer, size_t& length) {
+void AsyncGPUReadbackPluginRequest::GetRawData(std::shared_ptr<std::vector<rgb24>>& buffer, size_t& length) const {
     getData_mainThread(eventId, buffer, length);
 }
 

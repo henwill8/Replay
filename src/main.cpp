@@ -1211,7 +1211,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
 
     if(fpsCounter == nullptr) {
         fpsCounter =self->get_gameObject()->AddComponent<FPSCounter*>();
-    } else if((fpsCounter->get_currentFPS() < gameFPS-9 || fpsCounter->get_currentFPS() > gameFPS+9) && songTime > 5 && !inPauseMenu) {
+    } else if((fpsCounter->get_currentFPS() < gameFPS-4 || fpsCounter->get_currentFPS() > gameFPS+4) && songTime > 5 && !inPauseMenu) {
         gameFPS = fpsCounter->get_currentFPS();
         log("fps is "+std::to_string(gameFPS));
     }
@@ -2130,7 +2130,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 
                 cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
-                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Default);
+                texture = UnityEngine::RenderTexture::New_ctor(width, height, 16, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::sRGB);
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
                 UnityEngine::Object::DontDestroyOnLoad(texture);

@@ -32,6 +32,18 @@ void CameraCapture::RequestFrame() {
     frameRequestCount++;
 }
 
+// TODO: Make this work?
+void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngine::RenderTexture *destination) {
+    if (capture->IsInitialized()) {
+        if (requests->get_Count() <= 10) {
+            log("Requesting! %s");
+            requests->Add(AsyncGPUReadbackPlugin::Request(source));
+        } else {
+            log("Too many requests currently, not adding more");
+        }
+    }
+}
+
 void CameraCapture::OnPostRender() {
     if (frameRequestCount > 0) {
 
@@ -65,6 +77,8 @@ void CameraCapture::Update()
         auto req = requests->get_Item(i);
 
         if(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+            req->Update();
+
             if (req->HasError()) {
                 req->Dispose();
                 toRemove.push_back(req);
@@ -78,7 +92,8 @@ void CameraCapture::Update()
 
                 req->Dispose();
                 toRemove.push_back(req);
-            }
+            } else
+                break;
         } else {
             AsyncGPUReadbackPlugin::ReadPixels = false;// Bad attempt to stop song end crashes in makeRequest_renderThread
             
