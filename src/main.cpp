@@ -40,6 +40,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+using namespace System::Threading;
 using namespace il2cpp_utils;
 using namespace QuestUI;
 using namespace GlobalNamespace;
@@ -926,117 +927,121 @@ bool GetNoFail(const std::string& songHashID) {
     return usesNoFail;
 }
 
-bool SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice) {
-    if(recording && !practice && !zenMode) {
-        if(levelCompletionResults->levelEndStateType == 1) {
-            log("Level finished, trying to create replay file");
-            float storedFailedSongTime = failedSongTime;
-            bool storedFailedInReplay = failedInReplay;
-            if(fileexists(replayDirectory+songHash+fileExtensionName)) {
-                GetFailedReplayTime(songHash);            
-            }
-            if((!fileexists(replayDirectory+songHash+fileExtensionName)) || (levelCompletionResults->fullCombo && getConfig().config["FullComboOverwrites"].GetBool()) || (fileexists(replayDirectory+songHash+fileExtensionName) && failedInReplay)) {
-                if(replaySaveBools.noFail && getConfig().config["OverwriteNFPlays"].GetBool() && fileexists(replayDirectory+songHash+fileExtensionName)) {
-                    log("Old play does not use no fail and this play does, not overwriting");
-                    return false;
-                }
-                log("Creating replay as there are no existing replays");
-                failedSongTime = -1;
-                failedInReplay = false;
-                CreateReplayFileAsync(songHash);
-                return true;
-            } else {
-                failedSongTime = storedFailedSongTime;
-                failedInReplay = storedFailedInReplay;
-                if(GetNoFail(songHash) && getConfig().config["OverwriteNFPlays"].GetBool()) {
-                    log("Previous replay uses no fail, overwriting");
-                    CreateReplayFileAsync(songHash);
-                    return true;
-                }
+void SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice) {
+    GlobalNamespace::HMTask::New_ctor(il2cpp_utils::MakeDelegate<System::Action*>(classof(System::Action*),
+                                                                 (std::function<void()>)[=] {
+         if(recording && !practice && !zenMode) {
+             if(levelCompletionResults->levelEndStateType == 1) {
+                 log("Level finished, trying to create replay file");
+                 float storedFailedSongTime = failedSongTime;
+                 bool storedFailedInReplay = failedInReplay;
+                 if(fileexists(replayDirectory+songHash+fileExtensionName)) {
+                     GetFailedReplayTime(songHash);
+                 }
+                 if((!fileexists(replayDirectory+songHash+fileExtensionName)) || (levelCompletionResults->fullCombo && getConfig().config["FullComboOverwrites"].GetBool()) || (fileexists(replayDirectory+songHash+fileExtensionName) && failedInReplay)) {
+                     if(replaySaveBools.noFail && getConfig().config["OverwriteNFPlays"].GetBool() && fileexists(replayDirectory+songHash+fileExtensionName)) {
+                         log("Old play does not use no fail and this play does, not overwriting");
+                         return; // false
+                     }
+                     log("Creating replay as there are no existing replays");
+                     failedSongTime = -1;
+                     failedInReplay = false;
+                     CreateReplayFileAsync(songHash);
+                     return; //true
+                 } else {
+                     failedSongTime = storedFailedSongTime;
+                     failedInReplay = storedFailedInReplay;
+                     if(GetNoFail(songHash) && getConfig().config["OverwriteNFPlays"].GetBool()) {
+                         log("Previous replay uses no fail, overwriting");
+                         CreateReplayFileAsync(songHash);
+                         return; // true
+                     }
 
-                if(replaySaveBools.noFail && getConfig().config["OverwriteNFPlays"].GetBool()) {
-                    log("Old play does not use no fail and this play does, not overwriting");
-                    return false;
-                }
+                     if(replaySaveBools.noFail && getConfig().config["OverwriteNFPlays"].GetBool()) {
+                         log("Old play does not use no fail and this play does, not overwriting");
+                         return; // false
+                     }
 
-                log("Checking if this is a higher score than previous");
-                v6replayBools tempBools = replaySaveBools;
+                     log("Checking if this is a higher score than previous");
+                     v6replayBools tempBools = replaySaveBools;
 
-                GetReplayValues(songHash);
+                     GetReplayValues(songHash);
 
-                log("Getting energy type");
-                int energy = 0;
-                if(replaySaveBools.fourLives) {
-                    energy = 1;
-                }
+                     log("Getting energy type");
+                     int energy = 0;
+                     if(replaySaveBools.fourLives) {
+                         energy = 1;
+                     }
 
-                log("Getting obstacle type");
-                int obstacles = 0;
-                if(replaySaveBools.noObstacles) {
-                    obstacles = 2;
-                }
+                     log("Getting obstacle type");
+                     int obstacles = 0;
+                     if(replaySaveBools.noObstacles) {
+                         obstacles = 2;
+                     }
 
-                log("Getting song speed");
-                int speed = 0;
-                if(replaySaveBools.fasterSong) {
-                    speed = 1;
-                } else if(replaySaveBools.slowerSong) {
-                    speed = 2;
-                } else if(replaySaveBools.superFastSong) {
-                    speed = 3;
-                }
+                     log("Getting song speed");
+                     int speed = 0;
+                     if(replaySaveBools.fasterSong) {
+                         speed = 1;
+                     } else if(replaySaveBools.slowerSong) {
+                         speed = 2;
+                     } else if(replaySaveBools.superFastSong) {
+                         speed = 3;
+                     }
 
-                log("Getting old score modifiers");
-                GameplayModifiers* oldScoreModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.oneLife, false, obstacles, replaySaveBools.noBombs, false, replaySaveBools.strictAngles, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes, replaySaveBools.proMode, false, replaySaveBools.smallNotes);
-                log("Getting old modified score");
-                int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, modifiersModel->CreateModifierParamsList(oldScoreModifiers), didReach0Energy ? 0 : 1);
-                log("Getting new modified score");
-                int newModifiedScore = std::floor(float(score) * scoreMultiplier);
-                log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
-                if(newModifiedScore > oldModifiedScore) {
-                    replaySaveBools = tempBools;
-                    CreateReplayFileAsync(songHash);
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        } else if(levelCompletionResults->levelEndStateType == 2) {
-            log("Trying to create failed replay");
-            if(!fileexists(replayDirectory+songHash+fileExtensionName)) {
-                log("Creating replay as there are no existing replays");
-                failedInReplay = true;
-                CreateReplayFileAsync(songHash);
-                return true;
-            } else {
-                if(GetNoFail(songHash) && getConfig().config["OverwriteNFPlays"].GetBool()) {
-                    log("Previous replay uses no fail, overwriting");
-                    failedInReplay = true;
-                    CreateReplayFileAsync(songHash);
-                    return true;
-                }
-                float storedTime = failedSongTime;
-                GetFailedReplayTime(songHash);
-                if(!failedInReplay) {
-                    log("There is already a successful replay, not creating failed replay");
-                    failedSongTime = storedTime;
-                    failedInReplay = true;
-                    return false;
-                } else if(songTime <= failedSongTime) {
-                    failedSongTime = storedTime;
-                    failedInReplay = true;
-                    log("Existing failed replay lasted longer than current failed replay, not overwriting replay file, time is "+std::to_string(songTime)+", old time is "+std::to_string(failedSongTime));
-                    return false;
-                } else {
-                    failedSongTime = storedTime;
-                    failedInReplay = true;
-                    log("All requirenments are met, creating failed replay");
-                    CreateReplayFileAsync(songHash);
-                }
-            }
+                     log("Getting old score modifiers");
+                     GameplayModifiers* oldScoreModifiers = GameplayModifiers::New_ctor(false, false, energy, replaySaveBools.noFail, replaySaveBools.oneLife, false, obstacles, replaySaveBools.noBombs, false, replaySaveBools.strictAngles, replaySaveBools.disappearingArrows, speed, replaySaveBools.noArrows, replaySaveBools.ghostNotes, replaySaveBools.proMode, false, replaySaveBools.smallNotes);
+                     log("Getting old modified score");
+                     int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, modifiersModel->CreateModifierParamsList(oldScoreModifiers), didReach0Energy ? 0 : 1);
+                     log("Getting new modified score");
+                     int newModifiedScore = std::floor(float(score) * scoreMultiplier);
+                     log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
+                     if(newModifiedScore > oldModifiedScore) {
+                         replaySaveBools = tempBools;
+                         CreateReplayFileAsync(songHash);
+                         return; // true
+                     } else {
+                         return; // false
+                     }
+                 }
+             } else if(levelCompletionResults->levelEndStateType == 2) {
+                 log("Trying to create failed replay");
+                 if(!fileexists(replayDirectory+songHash+fileExtensionName)) {
+                     log("Creating replay as there are no existing replays");
+                     failedInReplay = true;
+                     CreateReplayFileAsync(songHash);
+                     return; // true
+                 } else {
+                     if(GetNoFail(songHash) && getConfig().config["OverwriteNFPlays"].GetBool()) {
+                         log("Previous replay uses no fail, overwriting");
+                         failedInReplay = true;
+                         CreateReplayFileAsync(songHash);
+                         return; // true
+                     }
+                     float storedTime = failedSongTime;
+                     GetFailedReplayTime(songHash);
+                     if(!failedInReplay) {
+                         log("There is already a successful replay, not creating failed replay");
+                         failedSongTime = storedTime;
+                         failedInReplay = true;
+                         return; // false
+                     } else if(songTime <= failedSongTime) {
+                         failedSongTime = storedTime;
+                         failedInReplay = true;
+                         log("Existing failed replay lasted longer than current failed replay, not overwriting replay file, time is "+std::to_string(songTime)+", old time is "+std::to_string(failedSongTime));
+                         return; // false
+                     } else {
+                         failedSongTime = storedTime;
+                         failedInReplay = true;
+                         log("All requirenments are met, creating failed replay");
+                         CreateReplayFileAsync(songHash);
+                     }
+                 }
+             }
+         }
+         // false
         }
-    }
-    return false;
+    ), nullptr)->Run();
 }
 
 void GetModifiers(GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, int value = 0) {

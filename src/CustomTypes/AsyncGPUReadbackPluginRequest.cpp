@@ -67,7 +67,6 @@ static void create_ppm(int frame_id, unsigned int width, unsigned int height, un
 }
 
 extern "C" void makeRequest_renderThread(int event_id) {
-    if(!AsyncGPUReadbackPlugin::ReadPixels) return;
 
 	// Get task back
 	tasks_mutex.lock();

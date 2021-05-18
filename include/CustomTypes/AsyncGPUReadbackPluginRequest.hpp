@@ -45,5 +45,4 @@ namespace AsyncGPUReadbackPlugin {
 
     AsyncGPUReadbackPluginRequest* Request(UnityEngine::Texture* src);
     
-    static bool ReadPixels = true;
 }

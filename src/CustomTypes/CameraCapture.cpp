@@ -16,7 +16,8 @@ DEFINE_TYPE(CameraCapture);
 
 extern UnityEngine::RenderTexture *texture;
 
-extern bool inSong;
+extern float songTime;
+extern float maxSongTime;
 std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTime;
 
 void CameraCapture::ctor()
@@ -124,8 +125,6 @@ void CameraCapture::Update()
             } else
                 break;
         } else {
-            AsyncGPUReadbackPlugin::ReadPixels = false;// Bad attempt to stop song end crashes in makeRequest_renderThread
-            
             req->Dispose();
             toRemove.push_back(req);
         }
