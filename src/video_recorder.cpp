@@ -208,6 +208,7 @@ void VideoCapture::encodeFrames()
                 // log("size is %i", framebuffers.size());
                 auto frameData = listCopy.front();
 
+                // TODO: Comment while using OnRenderImage, for now no worky because 16x16 too small
                 //Flip the screen
                 for(int line = 0; line != height/2; ++line) {
                     std::swap_ranges(

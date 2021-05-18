@@ -2125,6 +2125,12 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
                 // Set aspect ratio accordingly
                 camera->set_aspect(float(width) / float(height));
+
+                typedef function_ptr_t<void, UnityEngine::Camera*, UnityEngine::Rect&> setPixelRectType;
+                auto set_cullingMatrix = *reinterpret_cast<setPixelRectType>(il2cpp_functions::resolve_icall("UnityEngine.Camera::set_pixelRect_Injected"));
+
+                auto pixelRect = UnityEngine::Rect(0,0, (float) width, (float) height);
+                set_cullingMatrix(camera, pixelRect);
                 
                 camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
                 
