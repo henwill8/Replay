@@ -25,7 +25,7 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
     DECLARE_METHOD(void, Dispose);
 
     public:
-        void GetRawData(std::shared_ptr<std::vector<rgb24>>& buffer, size_t& length) const;
+        void GetRawData(rgb24*& buffer, size_t& length) const;
 
     REGISTER_FUNCTION(
         REGISTER_FIELD(eventId);

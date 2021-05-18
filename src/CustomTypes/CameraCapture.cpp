@@ -85,7 +85,7 @@ void CameraCapture::Update()
             } else if (req->IsDone()) {
                 // log("Finished %d", i);
                 size_t length;
-                std::shared_ptr<std::vector<rgb24>> buffer;
+                rgb24* buffer;
                 req->GetRawData(buffer, length);
 
                 capture->queueFrame(buffer);
