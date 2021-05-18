@@ -16,7 +16,8 @@ DEFINE_TYPE(CameraCapture);
 
 extern UnityEngine::RenderTexture *texture;
 
-extern bool inSong;
+extern float songTime;
+extern float maxSongTime;
 
 void CameraCapture::ctor()
 {
@@ -24,7 +25,6 @@ void CameraCapture::ctor()
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "ultrafast", "/sdcard/video.h264");
 
-    // StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
     UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("RequestFrame"), 1.0f, 1.0f/capture->getFpsrate());
 }
 
@@ -79,9 +79,7 @@ void CameraCapture::Update()
                 req->Dispose();
                 toRemove.push_back(req);
             }
-        } else {
-            AsyncGPUReadbackPlugin::ReadPixels = false;// Bad attempt to stop song end crashes in makeRequest_renderThread
-            
+        } else {            
             req->Dispose();
             toRemove.push_back(req);
         }
