@@ -2080,7 +2080,6 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
 
-
             static UnityEngine::GameObject* cameraGameObject = nullptr;
             UnityEngine::Camera* camera = nullptr;
 
@@ -2137,18 +2136,15 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
                 UnityEngine::Object::DontDestroyOnLoad(texture);
                 // camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
-
-                mainCamera->set_cullingMask(0);
             }
             #endif
+
             camera = cameraGO->GetComponent<UnityEngine::Camera*>();
 
             #ifdef DO_FPS_RECORD
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
             #endif
-	
-
             
             UnityEngine::Vector3 prevPos = cameraGO->get_transform()->get_localPosition();
             UnityEngine::Vector3 prevRot = cameraGO->get_transform()->get_localEulerAngles();
