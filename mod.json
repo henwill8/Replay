@@ -8,7 +8,7 @@
   "packageVersion": "1.15.0",
   "modFiles": ["libreplay.so"],
   "libraryFiles": [
-    "libbeatsaber-hook_1_3_3.so",
+    "libbeatsaber-hook_1_3_5.so",
     "libbs-utils.so",
     "libquestui.so",
     "libavcodec.so",
