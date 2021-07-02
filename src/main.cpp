@@ -1182,28 +1182,47 @@ void SetEnergyState(float newTime) {
 }
 
 MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
-    qosmeticsIsRunning = true;  
-    if(!recording) {
-        int offsetIndex = clip(indexNum+offset, 0, replayData.size()-1);
-        int nextOffsetIndex = clip(indexNum+offset+1, 0, replayData.size()-1);
+    qosmeticsIsRunning = true;
+    if (leftSaberTransformCache || rightSaberTransformCache) {
+        if (!recording) {
+            int offsetIndex = clip(indexNum + offset, 0, replayData.size() - 1);
+            int nextOffsetIndex = clip(indexNum + offset + 1, 0, replayData.size() - 1);
 
-        int lerpOffsetIndex = clip(indexNum-1, 0, replayData.size()-1);
-        int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size()-1);
+            int lerpOffsetIndex = clip(indexNum - 1, 0, replayData.size() - 1);
+            int lerpNextOffsetIndex = clip(indexNum, 0, replayData.size() - 1);
 
-        float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) / (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
-        if(leftSaberTransformCache->get_gameObject() != nullptr) {
-            lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x, replayData[offsetIndex].playerData.leftSaber.rot.y, replayData[offsetIndex].playerData.leftSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x, replayData[nextOffsetIndex].playerData.leftSaber.rot.y, replayData[nextOffsetIndex].playerData.leftSaber.rot.z), lerpAmount);
-            lerpedLeftHandPosition = Lerp(replayData[offsetIndex].playerData.leftSaber.pos, replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
-            
-            leftSaberTransformCache->set_position(lerpedLeftHandPosition);
-            leftSaberTransformCache->set_rotation(lerpedLeftHandRotation);
-        }
-        if(rightSaberTransformCache->get_gameObject() != nullptr) {
-            lerpedRightHandPosition = Lerp(replayData[offsetIndex].playerData.rightSaber.pos, replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
-            lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x, replayData[offsetIndex].playerData.rightSaber.rot.y, replayData[offsetIndex].playerData.rightSaber.rot.z), UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x, replayData[nextOffsetIndex].playerData.rightSaber.rot.y, replayData[nextOffsetIndex].playerData.rightSaber.rot.z), lerpAmount);
-            
-            rightSaberTransformCache->set_position(lerpedRightHandPosition);
-            rightSaberTransformCache->set_rotation(lerpedRightHandRotation);
+            float lerpAmount = (songTime - replayData[lerpOffsetIndex].time) /
+                               (replayData[lerpNextOffsetIndex].time - replayData[lerpOffsetIndex].time);
+            if (leftSaberTransformCache && leftSaberTransformCache->get_gameObject() != nullptr) {
+                lerpedLeftHandRotation = UnityEngine::Quaternion::Lerp(
+                        UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.leftSaber.rot.x,
+                                                       replayData[offsetIndex].playerData.leftSaber.rot.y,
+                                                       replayData[offsetIndex].playerData.leftSaber.rot.z),
+                        UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.leftSaber.rot.x,
+                                                       replayData[nextOffsetIndex].playerData.leftSaber.rot.y,
+                                                       replayData[nextOffsetIndex].playerData.leftSaber.rot.z),
+                        lerpAmount);
+                lerpedLeftHandPosition = Lerp(replayData[offsetIndex].playerData.leftSaber.pos,
+                                              replayData[nextOffsetIndex].playerData.leftSaber.pos, lerpAmount);
+
+                leftSaberTransformCache->set_position(lerpedLeftHandPosition);
+                leftSaberTransformCache->set_rotation(lerpedLeftHandRotation);
+            }
+            if (rightSaberTransformCache && rightSaberTransformCache->get_gameObject() != nullptr) {
+                lerpedRightHandPosition = Lerp(replayData[offsetIndex].playerData.rightSaber.pos,
+                                               replayData[nextOffsetIndex].playerData.rightSaber.pos, lerpAmount);
+                lerpedRightHandRotation = UnityEngine::Quaternion::Lerp(
+                        UnityEngine::Quaternion::Euler(replayData[offsetIndex].playerData.rightSaber.rot.x,
+                                                       replayData[offsetIndex].playerData.rightSaber.rot.y,
+                                                       replayData[offsetIndex].playerData.rightSaber.rot.z),
+                        UnityEngine::Quaternion::Euler(replayData[nextOffsetIndex].playerData.rightSaber.rot.x,
+                                                       replayData[nextOffsetIndex].playerData.rightSaber.rot.y,
+                                                       replayData[nextOffsetIndex].playerData.rightSaber.rot.z),
+                        lerpAmount);
+
+                rightSaberTransformCache->set_position(lerpedRightHandPosition);
+                rightSaberTransformCache->set_rotation(lerpedRightHandRotation);
+            }
         }
     }
 

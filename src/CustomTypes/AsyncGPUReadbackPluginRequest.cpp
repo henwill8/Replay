@@ -256,5 +256,6 @@ void AsyncGPUReadbackPluginRequest::GetRawData(rgb24*& buffer, size_t& length) c
 }
 
 AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::Texture* src) {
+	loggingFunction().info("Render Texture is sRGB: %i", src.sRGB);
     return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src).value();
 }
