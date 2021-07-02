@@ -119,6 +119,8 @@
 #include "UnityEngine/Texture.hpp"
 #include "UnityEngine/Texture2D.hpp"
 #include "UnityEngine/RenderTexture.hpp"
+#include "UnityEngine/TextureWrapMode.hpp"
+#include "UnityEngine/FilterMode.hpp"
 #include "UnityEngine/RenderTextureReadWrite.hpp"
 #include "UnityEngine/RenderTextureDescriptor.hpp"
 #include "UnityEngine/RenderTextureFormat.hpp"
