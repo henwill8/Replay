@@ -44,9 +44,6 @@ class AudioRenderer {
 
 DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
     
-    DECLARE_METHOD(void, OnAudioFilterRead, Array<float>* data, int channels);
+    DECLARE_INSTANCE_METHOD(void, OnAudioFilterRead, Array<float>* data, int channels);
 
-    REGISTER_FUNCTION(
-        REGISTER_METHOD(OnAudioFilterRead);
-    )
 )

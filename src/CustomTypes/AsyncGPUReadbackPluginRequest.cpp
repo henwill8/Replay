@@ -216,7 +216,7 @@ GLIssuePluginEvent GetGLIssuePluginEvent() {
 }
 using namespace AsyncGPUReadbackPlugin;
 
-DEFINE_TYPE(AsyncGPUReadbackPluginRequest);
+DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
 
 void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::Texture* src) {
     texture = src;
@@ -247,6 +247,5 @@ void AsyncGPUReadbackPluginRequest::GetRawData(std::shared_ptr<std::vector<rgb24
 }
 
 AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::Texture* src) {
-	loggingFunction().info("Render Texture is sRGB: %i", src.sRGB);
     return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src).value();
 }

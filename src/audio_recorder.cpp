@@ -2,7 +2,7 @@
 
 using namespace Replay;
 
-DEFINE_TYPE(AudioCapture);
+DEFINE_TYPE(Replay, AudioCapture);
 
 void AudioRenderer::OpenFile(std::string filename) {
     Rendering = true;

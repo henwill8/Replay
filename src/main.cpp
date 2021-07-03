@@ -1738,7 +1738,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
         failedSongTime = storedTime;
         failedInReplay = storedDidFail;
 
-        warningText = QuestUI::BeatSaberUI::CreateText(parent, "Warning: fixed camera view;\nmay cause motion sickness", true, UnityEngine::Vector2{buttonsPosition.x-4.0f, buttonsPosition.y-4.0f});
+        warningText = QuestUI::BeatSaberUI::CreateText(parent, "Warning: fixed camera view;\nsitting is recommended", true, UnityEngine::Vector2{buttonsPosition.x-4.0f, buttonsPosition.y-4.0f});
         warningText->set_alignment(TMPro::TextAlignmentOptions::Center);
         warningText->set_color(UnityEngine::Color{1, 0.1f, 0.05f, 1});
         warningText->set_fontSize(4);
@@ -2666,7 +2666,7 @@ extern "C" void load() {
 
     QuestUI::Init();
 
-    custom_types::Register::RegisterTypes<Replay::UIController, Replay::CameraCapture, Replay::AudioCapture, AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest>();
+    custom_types::Register::AutoRegister();
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
 
     log("Installing hooks...");
