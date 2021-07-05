@@ -102,7 +102,7 @@ void VideoCapture::Finish()
 
 void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath)
 {
-    log("Setting up video at path " + filepath);
+    log("Setting up video at path %s", filepath.c_str());
     fps = fpsrate;
     width = videoWidth;
     height = videoHeight;

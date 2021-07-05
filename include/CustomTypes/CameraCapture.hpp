@@ -32,5 +32,6 @@ private:
     DECLARE_INSTANCE_METHOD(void, RequestFrame);
 
     DECLARE_INSTANCE_METHOD(void, OnPostRender);
-    DECLARE_INSTANCE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* source, UnityEngine::RenderTexture* destination);
+    // UNCOMMENT LATER
+//    DECLARE_INSTANCE_METHOD(void, OnRenderImage, UnityEngine::RenderTexture* source, UnityEngine::RenderTexture* destination);
 )
