@@ -12,7 +12,7 @@ using namespace custom_types::Helpers;
 using namespace Replay;
 using namespace UnityEngine;
 
-DEFINE_TYPE(CameraCapture);
+DEFINE_TYPE(Replay, CameraCapture);
 
 extern UnityEngine::RenderTexture *texture;
 

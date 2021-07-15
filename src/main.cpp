@@ -8,6 +8,7 @@
 #include "beatsaber-hook/shared/utils/logging.hpp"
 #include "modloader/shared/modloader.hpp"
 #include "beatsaber-hook/shared/utils/typedefs.h"
+#include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-utils.hpp"
 #include "beatsaber-hook/shared/utils/il2cpp-functions.hpp"
 #include "beatsaber-hook/shared/config/rapidjson-utils.hpp"
@@ -16,8 +17,6 @@
 #include "questui/shared/BeatSaberUI.hpp"
 #include "bs-utils/shared/utils.hpp"
 #include "custom-types/shared/register.hpp"
-
-#include "qraphicsplus/shared/qraphics_api.hpp"
 
 #include "MathUtils.hpp"
 
@@ -202,6 +201,21 @@ struct v6replayBools {
         writer.write(reinterpret_cast<const char*>(&leftHanded), sizeof(bool));
     }
 };
+
+
+static float InitialRefreshRate;
+
+/// Sets the refresh rate of the screen
+/// If null-opt, it will be set to the initial value
+/// This is what happens when Qraphics+ doesn't want to maintain a very simple
+/// to understand and maintain API
+static void setRefreshRate(std::optional<float> refreshRate) noexcept {
+    if (refreshRate) {
+        GlobalNamespace::OVRPlugin::set_systemDisplayFrequency(refreshRate.value());
+    } else {
+        GlobalNamespace::OVRPlugin::set_systemDisplayFrequency(InitialRefreshRate);
+    }
+}
 
 enum cameraAngles {
     HEADSET,
@@ -506,9 +520,9 @@ void SaveConfig() {
 
 template<class T>
 UnityEngine::GameObject* FindObject(const std::string& name, bool byParent = false, bool getLastIndex = false, int index = 0) {
-    log("Finding GameObject of name "+name);
+    log("Finding GameObject of name %s", name.c_str());
     Array<T>* trs = UnityEngine::Resources::FindObjectsOfTypeAll<T>();
-    log("There are "+std::to_string(trs->Length())+" GameObjects");
+    log("There are %i GameObjects", (int) trs->Length());
     for(int i = 0; i < trs->Length(); i++) {
         if(i != trs->Length()-1 && getLastIndex && index == 0) continue;
         if(i < index && (getLastIndex && index != 0)) continue;
@@ -610,7 +624,7 @@ float ClosestRealOffset() {
 void LoadAvatarData() {
     log("Setting visual avatar data");
     Array<AvatarDataModel*>* trs = UnityEngine::Resources::FindObjectsOfTypeAll<AvatarDataModel*>();
-    log("There are "+std::to_string(trs->Length())+" AvatarDataModels");
+    log("There are %i AvatarDataModels", (int) trs->Length());
 
     AvatarData* data = trs->values[0]->get_avatarData();
     AvatarPartsModel* partsModel = trs->values[0]->avatarPartsModel;
@@ -665,7 +679,7 @@ void LoadAvatarData() {
 void CreateReplayFile(const std::string& songHashID) {
     std::ofstream output(replayDirectory+songHashID+fileExtensionName, std::ios::binary);
     if(output.is_open()) {
-        log("Writing replay file at "+replayDirectory+songHashID+fileExtensionName);
+        log("Writing replay file at %s",(replayDirectory+songHashID+fileExtensionName).c_str());
 
         log("Writing magic bytes");
         for(unsigned char & i : fileHeader) {
@@ -706,7 +720,7 @@ void GetReplayValues(const std::string& songHashID) {
     std::ifstream input(replayDirectory+songHashID+fileExtensionName, std::ios::binary);
 
     if(input.is_open()) {
-        log("Successfully opened replay file at: "+replayDirectory+songHashID+fileExtensionName);
+        log("Successfully opened replay file at: %s", (replayDirectory+songHashID+fileExtensionName).c_str());
 
         bool isCorrectHeader = true;
         unsigned char headerBytes[3];
@@ -722,7 +736,7 @@ void GetReplayValues(const std::string& songHashID) {
             input.read(reinterpret_cast<char*>(&openedFileVersion), sizeof(int));
         }
 
-        log("File version is "+std::to_string(openedFileVersion));
+        log("File version is %i", openedFileVersion);
 
         ReplayKeyFrame keyFrameData;
 
@@ -844,7 +858,7 @@ void GetFailedReplayTime(const std::string& songHashID) {
     std::ifstream input(replayDirectory+songHashID+fileExtensionName, std::ios::binary);
 
     if(input.is_open()) {
-        log("Successfully opened replay file at: "+replayDirectory+songHashID+fileExtensionName);
+        log("Successfully opened replay file at: %s", (replayDirectory+songHashID+fileExtensionName).c_str());
 
         bool isCorrectHeader = true;
         unsigned char headerBytes[3];
@@ -860,12 +874,12 @@ void GetFailedReplayTime(const std::string& songHashID) {
             input.read(reinterpret_cast<char*>(&openedFileVersion), sizeof(int));
         }
 
-        log("File version is "+std::to_string(openedFileVersion));
+        log("File version is %i", openedFileVersion);
 
         if(openedFileVersion >= 3) {
             input.read(reinterpret_cast<char*>(&failedInReplay), sizeof(bool));
             input.read(reinterpret_cast<char*>(&failedSongTime), sizeof(float));
-            log("Failed replay time is "+std::to_string(failedSongTime));
+            log("Failed replay time is %f", failedSongTime);
         } else {
             failedInReplay = false;
             failedSongTime = 0;
@@ -882,7 +896,7 @@ bool GetNoFail(const std::string& songHashID) {
 
     bool usesNoFail;
     if(input.is_open()) {
-        log("Successfully opened replay file at: "+replayDirectory+songHashID+fileExtensionName);
+        log("Successfully opened replay file at: %s",(replayDirectory+songHashID+fileExtensionName).c_str());
 
         bool isCorrectHeader = true;
         unsigned char headerBytes[3];
@@ -898,7 +912,7 @@ bool GetNoFail(const std::string& songHashID) {
             input.read(reinterpret_cast<char*>(&openedFileVersion), sizeof(int));
         }
 
-        log("File version is "+std::to_string(openedFileVersion));
+        log("File version is %i", openedFileVersion);
 
         if(openedFileVersion >= 3 && openedFileVersion <= 5) {
             float tempFloat;
@@ -995,7 +1009,7 @@ void SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                      int oldModifiedScore = modifiersModel->GetModifiedScoreForGameplayModifiers(replayData[replayData.size()-1].score, modifiersModel->CreateModifierParamsList(oldScoreModifiers), didReach0Energy ? 0 : 1);
                      log("Getting new modified score");
                      int newModifiedScore = std::floor(float(score) * scoreMultiplier);
-                     log("Old score is "+std::to_string(oldModifiedScore)+", new score is "+std::to_string(newModifiedScore));
+                     log("Old score is %i, new score is %i", oldModifiedScore, newModifiedScore);
                      if(newModifiedScore > oldModifiedScore) {
                          replaySaveBools = tempBools;
                          CreateReplayFileAsync(songHash);
@@ -1028,7 +1042,7 @@ void SaveRecording(LevelCompletionResults* levelCompletionResults, bool practice
                      } else if(songTime <= failedSongTime) {
                          failedSongTime = storedTime;
                          failedInReplay = true;
-                         log("Existing failed replay lasted longer than current failed replay, not overwriting replay file, time is "+std::to_string(songTime)+", old time is "+std::to_string(failedSongTime));
+                         log("Existing failed replay lasted longer than current failed replay, not overwriting replay file, time is %f, old time is %f", songTime, failedSongTime);
                          return; // false
                      } else {
                          failedSongTime = storedTime;
@@ -1181,7 +1195,7 @@ void SetEnergyState(float newTime) {
     }
 }
 
-MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
+MAKE_HOOK_FIND_CLASS(QosmeticsTrail_Update, "Qosmetics", "QosmeticsTrail", "Update", void, Il2CppObject* self) {
     qosmeticsIsRunning = true;
     if (leftSaberTransformCache || rightSaberTransformCache) {
         if (!recording) {
@@ -1229,7 +1243,7 @@ MAKE_HOOK_OFFSETLESS(QosmeticsTrail_Update, void, Il2CppObject* self) {
     QosmeticsTrail_Update(self);
 }
 
-MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTransforms* self) {
+MAKE_HOOK_MATCH(PlayerController_Update, &PlayerTransforms::Update, void, GlobalNamespace::PlayerTransforms* self) {
 
     // log("PlayerControllerUpdate");
 
@@ -1237,7 +1251,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
         fpsCounter =self->get_gameObject()->AddComponent<FPSCounter*>();
     } else if((fpsCounter->get_currentFPS() < gameFPS-4 || fpsCounter->get_currentFPS() > gameFPS+4) && songTime > 5 && !inPauseMenu) {
         gameFPS = fpsCounter->get_currentFPS();
-        log("fps is "+std::to_string(gameFPS));
+        log("fps is %i", gameFPS);
     }
     
     if(recording) {
@@ -1284,7 +1298,7 @@ MAKE_HOOK_OFFSETLESS(PlayerController_Update, void, GlobalNamespace::PlayerTrans
     PlayerController_Update(self);
 }
 
-MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
+MAKE_HOOK_MATCH(Saber_ManualUpdate, &Saber::ManualUpdate, void, GlobalNamespace::Saber* self) {
 
     // log("Saber_ManualUpdate %s", to_utf8(csstrtostr(self->get_gameObject()->get_name())).c_str());
     
@@ -1292,6 +1306,8 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
     
     if(recording) {
         if(!checkedForTricksaber && songTime > 0.75f) {
+            // TODO: HENWILL I MADE TRICK SABER API FOR A REASON
+            // SAVE YOURSELF FROM THIS HORRIFYING CODE WHICH IS MY FAULT
             checkedForTricksaber = true;
             log("Checking for TrickSaber");
             
@@ -1299,7 +1315,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
             for(int i = 0; i < VRGameCore->get_childCount(); i++) {
                 UnityEngine::Transform* child = VRGameCore->GetChild(i);
                 std::string name = to_utf8(csstrtostr(UnityEngine::Transform::GetName(child)));
-                log(name);
+                log("%s",name.c_str());
                 if(name == "trick_saber_LeftSaber_0") {
                     usesTricksaber = true;
                     leftTrickSaber = child->get_gameObject();
@@ -1341,7 +1357,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
             checkedForQosmetics = true;
             if(il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0) != nullptr) {
                 log("Installing Qosmetics hook");
-                INSTALL_HOOK_OFFSETLESS(loggingFunction(), QosmeticsTrail_Update, il2cpp_utils::FindMethodUnsafe("Qosmetics", "QosmeticsTrail", "Update", 0));
+                INSTALL_HOOK(loggingFunction(), QosmeticsTrail_Update);
                 installedQosmeticsHook = true;
             }
         }
@@ -1410,7 +1426,7 @@ MAKE_HOOK_OFFSETLESS(Saber_ManualUpdate, void, GlobalNamespace::Saber* self) {
     Saber_ManualUpdate(self);
 }
 
-MAKE_HOOK_OFFSETLESS(BeatmapObjectSpawnMovementData_Update, void, Il2CppObject* self, float bpm, float jumpOffsetY) {
+MAKE_HOOK_MATCH(BeatmapObjectSpawnMovementData_Update, &BeatmapObjectSpawnMovementData::Update, void, BeatmapObjectSpawnMovementData* self, float bpm, float jumpOffsetY) {
     
     // log("BeatmapObjectSpawnMovementData_Update");
 
@@ -1427,7 +1443,7 @@ MAKE_HOOK_OFFSETLESS(BeatmapObjectSpawnMovementData_Update, void, Il2CppObject* 
     BeatmapObjectSpawnMovementData_Update(self, bpm, jumpOffsetY);
 }
 
-MAKE_HOOK_OFFSETLESS(SongUpdate, void, AudioTimeSyncController* self) {
+MAKE_HOOK_MATCH(SongUpdate, &AudioTimeSyncController::Update, void, AudioTimeSyncController* self) {
     
     // log("SongUpdate");
 
@@ -1529,9 +1545,9 @@ MAKE_HOOK_OFFSETLESS(SongUpdate, void, AudioTimeSyncController* self) {
     }
 }
 
-MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, ::Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
+MAKE_HOOK_MATCH(SongStart, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, ::Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
 
-    log("Song Start "+std::to_string(inSongOrResults));
+    log("Song Start %d", inSongOrResults);
 
     ResetVariables();
 
@@ -1628,7 +1644,7 @@ MAKE_HOOK_OFFSETLESS(SongStart, void, StandardLevelScenesTransitionSetupDataSO* 
     log("Finished song setup");
 }
 
-MAKE_HOOK_OFFSETLESS(ScoreChanged, void, Il2CppObject* self, int rawScore, int modifiedScore) {
+MAKE_HOOK_MATCH(ScoreChanged, &ScoreUIController::UpdateScore, void, ScoreUIController* self, int rawScore, int modifiedScore) {
 
     // log("Score Changed");
     
@@ -1640,11 +1656,11 @@ MAKE_HOOK_OFFSETLESS(ScoreChanged, void, Il2CppObject* self, int rawScore, int m
     ScoreChanged(self, rawScore, modifiedScore);
 }
 
-MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevelDetailView* self) {
+MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView::RefreshContent, void, StandardLevelDetailView* self) {
 
     StandardLevelDetailView_RefreshContent(self);
 
-    log("Refreshing Content, in song or results is "+std::to_string(inSongOrResults));
+    log("Refreshing Content, in song or results is %d", inSongOrResults);
 
     if(!inSongOrResults) {
         recording = true;
@@ -1671,7 +1687,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
         songHash.erase(songHash.begin(), songHash.begin()+13);
         transform(songHash.begin(), songHash.end(), songHash.begin(), ::tolower);
     }
-    log("Song Hash is "+songHash);
+    log("Song Hash is %s",songHash.c_str());
     
     std::string oldExtension = ".questReplayFileForQuestDontTryOnPcAlsoPinkEraAndLillieAreCuteBtwWilliamGay";
     if(fileexists(replayDirectory+"custom_level_"+songHash+oldExtension)) {
@@ -1728,7 +1744,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
             }
             
             std::string failedTimeString = minutesString+":"+secondsString;
-            log("Failed at "+failedTimeString);
+            log("Failed at %s",failedTimeString.c_str());
             failedTimeText = QuestUI::BeatSaberUI::CreateText(parent, " Died at\n"+failedTimeString, true, UnityEngine::Vector2{buttonsPosition.x+55.5f, buttonsPosition.y-0.3f});
             failedTimeText->set_alignment(TMPro::TextAlignmentOptions::Left);
             failedTimeText->set_fontSize(3.4f);
@@ -1738,7 +1754,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
         failedSongTime = storedTime;
         failedInReplay = storedDidFail;
 
-        warningText = QuestUI::BeatSaberUI::CreateText(parent, "Warning: fixed camera view;\nmay cause motion sickness", true, UnityEngine::Vector2{buttonsPosition.x-4.0f, buttonsPosition.y-4.0f});
+        warningText = QuestUI::BeatSaberUI::CreateText(parent, "Warning: fixed camera view;\nsitting is recommended", true, UnityEngine::Vector2{buttonsPosition.x-4.0f, buttonsPosition.y-4.0f});
         warningText->set_alignment(TMPro::TextAlignmentOptions::Center);
         warningText->set_color(UnityEngine::Color{1, 0.1f, 0.05f, 1});
         warningText->set_fontSize(4);
@@ -1789,10 +1805,10 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
 
     auto* songNameText = self->levelBar->songNameText;
     songName = to_utf8(csstrtostr(songNameText->get_text()));
-    log("Song name is "+songName);
+    log("Song name is %s", songName.c_str());
 }
 
-MAKE_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, void, StandardLevelDetailViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+MAKE_HOOK_MATCH(StandardLevelDetailViewController_DidActivate, &StandardLevelDetailViewController::DidActivate, void, StandardLevelDetailViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
     
     log("View Controller did activate");
 
@@ -1810,7 +1826,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailViewController_DidActivate, void, Standa
     }
 }
 
-MAKE_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, void, GameEnergyCounter* self, float value) {
+MAKE_HOOK_MATCH(GameEnergyCounter_AddEnergy, &GameEnergyCounter::ProcessEnergyChange, void, GameEnergyCounter* self, float value) {
     
     // log("GameEnergyCounter_AddEnergy");
 
@@ -1837,7 +1853,7 @@ MAKE_HOOK_OFFSETLESS(GameEnergyCounter_AddEnergy, void, GameEnergyCounter* self,
     }
 }
 
-MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, ScoreController* self) {
+MAKE_HOOK_MATCH(ScoreControllerLateUpdate, &ScoreController::LateUpdate, void, ScoreController* self) {
 
     // log("ScoreControllerLateUpdate");
 
@@ -1858,7 +1874,7 @@ MAKE_HOOK_OFFSETLESS(ScoreControllerLateUpdate, void, ScoreController* self) {
     }
 }
 
-MAKE_HOOK_OFFSETLESS(RefreshRank, void, ImmediateRankUIPanel* self) {
+MAKE_HOOK_MATCH(RefreshRank,&ImmediateRankUIPanel::RefreshUI, void, ImmediateRankUIPanel* self) {
 
     // log("RefreshRank");
 
@@ -1872,7 +1888,9 @@ MAKE_HOOK_OFFSETLESS(RefreshRank, void, ImmediateRankUIPanel* self) {
     RefreshRank(self);
 }
 
-MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedScore, int maxPossibleScore, int maxPossibleModifiedScore) {
+MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank,
+                &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank,
+                void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedScore, int maxPossibleScore, int maxPossibleModifiedScore) {
 
     // log("Score Changed");
  
@@ -1887,7 +1905,7 @@ MAKE_HOOK_OFFSETLESS(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAnd
     }
 }
 
-MAKE_HOOK_OFFSETLESS(Triggers, void, Il2CppObject* self, int node) {
+MAKE_HOOK_MATCH(Triggers, &VRControllersInputManager::TriggerValue, float, VRControllersInputManager* self, UnityEngine::XR::XRNode node) {
 
     // log("Triggers");
 
@@ -1895,10 +1913,10 @@ MAKE_HOOK_OFFSETLESS(Triggers, void, Il2CppObject* self, int node) {
         triggerNode = node;
     }
 
-    Triggers(self, node);
+    return Triggers(self, node);
 }
 
-MAKE_HOOK_OFFSETLESS(ControllerUpdate, void, VRController* self) {
+MAKE_HOOK_MATCH(ControllerUpdate, &VRController::Update, void, VRController* self) {
 
     // log("ControllerUpdate");
 
@@ -1916,7 +1934,7 @@ MAKE_HOOK_OFFSETLESS(ControllerUpdate, void, VRController* self) {
     ControllerUpdate(self);
 }
 
-MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, GlobalNamespace::SongProgressUIController* self) {
+MAKE_HOOK_MATCH(ProgressUpdate, &SongProgressUIController::Update, void, GlobalNamespace::SongProgressUIController* self) {
     
     // log("Progress update");
 
@@ -1966,7 +1984,7 @@ MAKE_HOOK_OFFSETLESS(ProgressUpdate, void, GlobalNamespace::SongProgressUIContro
     ProgressUpdate(self);
 }
 
-MAKE_HOOK_OFFSETLESS(PauseStart, void, PauseMenuManager* self) {
+MAKE_HOOK_MATCH(PauseStart, &PauseMenuManager::Start, void, PauseMenuManager* self) {
 
     log("PauseStart");
 
@@ -2000,7 +2018,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, PauseMenuManager* self) {
             rts->set_sizeDelta(UnityEngine::Vector2{147, currentSizeDelta.y});
         }
 
-        log("Creating time slider, practice start time is "+std::to_string(practiceStartTime)+", failedSongTime is "+std::to_string(failedSongTime));
+        log("Creating time slider, practice start time is %f, failedSongTime is %f", practiceStartTime, failedSongTime);
 
         failedTimeSlider = UnityEngine::Object::Instantiate(latencySlider);
         failedTimeSlider->SetActive(true);
@@ -2041,7 +2059,7 @@ MAKE_HOOK_OFFSETLESS(PauseStart, void, PauseMenuManager* self) {
     firstTimeInPause = false;
 }
 
-MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
+MAKE_HOOK_MATCH(PauseFinish, &PauseMenuManager::StartResumeAnimation, void, PauseMenuManager* self) {
 
     log("PauseFinish");
 
@@ -2051,7 +2069,7 @@ MAKE_HOOK_OFFSETLESS(PauseFinish, void, Il2CppObject* self) {
     inResumeAnimation = true;
 }
 
-MAKE_HOOK_OFFSETLESS(PauseAnimationFinish, void, Il2CppObject* self) {
+MAKE_HOOK_MATCH(PauseAnimationFinish, &PauseMenuManager::HandleResumeFromPauseAnimationDidFinish, void, PauseMenuManager* self) {
 
     log("PauseAnimationFinish");
 
@@ -2060,7 +2078,7 @@ MAKE_HOOK_OFFSETLESS(PauseAnimationFinish, void, Il2CppObject* self) {
     inResumeAnimation = false;
 }
 
-MAKE_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, void, Il2CppObject* self) {
+MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed,&PauseMenuManager::MenuButtonPressed, void, PauseMenuManager* self) {
 
     log("MenuButtonPressed");
 
@@ -2074,10 +2092,10 @@ MAKE_HOOK_OFFSETLESS(PauseMenuManager_MenuButtonPressed, void, Il2CppObject* sel
 
     audioRenderer.Save();
 
-    log("Set inSongOrResults to false 1 "+std::to_string(inSongOrResults));
+    log("Set inSongOrResults to false 1 %d", inSongOrResults);
 }
 
-MAKE_HOOK_OFFSETLESS(ResultsScreenEnd, void, Il2CppObject* self, bool removedFromHierarchy, bool screenSystemDisabling) {
+MAKE_HOOK_MATCH(ResultsScreenEnd, &ResultsViewController::DidDeactivate, void, ResultsViewController* self, bool removedFromHierarchy, bool screenSystemDisabling) {
 
     log("ResultsScreenEnd");
 
@@ -2092,7 +2110,7 @@ UnityEngine::RenderTexture* texture;
 
 #include "CustomTypes/CameraCapture.hpp"
 
-MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) {
+MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObject, void, LightManager* self) {
 
     // log("LightManager_OnWillRenderObject");
 
@@ -2114,7 +2132,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
             }
             if(!cameraGameObject) {
                 // Set to 60 hz
-                Qraphics::QraphicsAPI::setRefreshRate(std::make_optional(60.0f));
+                setRefreshRate(std::make_optional(60.0f));
 
                 auto mainCamera = UnityEngine::Camera::get_main();
 
@@ -2155,12 +2173,14 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
 
                 auto pixelRect = UnityEngine::Rect(0,0, (float) width, (float) height);
                 set_cullingMatrix(camera, pixelRect);
-                
+
                 camera->set_projectionMatrix(mainCamera->get_projectionMatrix());
                 
                 cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
                 texture = UnityEngine::RenderTexture::New_ctor(width, height, 16, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::sRGB);
+                texture->set_wrapMode(UnityEngine::TextureWrapMode::Clamp);
+                texture->set_filterMode(UnityEngine::FilterMode::Bilinear);
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
                 UnityEngine::Object::DontDestroyOnLoad(texture);
@@ -2247,7 +2267,7 @@ MAKE_HOOK_OFFSETLESS(LightManager_OnWillRenderObject, void, Il2CppObject* self) 
     LightManager_OnWillRenderObject(self);
 }
 
-MAKE_HOOK_OFFSETLESS(HapticFeedbackController_Rumble, void, Il2CppObject* self, int node, Il2CppObject* hapticPreset) {
+MAKE_HOOK_MATCH(HapticFeedbackController_Rumble, &HapticFeedbackController::PlayHapticFeedback, void, HapticFeedbackController* self, UnityEngine::XR::XRNode node, Libraries::HM::HMLib::VR::HapticPresetSO* hapticPreset) {
 
     // log("HapticFeedbackController_Rumble "+std::to_string(recording));
 
@@ -2258,7 +2278,7 @@ MAKE_HOOK_OFFSETLESS(HapticFeedbackController_Rumble, void, Il2CppObject* self, 
     HapticFeedbackController_Rumble(self, node, hapticPreset);
 }
 
-MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, GlobalNamespace::ResultsViewController* self) {
+MAKE_HOOK_MATCH(ResultsViewController_SetDataToUI, &ResultsViewController::SetDataToUI, void, GlobalNamespace::ResultsViewController* self) {
     
     log("ResultsViewController_SetDataToUI");
 
@@ -2329,7 +2349,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, GlobalNamespace::R
         failedCameraToggle->get_gameObject()->GetComponentInChildren<UnityEngine::RectTransform*>()->set_sizeDelta(UnityEngine::Vector2{45, 10});
 
         if(failedSongTime-practiceStartTime > 10) {
-            log("Creating song start slider, failedSongTime is "+std::to_string(failedSongTime));
+            log("Creating song start slider, failedSongTime is %f", failedSongTime);
             failedTimeSlider = UnityEngine::Object::Instantiate(latencySlider);
             failedTimeSlider->SetActive(true);
             failedTimeSlider->get_transform()->set_parent(parent);
@@ -2358,7 +2378,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_SetDataToUI, void, GlobalNamespace::R
     }
 }
 
-MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, ResultsViewController* self, GlobalNamespace::LevelCompletionResults* levelCompletionResults, IDifficultyBeatmap* difficultyBeatmap, bool practice, bool newHighScore) {
+MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init,void, ResultsViewController* self, GlobalNamespace::LevelCompletionResults* levelCompletionResults, IDifficultyBeatmap* difficultyBeatmap, bool practice, bool newHighScore) {
     
     log("ResultsViewController_Init");
 
@@ -2371,7 +2391,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_Init, void, ResultsViewController* se
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }
 
-MAKE_HOOK_OFFSETLESS(ResultsViewController_ContinueButtonPressed, void, ResultsViewController* self) {
+MAKE_HOOK_MATCH(ResultsViewController_ContinueButtonPressed, &ResultsViewController::ContinueButtonPressed, void, ResultsViewController* self) {
     
     log("ResultsViewController_ContinueButtonPressed");
 
@@ -2380,7 +2400,7 @@ MAKE_HOOK_OFFSETLESS(ResultsViewController_ContinueButtonPressed, void, ResultsV
     recording = true;
 }
 
-MAKE_HOOK_OFFSETLESS(NoteController_NoteWasMissed, void, NoteController* self) {
+MAKE_HOOK_MATCH(NoteController_NoteWasMissed, &NoteController::SendNoteWasMissedEvent, void, NoteController* self) {
 
     if(!recording && HasFakeMiss()) {
         return;
@@ -2393,10 +2413,10 @@ MAKE_HOOK_OFFSETLESS(NoteController_NoteWasMissed, void, NoteController* self) {
     NoteController_NoteWasMissed(self);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteController_NoteWasCut, void, NoteController* self, NoteCutInfo* noteCutInfo) {
+MAKE_HOOK_MATCH(NoteController_NoteWasCut, &NoteController::SendNoteWasCutEvent, void, NoteController* self, NoteCutInfo& noteCutInfo) {
 
     if(!recording) {
-        bool allIsOk = noteCutInfo->get_allIsOK();
+        bool allIsOk = noteCutInfo.get_allIsOK();
 
         if(!allIsOk && (((deathReplay || failedReplay) && songTime < songStartTime+0.2f) || HasFakeMiss())) {
             return;
@@ -2406,7 +2426,7 @@ MAKE_HOOK_OFFSETLESS(NoteController_NoteWasCut, void, NoteController* self, Note
     NoteController_NoteWasCut(self, noteCutInfo);
 }
 
-MAKE_HOOK_OFFSETLESS(NoteDebrisSpawner_SpawnDebris, void, Il2CppObject* self, UnityEngine::Vector3 cutPoint, UnityEngine::Vector3 cutNormal, float saberSpeed, UnityEngine::Vector3 saberDir, UnityEngine::Vector3 notePos, UnityEngine::Quaternion noteRotation, UnityEngine::Vector3 noteScale, Il2CppObject* colorType, float timeToNextColorNote, UnityEngine::Vector3 moveVec) {
+MAKE_HOOK_MATCH(NoteDebrisSpawner_SpawnDebris, &NoteDebrisSpawner::SpawnDebris, void, NoteDebrisSpawner* self, UnityEngine::Vector3 cutPoint, UnityEngine::Vector3 cutNormal, float saberSpeed, UnityEngine::Vector3 saberDir, UnityEngine::Vector3 notePos, UnityEngine::Quaternion noteRotation, UnityEngine::Vector3 noteScale, GlobalNamespace::ColorType colorType, float timeToNextColorNote, UnityEngine::Vector3 moveVec) {
 
     if(!recording && reduceDebris) {
         return;
@@ -2415,7 +2435,7 @@ MAKE_HOOK_OFFSETLESS(NoteDebrisSpawner_SpawnDebris, void, Il2CppObject* self, Un
     NoteDebrisSpawner_SpawnDebris(self, cutPoint, cutNormal, saberSpeed, saberDir, notePos, noteRotation, noteScale, colorType, timeToNextColorNote, moveVec);
 }
 
-MAKE_HOOK_OFFSETLESS(MainFlowCoordinator_DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
+MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &MainFlowCoordinator::DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 
     log("MainFlowCoordinator_DidActivate");
 
@@ -2424,7 +2444,7 @@ MAKE_HOOK_OFFSETLESS(MainFlowCoordinator_DidActivate, void, GlobalNamespace::Mai
     if(firstActivation) {
         std::string oldPath = "sdcard/Android/data/com.beatgames.beatsaber/files/replays/";
         replayDirectory = bs_utils::getDataDir(modInfo) + "replays/";
-        log("Replay Directory is "+replayDirectory);
+        log("Replay Directory is %s", replayDirectory.c_str());
         if(System::IO::Directory::Exists(createcsstr(oldPath))) {
             log("Moving old replay files to new location");
             mkpath(const_cast<char*>(replayDirectory.c_str()));
@@ -2442,7 +2462,7 @@ MAKE_HOOK_OFFSETLESS(MainFlowCoordinator_DidActivate, void, GlobalNamespace::Mai
     inMulti = false;
 }
 
-MAKE_HOOK_OFFSETLESS(MultiplayerLobbyController_ActivateMultiplayerLobby, void, Il2CppObject* self) {
+MAKE_HOOK_MATCH(MultiplayerLobbyController_ActivateMultiplayerLobby, &MultiplayerLobbyController::ActivateMultiplayerLobby, void, MultiplayerLobbyController* self) {
 
     MultiplayerLobbyController_ActivateMultiplayerLobby(self);
 
@@ -2451,9 +2471,9 @@ MAKE_HOOK_OFFSETLESS(MultiplayerLobbyController_ActivateMultiplayerLobby, void, 
     inMulti = true;
 }
 
-MAKE_HOOK_OFFSETLESS(MultiplayerSongStart, void, MultiplayerLevelScenesTransitionSetupDataSO* self,::Il2CppString* gameMode, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::BeatmapDifficulty beatmapDifficulty, GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, bool useTestNoteCutSoundEffects) {
+MAKE_HOOK_MATCH(MultiplayerSongStart, &MultiplayerLevelScenesTransitionSetupDataSO::Init, void, MultiplayerLevelScenesTransitionSetupDataSO* self,::Il2CppString* gameMode, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::BeatmapDifficulty beatmapDifficulty, GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, bool useTestNoteCutSoundEffects) {
 
-    log("Multiplayer Song Start "+std::to_string(inSongOrResults));
+    log("Multiplayer Song Start %d", inSongOrResults);
 
     ResetVariables();
 
@@ -2478,32 +2498,39 @@ MAKE_HOOK_OFFSETLESS(MultiplayerSongStart, void, MultiplayerLevelScenesTransitio
         log("Erasing custom_level_");
         songHash.erase(songHash.begin(), songHash.begin()+13);
     }
-    log("Song hash is "+songHash);
+    log("Song hash is %s", songHash.c_str());
 
     MultiplayerSongStart(self, gameMode, previewBeatmapLevel, beatmapDifficulty, beatmapCharacteristic, difficultyBeatmap, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, useTestNoteCutSoundEffects);
     log("Finished song setup");
 }
 
-MAKE_HOOK_OFFSETLESS(MultiplayerLevelFinishedController_HandlePlayerDidFinish, void, Il2CppObject* self, LevelCompletionResults* levelCompletionResults) {
+MAKE_HOOK_MATCH(MultiplayerLevelFinishedController_HandlePlayerDidFinish,
+                &MultiplayerLevelFinishedController::HandlePlayerDidFinish,
+                void, MultiplayerLevelFinishedController* self, MultiplayerLevelCompletionResults* levelCompletionResults) {
 
     log("Multiplayer song finished");
 
     inSong = false;
     inSongOrResults = true;
 
-    SaveRecording(levelCompletionResults, false);
+    // This cast might be bad
+    SaveRecording((LevelCompletionResults*) levelCompletionResults, false);
 
     MultiplayerLevelFinishedController_HandlePlayerDidFinish(self, levelCompletionResults);
 }
 
-MAKE_HOOK_OFFSETLESS(LevelFailedTextEffect_ShowEffect, void, Il2CppObject* self) {
+MAKE_HOOK_MATCH(LevelFailedTextEffect_ShowEffect,
+                &LevelFailedTextEffect::ShowEffect,
+                void, LevelFailedTextEffect* self) {
 
     levelFailedTextEffect = true;
 
     LevelFailedTextEffect_ShowEffect(self);
 }
 
-MAKE_HOOK_OFFSETLESS(GameSongController_LateUpdate, void, GameSongController* self) {
+MAKE_HOOK_MATCH(GameSongController_LateUpdate,
+                &GameSongController::LateUpdate,
+                void, GameSongController* self) {
 
     // log("GameSongController_LateUpdate");
 
@@ -2519,7 +2546,7 @@ MAKE_HOOK_OFFSETLESS(GameSongController_LateUpdate, void, GameSongController* se
             setSongTime = false;
         }
 
-        log("Slider is "+std::to_string(sliderValue)+", old slider is "+std::to_string(oldSliderTime));
+        log("Slider is %f, old slider is %f", sliderValue, oldSliderTime);
 
         if(setSongTime) {
             setSongTime = false;
@@ -2619,7 +2646,9 @@ MAKE_HOOK_OFFSETLESS(GameSongController_LateUpdate, void, GameSongController* se
     }
 }
 
-MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel* self, float energy) {
+MAKE_HOOK_MATCH(GameEnergyUIPanel_RefreshEnergyUI,
+                &GameEnergyUIPanel::RefreshEnergyUI,
+                void, GameEnergyUIPanel* self, float energy) {
     if(!recording && didReach0Energy && replaySaveBools.noFail) {
         if(songTime < reached0Time) {
             doneFailedEffect = false;
@@ -2645,7 +2674,12 @@ MAKE_HOOK_OFFSETLESS(GameEnergyUIPanel_RefreshEnergyUI, void, GameEnergyUIPanel*
     GameEnergyUIPanel_RefreshEnergyUI(self, energy);
 }
 
-MAKE_HOOK_OFFSETLESS(AudioCapture_OnAudioFilterRead, void, Il2CppObject* self, Array<float>* data, int channels) {
+// TODO: HENWILL DON'T DO THIS WHAT IS WRONG WITH YOU
+// FIX THIS SOON!
+#warning "HENWILL THIS IS WRONG PLEASE DON'T DO THIS"
+MAKE_HOOK_FIND_CLASS_UNSAFE_INSTANCE(AudioCapture_OnAudioFilterRead,
+                     "Replay", "AudioCapture", "OnAudioFilterRead",
+                     void, Il2CppObject* self, Array<float>* data, int channels) {
 
     AudioCapture_OnAudioFilterRead(self, data, channels);
 
@@ -2670,46 +2704,50 @@ extern "C" void load() {
 
     QuestUI::Init();
 
-    custom_types::Register::RegisterTypes<Replay::UIController, Replay::CameraCapture, Replay::AudioCapture, AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest>();
+    InitialRefreshRate = GlobalNamespace::OVRPlugin::get_systemDisplayFrequency();
+
+    custom_types::Register::AutoRegister();
     QuestUI::Register::RegisterModSettingsViewController<Replay::UIController*>(modInfo, "Replay");
 
     log("Installing hooks...");
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), SongUpdate, il2cpp_utils::FindMethodUnsafe("", "AudioTimeSyncController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), SongStart, il2cpp_utils::FindMethodUnsafe("", "StandardLevelScenesTransitionSetupDataSO", "Init", 10));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), BeatmapObjectSpawnMovementData_Update, il2cpp_utils::FindMethodUnsafe("", "BeatmapObjectSpawnMovementData", "Update", 2));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PlayerController_Update, il2cpp_utils::FindMethodUnsafe("", "PlayerTransforms", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), Saber_ManualUpdate, il2cpp_utils::FindMethodUnsafe("", "Saber", "ManualUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ScoreChanged, il2cpp_utils::FindMethodUnsafe("", "ScoreUIController", "UpdateScore", 2));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), StandardLevelDetailViewController_DidActivate, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "DidActivate", 3));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameEnergyCounter_AddEnergy, il2cpp_utils::FindMethodUnsafe("", "GameEnergyCounter", "ProcessEnergyChange", 1));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ScoreControllerLateUpdate, il2cpp_utils::FindMethodUnsafe("", "ScoreController", "LateUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), RefreshRank, il2cpp_utils::FindMethodUnsafe("", "ImmediateRankUIPanel", "RefreshUI", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, il2cpp_utils::FindMethodUnsafe("", "RelativeScoreAndImmediateRankCounter", "UpdateRelativeScoreAndImmediateRank", 4));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), Triggers, il2cpp_utils::FindMethodUnsafe("", "VRControllersInputManager", "TriggerValue", 1));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ControllerUpdate, il2cpp_utils::FindMethodUnsafe("", "VRController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ProgressUpdate, il2cpp_utils::FindMethodUnsafe("", "SongProgressUIController", "Update", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseStart, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "ShowMenu", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseFinish, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "StartResumeAnimation", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseAnimationFinish, il2cpp_utils::FindMethodUnsafe("", "PauseController", "HandlePauseMenuManagerDidFinishResumeAnimation", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), PauseMenuManager_MenuButtonPressed, il2cpp_utils::FindMethodUnsafe("", "PauseMenuManager", "MenuButtonPressed", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsScreenEnd, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "DidDeactivate", 2));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), LightManager_OnWillRenderObject, il2cpp_utils::FindMethodUnsafe("", "LightManager", "OnWillRenderObject", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), HapticFeedbackController_Rumble, il2cpp_utils::FindMethodUnsafe("", "HapticFeedbackController", "PlayHapticFeedback", 2));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsViewController_SetDataToUI, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "SetDataToUI", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsViewController_Init, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "Init", 4));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), ResultsViewController_ContinueButtonPressed, il2cpp_utils::FindMethodUnsafe("", "ResultsViewController", "ContinueButtonPressed", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteController_NoteWasMissed, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasMissedEvent", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteController_NoteWasCut, il2cpp_utils::FindMethodUnsafe("", "NoteController", "SendNoteWasCutEvent", 1));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), NoteDebrisSpawner_SpawnDebris, il2cpp_utils::FindMethodUnsafe("", "NoteDebrisSpawner", "SpawnDebris", 10));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MainFlowCoordinator_DidActivate, il2cpp_utils::FindMethodUnsafe("", "MainFlowCoordinator", "DidActivate", 3));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MultiplayerLobbyController_ActivateMultiplayerLobby, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLobbyController", "ActivateMultiplayerLobby", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MultiplayerSongStart, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLevelScenesTransitionSetupDataSO", "Init", 10));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), MultiplayerLevelFinishedController_HandlePlayerDidFinish, il2cpp_utils::FindMethodUnsafe("", "MultiplayerLevelFinishedController", "HandlePlayerDidFinish", 1));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), LevelFailedTextEffect_ShowEffect, il2cpp_utils::FindMethodUnsafe("", "LevelFailedTextEffect", "ShowEffect", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameSongController_LateUpdate, il2cpp_utils::FindMethodUnsafe("", "GameSongController", "LateUpdate", 0));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), GameEnergyUIPanel_RefreshEnergyUI, il2cpp_utils::FindMethodUnsafe("", "GameEnergyUIPanel", "RefreshEnergyUI", 1));
-    INSTALL_HOOK_OFFSETLESS(loggingFunction(), AudioCapture_OnAudioFilterRead, il2cpp_utils::FindMethodUnsafe("Replay", "AudioCapture", "OnAudioFilterRead", 2));
+    INSTALL_HOOK(loggingFunction(), SongUpdate);
+    INSTALL_HOOK(loggingFunction(), SongStart);
+    INSTALL_HOOK(loggingFunction(), BeatmapObjectSpawnMovementData_Update);
+    INSTALL_HOOK(loggingFunction(), PlayerController_Update);
+    INSTALL_HOOK(loggingFunction(), Saber_ManualUpdate);
+    INSTALL_HOOK(loggingFunction(), ScoreChanged);
+    INSTALL_HOOK(loggingFunction(), StandardLevelDetailView_RefreshContent);
+    INSTALL_HOOK(loggingFunction(), StandardLevelDetailViewController_DidActivate);
+    INSTALL_HOOK(loggingFunction(), GameEnergyCounter_AddEnergy);
+    INSTALL_HOOK(loggingFunction(), ScoreControllerLateUpdate);
+    INSTALL_HOOK(loggingFunction(), RefreshRank);
+    INSTALL_HOOK(loggingFunction(), RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank);
+    INSTALL_HOOK(loggingFunction(), Triggers);
+    INSTALL_HOOK(loggingFunction(), ControllerUpdate);
+    INSTALL_HOOK(loggingFunction(), ProgressUpdate);
+    INSTALL_HOOK(loggingFunction(), PauseStart);
+    INSTALL_HOOK(loggingFunction(), PauseFinish);
+    INSTALL_HOOK(loggingFunction(), PauseAnimationFinish);
+    INSTALL_HOOK(loggingFunction(), PauseMenuManager_MenuButtonPressed);
+    INSTALL_HOOK(loggingFunction(), ResultsScreenEnd);
+    INSTALL_HOOK(loggingFunction(), LightManager_OnWillRenderObject);
+    INSTALL_HOOK(loggingFunction(), HapticFeedbackController_Rumble);
+    INSTALL_HOOK(loggingFunction(), ResultsViewController_SetDataToUI);
+    INSTALL_HOOK(loggingFunction(), ResultsViewController_Init);
+    INSTALL_HOOK(loggingFunction(), ResultsViewController_ContinueButtonPressed);
+    INSTALL_HOOK(loggingFunction(), NoteController_NoteWasMissed);
+    INSTALL_HOOK(loggingFunction(), NoteController_NoteWasCut);
+    INSTALL_HOOK(loggingFunction(), NoteDebrisSpawner_SpawnDebris);
+    INSTALL_HOOK(loggingFunction(), MainFlowCoordinator_DidActivate);
+    INSTALL_HOOK(loggingFunction(), MultiplayerLobbyController_ActivateMultiplayerLobby);
+    INSTALL_HOOK(loggingFunction(), MultiplayerSongStart);
+    INSTALL_HOOK(loggingFunction(), MultiplayerLevelFinishedController_HandlePlayerDidFinish);
+    INSTALL_HOOK(loggingFunction(), LevelFailedTextEffect_ShowEffect);
+    INSTALL_HOOK(loggingFunction(), GameSongController_LateUpdate);
+    INSTALL_HOOK(loggingFunction(), GameEnergyUIPanel_RefreshEnergyUI);
+#ifdef DO_FPS_RECORD
+    INSTALL_HOOK(loggingFunction(), AudioCapture_OnAudioFilterRead);
+#endif
     log("Installed all hooks!");
 
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
