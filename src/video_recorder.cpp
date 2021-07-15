@@ -189,47 +189,34 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     encodingThread = std::thread(&VideoCapture::encodeFrames, this);
 }
 
-void VideoCapture::encodeFrames()
-{
+void VideoCapture::encodeFrames() {
     log("Starting encoding thread");
 
-    while (initialized || !framebuffers.empty())
-    {
-        if (!framebuffers.empty())
-        {
-            framebuffer_mutex.lock();
-            std::list<rgb24*> listCopy(framebuffers); // copy the list
-            framebuffers.clear();
-            framebuffer_mutex.unlock();
-            // Unlock and use the copy
+    while (initialized) {
+        rgb24 *frameData = nullptr;
 
-            // Now we use the copied list and it should be ours only
-            while (!listCopy.empty()) {
-                // log("size is %i", framebuffers.size());
-                auto frameData = listCopy.front();
-
-                // TODO: Comment while using OnRenderImage, for now no worky because 16x16 too small
-                //Flip the screen
-                for(int line = 0; line != height/2; ++line) {
-                    std::swap_ranges(
-                            frameData + width * line,
-                            frameData + width * (line+1),
-                            frameData + width * (height-line-1));
-                }
-
-                this->AddFrame(frameData);
-                listCopy.pop_front();
-                free(frameData);
-            }
+        // Block instead?
+        if (!framebuffers.try_dequeue(frameData)) {
+            continue;
         }
+
+        // TODO: Comment while using OnRenderImage, for now no worky because 16x16 too small
+        //Flip the screen
+        for (int line = 0; line != height / 2; ++line) {
+            std::swap_ranges(
+                    frameData + width * line,
+                    frameData + width * (line + 1),
+                    frameData + width * (height - line - 1));
+        }
+
+        this->AddFrame(frameData);
+        free(frameData);
     }
     log("Ending encoding thread");
 }
 
 void VideoCapture::queueFrame(rgb24*& queuedFrame) {
-    framebuffer_mutex.lock();
-    framebuffers.push_back(queuedFrame);
-    framebuffer_mutex.unlock();
+    while(!framebuffers.enqueue(queuedFrame));
 }
 
 VideoCapture::~VideoCapture()

@@ -2,8 +2,8 @@
 
 #include "main.hpp"
 #include "CustomTypes/AsyncGPUReadbackPluginRequest.hpp"
+#include "queue/readerwriterqueue.h"
 
-#include <iostream>
 #include <iostream>
 #include <fstream>
 
@@ -80,8 +80,8 @@ private:
     const char *filename;
     std::ofstream f;
 
-    mutable std::mutex framebuffer_mutex;
-    std::list<rgb24*> framebuffers;
+    moodycamel::ReaderWriterQueue<rgb24*> framebuffers;
+//    std::list<rgb24*> framebuffers;
     std::thread encodingThread;
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
