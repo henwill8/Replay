@@ -21,7 +21,7 @@ extern "C"
 class VideoCapture
 {
 public:
-    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath);
+    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath);
 
     void AddFrame(rgb24*& data);
     
@@ -77,7 +77,7 @@ private:
 
     bool stabilizeFPS;
 
-    const char *filename;
+    std::string filename;
     std::ofstream f;
 
     moodycamel::ReaderWriterQueue<rgb24*> framebuffers;

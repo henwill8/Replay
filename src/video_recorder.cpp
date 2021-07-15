@@ -100,14 +100,14 @@ void VideoCapture::Finish()
     initialized = false;
 }
 
-void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, std::string encodeSpeed, std::string filepath)
+void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath)
 {
     log("Setting up video at path %s", filepath.c_str());
     fps = fpsrate;
     width = videoWidth;
     height = videoHeight;
     bitrate = videoBitrate * 1000;
-    filename = filepath.c_str();
+    filename = filepath;
     this->stabilizeFPS = stabilizeFPS;
     frameCounter = 0;
 
@@ -160,7 +160,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     f = std::ofstream(filename);
     if (!f)
     {
-        log("Could not open %s\n", filename);
+        log("Could not open %s\n", filename.c_str());
         return;
     }
 
@@ -184,7 +184,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     // swsCtx = sws_getContext(c->width, c->height, AV_PIX_FMT_RGB24, c->width, c->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, 0, 0, 0);
 
     initialized = true;
-    log("Finished initializing video at path %s", filename);
+    log("Finished initializing video at path %s", filename.c_str());
 
     encodingThread = std::thread(&VideoCapture::encodeFrames, this);
 }
