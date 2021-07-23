@@ -23,6 +23,8 @@ struct Task {
 	int size;
 	int height;
 	int width;
+	int depth;
+	GLint internal_format;
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;
@@ -79,14 +81,14 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_DEPTH, &(task->depth));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
-	task->size = task->depth * task->width * task->height * getPixelSizeFromInternalFormat(task->internal_format);
+	task->size = task->depth * task->width * task->height * 3;
 
-    if (task->size == 0
-		|| getFormatFromInternalFormat(task->internal_format) == 0
-		|| getTypeFromInternalFormat(task->internal_format) == 0) {
-		task->error = true;
-		return;
-	}
+    // if (task->size == 0
+	// 	|| getFormatFromInternalFormat(task->internal_format) == 0
+	// 	|| getTypeFromInternalFormat(task->internal_format) == 0) {
+	// 	task->error = true;
+	// 	return;
+	// }
 
 	// Create the fbo (frame buffer object) from the given texture
 	glGenFramebuffers(1, &(task->fbo));

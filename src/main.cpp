@@ -2178,7 +2178,6 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
                 UnityEngine::Object::DontDestroyOnLoad(texture);
-                // camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
             }
             #endif
