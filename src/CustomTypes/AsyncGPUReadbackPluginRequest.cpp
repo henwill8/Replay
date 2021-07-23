@@ -77,7 +77,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glBindTexture(GL_TEXTURE_2D, task->texture);
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
-	task->size = task->width * task->height * 3;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_DEPTH, &(task->depth));
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
+	task->size = task->width * task->height * getPixelSizeFromInternalFormat(task->internal_format);
 
 	// Create the fbo (frame buffer object) from the given texture
 	glGenFramebuffers(1, &(task->fbo));
