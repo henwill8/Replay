@@ -43,6 +43,8 @@ void CameraCapture::OnPostRender() {
             } else {
                 log("Too many requests currently, not adding more");
             }
+        } else if(texture->m_CachedPtr.m_value == nullptr) {
+            log("ERROR: Texture is null, can't add frame!");
         }
 
         // auto endTime = std::chrono::high_resolution_clock::now();
