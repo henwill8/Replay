@@ -2184,7 +2184,6 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 texture->Create();
                 UnityEngine::RenderTexture::set_active(texture);
                 UnityEngine::Object::DontDestroyOnLoad(texture);
-                // camera->set_targetTexture(texture);
                 cameraGameObject->AddComponent<Replay::CameraCapture*>();
             }
             #endif
@@ -2192,6 +2191,13 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             camera = cameraGO->GetComponent<UnityEngine::Camera*>();
 
             #ifdef DO_FPS_RECORD
+            if(texture->m_CachedPtr.m_value == nullptr) {
+                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Default);
+                texture->set_wrapMode(UnityEngine::TextureWrapMode::Clamp);
+                texture->set_filterMode(UnityEngine::FilterMode::Bilinear);
+                texture->Create();
+                log("Texture was null, remade it");
+            }
             camera->set_targetTexture(texture);
             camera->set_aspect(float(width) / float(height));
             #endif
