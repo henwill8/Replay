@@ -7,6 +7,7 @@
 #include <GLES3/gl32.h>
 #include <GLES3/gl3ext.h>
 #include "video_recorder.hpp"
+#include "CustomTypes/TypeHelpers.hpp"
 
 // Looks like this was from https://github.com/Alabate/AsyncGPUReadbackPlugin
 
@@ -83,12 +84,12 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
 	task->size = task->depth * task->width * task->height * 3;
 
-    // if (task->size == 0
-	// 	|| getFormatFromInternalFormat(task->internal_format) == 0
-	// 	|| getTypeFromInternalFormat(task->internal_format) == 0) {
-	// 	task->error = true;
-	// 	return;
-	// }
+     if (task->size == 0
+	 	|| getFormatFromInternalFormat(task->internal_format) == 0
+	 	|| getTypeFromInternalFormat(task->internal_format) == 0) {
+	 	task->error = true;
+	 	return;
+	 }
 
     // Check for errors
     if (task->size == 0
@@ -120,7 +121,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
     // Start the read request
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glReadPixels(0, 0, task->width, task->height, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    glReadPixels(0, 0, task->width, task->height, getFormatFromInternalFormat(task->internal_format), getTypeFromInternalFormat(task->internal_format), 0);
 
 	// if(event_id == 500) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data->data()));
     
