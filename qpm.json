@@ -11,7 +11,7 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "*",
+      "versionRange": "<=2.0.3",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -25,6 +25,11 @@
     },
     {
       "id": "questui",
+      "versionRange": "*",
+      "additionalData": {}
+    },
+    {
+      "id": "mimalloc",
       "versionRange": "*",
       "additionalData": {}
     }
