@@ -84,19 +84,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
 	task->size = task->depth * task->width * task->height * getPixelSizeFromInternalFormat(task->internal_format);
 
-     if (task->size == 0
-	 	|| getFormatFromInternalFormat(task->internal_format) == 0
-	 	|| getTypeFromInternalFormat(task->internal_format) == 0) {
-	 	task->error = true;
-	 	return;
-	 }
-
-    // Check for errors
     if (task->size == 0
-        // TODO: do we need?
-        //|| getFormatFromInternalFormat(task->internal_format) == 0
-        //|| getTypeFromInternalFormat(task->internal_format) == 0
-        ) {
+        || getFormatFromInternalFormat(task->internal_format) == 0
+        || getTypeFromInternalFormat(task->internal_format) == 0) {
         task->error = true;
         return;
     }
