@@ -104,6 +104,11 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := ffmpegkitabidetect
 LOCAL_SRC_FILES := ffmpeg/libffmpegkit_abidetect.so
 include $(PREBUILT_SHARED_LIBRARY)
+# Creating prebuilt for dependency: ffmpeg - mobileffmpegabidetect
+include $(CLEAR_VARS)
+LOCAL_MODULE := cppshared
+LOCAL_SRC_FILES := ffmpeg/libc++_shared.so
+include $(PREBUILT_SHARED_LIBRARY)
 
 
 include $(CLEAR_VARS)
@@ -117,6 +122,7 @@ LOCAL_SHARED_LIBRARIES += avutil
 LOCAL_SHARED_LIBRARIES += swscale
 LOCAL_SHARED_LIBRARIES += ffmpegkit
 LOCAL_SHARED_LIBRARIES += ffmpegkitabidetect
+LOCAL_SHARED_LIBRARIES += cppshared
 LOCAL_LDLIBS += -llog -lGLESv3 -lGLESv2
 LOCAL_CPPFLAGS += -std=c++2a -O3
 LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./ffmpeg
