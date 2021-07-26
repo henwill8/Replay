@@ -55,6 +55,14 @@ public:
 
     ~VideoCapture();
 
+    int getWidth() {
+        return width;
+    }
+
+    int getHeight() {
+        return height;
+    }
+
 private:
     const AVCodec *codec;
     AVCodecContext *c = NULL;

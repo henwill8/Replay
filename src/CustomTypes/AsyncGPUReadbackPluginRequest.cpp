@@ -250,7 +250,8 @@ void AsyncGPUReadbackPluginRequest::Update() {
 
 void AsyncGPUReadbackPluginRequest::Dispose() {
     dispose(eventId);
-    //UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
+    // Comment if using the same texture
+    //    UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
 }
 
 void AsyncGPUReadbackPluginRequest::GetRawData(rgb24*& buffer, size_t& length) const {

@@ -3,8 +3,14 @@
 #include "main.hpp"
 
 #include <string>
+
 #include "UnityEngine/WaitForEndOfFrame.hpp"
 #include "UnityEngine/WaitForSecondsRealtime.hpp"
+#include "UnityEngine/RenderTextureFormat.hpp"
+#include "UnityEngine/RenderTexture.hpp"
+#include "UnityEngine/RenderTextureReadWrite.hpp"
+#include "UnityEngine/TextureWrapMode.hpp"
+#include "UnityEngine/FilterMode.hpp"
 
 #include "UnityEngine/Graphics.hpp"
 
@@ -35,6 +41,21 @@ void CameraCapture::ctor()
 void CameraCapture::RequestFrame() {
     frameRequestCount++;
 }
+UnityEngine::RenderTexture* _RecycledRenderTexture;
+
+UnityEngine::RenderTexture* GetTemporaryRenderTexture(VideoCapture* capture, int format)
+{
+    auto rt = _RecycledRenderTexture;
+    _RecycledRenderTexture = nullptr;
+
+    if (rt != nullptr) return rt;
+
+    rt = RenderTexture::GetTemporary(capture->getWidth(), capture->getHeight(), 0, (RenderTextureFormat) format, RenderTextureReadWrite::Default);
+    rt->set_wrapMode(TextureWrapMode::Clamp);
+    rt->set_filterMode(FilterMode::Bilinear);
+
+    return rt;
+}
 
 
 void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngine::RenderTexture *destination) {
@@ -60,31 +81,67 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
     if (render) {
         // TODO: Fix the 16x16 render texture to higher res
         lastRecordedTime = std::chrono::high_resolution_clock::now();
-        UnityEngine::Graphics::Blit(source, destination);
+
+        auto targetRenderTexture = GetTemporaryRenderTexture(capture.get(), source->get_format());
+
+        UnityEngine::RenderTexture::set_active(targetRenderTexture);
+
+
+        Graphics::Blit(source, targetRenderTexture);
 
         if (capture->IsInitialized()) {
             if (requests->get_Count() <= 10) {
 
-                log("Requesting! %dx%d", source->GetDataWidth(), source->GetDataHeight());
-                requests->Add(AsyncGPUReadbackPlugin::Request(source));
+                log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
+                requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture));
             } else {
                 log("Too many requests currently, not adding more");
             }
         }
     }
+
+    UnityEngine::Graphics::Blit(source, destination);
 }
 
 void CameraCapture::OnPostRender() {
-    if (frameRequestCount > 0) {
+    bool render = false;
+
+    if (!lastRecordedTime) {
+        render = true;
+    }
+
+    if (!render) {
+        auto currentTime = std::chrono::high_resolution_clock::now();
+
+        int64_t duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastRecordedTime.value()).count();
+
+        if ((float) duration >= 1.0f/capture->getFpsrate()) {
+            render = true;
+        }
+    }
+
+    // render = frameRequestCount > 0
+
+    if (render) {
 
         auto startTime = std::chrono::high_resolution_clock::now();
 
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+
             if (requests->get_Count() <= 10) {
+                // This is unnnecessary work, no worky
+//                auto targetRenderTexture = GetTemporaryRenderTexture(capture.get(), texture->get_format());
+//
+//                UnityEngine::RenderTexture::set_active(targetRenderTexture);
+//
+//
+//                Graphics::Blit(texture, targetRenderTexture);
+
                 requests->Add(AsyncGPUReadbackPlugin::Request(texture));
             } else {
                 log("Too many requests currently, not adding more");
             }
+
         } else if(texture->m_CachedPtr.m_value == nullptr) {
             log("ERROR: Texture is null, can't add frame!");
         }

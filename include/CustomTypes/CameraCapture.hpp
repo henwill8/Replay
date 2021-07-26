@@ -32,6 +32,7 @@ private:
     DECLARE_INSTANCE_METHOD(void, RequestFrame);
 
     DECLARE_INSTANCE_METHOD(void, OnPostRender);
+//    void OnPostRender();
 
     // We do this to avoid compile error
     void OnRenderImage(UnityEngine::RenderTexture *source, UnityEngine::RenderTexture *destination);
