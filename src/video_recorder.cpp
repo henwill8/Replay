@@ -44,7 +44,8 @@ void VideoCapture::AddFrame(rgb24*& data) {
     if(!initialized) return;
 
     if(startTime == 0) {
-        startTime = UnityEngine::Time::get_time();
+        static auto get_time = FPtrWrapper<&UnityEngine::Time::get_time>::get();
+        startTime = get_time();
         log("Video global time start is %f", startTime);
     }
 
@@ -189,12 +190,15 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     log("Finished initializing video at path %s", filename.c_str());
 
     encodingThread = std::thread(&VideoCapture::encodeFrames, this);
+    flippingThread = std::thread(&VideoCapture::flipFrames, this);
 
     emptyFrame = new rgb24[width * height];
 }
 
-void VideoCapture::encodeFrames() {
-    log("Starting encoding thread");
+// Make this more than 1 thread? We need a way to synchronize the frame order then.
+// This seems to be a bottle neck since it can't keep up with queued frames.
+void VideoCapture::flipFrames() {
+    log("Starting flipping thread");
 
     while (initialized) {
         rgb24 *frameData = nullptr;
@@ -204,6 +208,7 @@ void VideoCapture::encodeFrames() {
             continue;
         }
 
+        auto startTime = std::chrono::high_resolution_clock::now();
         // TODO: Comment while using OnRenderImage, for now no worky because 16x16 too small
         //Flip the screen
         for (int line = 0; line != height / 2; ++line) {
@@ -213,7 +218,34 @@ void VideoCapture::encodeFrames() {
                     frameData + width * (height - line - 1));
         }
 
+        while (!flippedframebuffers.try_enqueue(frameData));
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+
+        log("Took %lldms to flip frame", (long long) duration);
+    }
+    log("Ending flipping thread");
+}
+
+void VideoCapture::encodeFrames() {
+    log("Starting encoding thread");
+
+    while (initialized) {
+        rgb24 *frameData = nullptr;
+
+        // Block instead?
+        if (!flippedframebuffers.try_dequeue(frameData)) {
+            continue;
+        }
+
+        auto startTime = std::chrono::high_resolution_clock::now();
         this->AddFrame(frameData);
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
+
+        log("Took %lldms to add and encode frame", (long long) duration);
+
         free(frameData);
     }
     log("Ending encoding thread");
@@ -230,6 +262,9 @@ VideoCapture::~VideoCapture()
 
     if (encodingThread.joinable())
         encodingThread.join();
+
+    if (flippingThread.joinable())
+        flippingThread.join();
 
     delete[] emptyFrame;
 }

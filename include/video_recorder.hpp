@@ -89,13 +89,18 @@ private:
     std::ofstream f;
 
     moodycamel::ReaderWriterQueue<rgb24*> framebuffers;
+
+    // Flipped frames ready to encode
+    moodycamel::ReaderWriterQueue<rgb24*> flippedframebuffers;
 //    std::list<rgb24*> framebuffers;
     std::thread encodingThread;
+    std::thread flippingThread;
     rgb24* emptyFrame; // constant used to set the frame data to null
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
 
     void encodeFrames();
+    void flipFrames();
 
     void WaitForEndFrames();
 };
