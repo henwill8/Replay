@@ -82,7 +82,13 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_DEPTH, &(task->depth));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
-	task->size = task->depth * task->width * task->height * getPixelSizeFromInternalFormat(task->internal_format);
+	auto pixelSize = getPixelSizeFromInternalFormat(task->internal_format);
+
+	// In our current state, this turns out to be 32 * 1920 * 1080 * 1 (66,355,200)
+	// However, we've been expecting this to be 1920 * 1080 * 3 (6,220,800)
+	task->size = task->depth * task->width * task->height * pixelSize;
+
+	log("Task size %d with pixel size %d and depth %d and format %d", task->size, task->depth, pixelSize, getFormatFromInternalFormat(task->internal_format));
 
     if (task->size == 0
         || getFormatFromInternalFormat(task->internal_format) == 0
@@ -100,10 +106,12 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGenFramebuffers(1, &(task->fbo));
 
 	// Bind the texture to the fbo
+	task->fbo;
 	glBindFramebuffer(GL_FRAMEBUFFER, task->fbo);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, task->texture, 0);
 
 	// Create and bind pbo (pixel buffer object) to fbo
+	task->pbo;
 	glGenBuffers(1, &(task->pbo));
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, task->pbo);
 	glBufferData(GL_PIXEL_PACK_BUFFER, task->size, 0, GL_DYNAMIC_READ);

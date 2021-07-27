@@ -209,12 +209,40 @@ static float InitialRefreshRate;
 /// If null-opt, it will be set to the initial value
 /// This is what happens when Qraphics+ doesn't want to maintain a very simple
 /// to understand and maintain API
+
+// OVR doesn't seem to apply our refresh rate, do we need to force the game to restart the menu?
 static void setRefreshRate(std::optional<float> refreshRate) noexcept {
-    if (refreshRate) {
-        GlobalNamespace::OVRPlugin::set_systemDisplayFrequency(refreshRate.value());
-    } else {
-        GlobalNamespace::OVRPlugin::set_systemDisplayFrequency(InitialRefreshRate);
+    float oldRefreshRate = GlobalNamespace::OVRPlugin::get_systemDisplayFrequency();
+    float newRefreshRate = refreshRate ? refreshRate.value() : InitialRefreshRate;
+
+    auto systemDisplayFrequenciesAvailable = OVRPlugin::get_systemDisplayFrequenciesAvailable();
+    for (int i = 0; i < systemDisplayFrequenciesAvailable->Length(); i++)
+    {
+        if (areApproximate(systemDisplayFrequenciesAvailable->values[i], newRefreshRate))
+        {
+            newRefreshRate = systemDisplayFrequenciesAvailable->values[i];
+            break;
+        }
     }
+    log("Going to try set refresh rate to %f", newRefreshRate);
+
+
+    GlobalNamespace::OVRPlugin::set_systemDisplayFrequency(newRefreshRate);
+
+
+    // Attempt to force refresh rate
+    auto ovrManager = GlobalNamespace::OVRManager::get_instance();
+    ovrManager->UpdateHMDEvents();
+    auto ovrDisplay = GlobalNamespace::OVRManager::get_display();
+    if (ovrDisplay) {
+        ovrDisplay->RecenterPose();
+    }
+
+    auto refreshRateChangedAction = GlobalNamespace::OVRManager::_get_DisplayRefreshRateChanged();
+    if (refreshRateChangedAction)
+        refreshRateChangedAction->Invoke(oldRefreshRate, newRefreshRate);
+
+    log("Display refresh rate is now %f", GlobalNamespace::OVRPlugin::get_systemDisplayFrequency());
 }
 
 enum cameraAngles {

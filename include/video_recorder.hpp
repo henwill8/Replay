@@ -91,6 +91,7 @@ private:
     moodycamel::ReaderWriterQueue<rgb24*> framebuffers;
 //    std::list<rgb24*> framebuffers;
     std::thread encodingThread;
+    rgb24* emptyFrame; // constant used to set the frame data to null
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
 

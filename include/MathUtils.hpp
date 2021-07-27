@@ -68,3 +68,7 @@ UnityEngine::Quaternion Slerp(UnityEngine::Quaternion quaternion1, UnityEngine::
     result.w = num2 * quaternion1.w + num3 * quaternion2.w;
     return result;
 }
+
+bool areApproximate(float a, float b) {
+    return std::abs(b - a) < std::max(1E-06f * std::max(std::abs(a), std::abs(b)),  std::numeric_limits<float>::epsilon() * 8.0f);
+}

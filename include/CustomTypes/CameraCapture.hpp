@@ -15,6 +15,8 @@
 
 #include <memory>
 
+using RequestList = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>;
+
 DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
 
 private:
@@ -22,7 +24,7 @@ private:
     std::shared_ptr<VideoCapture> capture;
     int frameRequestCount = 0;
 
-    DECLARE_INSTANCE_FIELD(System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>*, requests);
+    DECLARE_INSTANCE_FIELD(RequestList*, requests);
  
     DECLARE_CTOR(ctor);
     DECLARE_DTOR(dtor);

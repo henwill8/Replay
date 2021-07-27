@@ -2,6 +2,8 @@
 
 #include "main.hpp"
 
+#include "beatsaber-hook/shared/utils/il2cpp-type-check.hpp"
+
 #include <string>
 
 #include "UnityEngine/WaitForEndOfFrame.hpp"
@@ -26,6 +28,21 @@ extern float songTime;
 extern float maxSongTime;
 std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTime;
 
+template<>
+struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<&RequestList::get_Count> {
+    static const MethodInfo* get() {
+        return THROW_UNLESS((::il2cpp_utils::FindMethod(classof(RequestList*), "get_Count", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{})));
+    }
+};
+
+template<>
+struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<&RequestList::get_Item> {
+    static const MethodInfo* get() {
+        int index = 0;
+        return THROW_UNLESS((::il2cpp_utils::FindMethod(classof(RequestList*), "get_Item", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{::il2cpp_utils::ExtractType(index)})));
+    }
+};
+
 void CameraCapture::ctor()
 {
     capture = std::make_shared<VideoCapture>();
@@ -35,7 +52,7 @@ void CameraCapture::ctor()
 
 
     // StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
-    UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("RequestFrame"), 1.0f, 1.0f/capture->getFpsrate());
+//    UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("RequestFrame"), 1.0f, 1.0f/capture->getFpsrate());
 }
 
 void CameraCapture::RequestFrame() {
@@ -127,8 +144,9 @@ void CameraCapture::OnPostRender() {
         auto startTime = std::chrono::high_resolution_clock::now();
 
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+            static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
 
-            if (requests->get_Count() <= 10) {
+            if (get_Count(requests) <= 10) {
                 // This is unnnecessary work, no worky
 //                auto targetRenderTexture = GetTemporaryRenderTexture(capture.get(), texture->get_format());
 //
@@ -150,7 +168,8 @@ void CameraCapture::OnPostRender() {
 
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 
-        log("Took %ldms to create request, remaining requests to process %d", duration, frameRequestCount);
+        // The time consumption is from AsyncGPUReadbackPlugin::Request which is weird since it's a callback
+        log("Took %lldms to create request, remaining requests to process %d", (long long) duration, frameRequestCount);
 
         frameRequestCount--;
     }
@@ -162,8 +181,11 @@ void CameraCapture::Update()
     
     std::vector<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *> toRemove;
 
-    for (int i = 0; i < requests->get_Count(); i++) {
-        auto req = requests->get_Item(i);
+    static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
+    static auto get_Item = FPtrWrapper<&RequestList::get_Item>::get();
+
+    for (int i = 0; i < get_Count(requests); i++) {
+        auto req = get_Item(requests, i);
 
         if(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             req->Update();

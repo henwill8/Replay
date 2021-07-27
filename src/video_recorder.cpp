@@ -78,7 +78,9 @@ void VideoCapture::AddFrame(rgb24*& data) {
     /* encode the image */
     Encode(c, frame, pkt, f, framesToWrite);
 
-    for(auto & i : frame->data) i = nullptr;
+
+    frame->data[0] = reinterpret_cast<uint8_t *>(emptyFrame);
+//  iterating slow?  for(auto & i : frame->data) i = nullptr;
 }
 
 void VideoCapture::Finish()
@@ -187,6 +189,8 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     log("Finished initializing video at path %s", filename.c_str());
 
     encodingThread = std::thread(&VideoCapture::encodeFrames, this);
+
+    emptyFrame = new rgb24[width * height];
 }
 
 void VideoCapture::encodeFrames() {
@@ -217,6 +221,7 @@ void VideoCapture::encodeFrames() {
 
 void VideoCapture::queueFrame(rgb24*& queuedFrame) {
     while(!framebuffers.enqueue(queuedFrame));
+    log("Frame queue: %zu", framebuffers.size_approx());
 }
 
 VideoCapture::~VideoCapture()
@@ -225,4 +230,6 @@ VideoCapture::~VideoCapture()
 
     if (encodingThread.joinable())
         encodingThread.join();
+
+    delete[] emptyFrame;
 }
