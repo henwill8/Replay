@@ -86,9 +86,12 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// In our current state, this turns out to be 32 * 1920 * 1080 * 1 (66,355,200)
 	// However, we've been expecting this to be 1920 * 1080 * 3 (6,220,800)
-	task->size = task->depth * task->width * task->height * pixelSize;
 
-	log("Task size %d with pixel size %d and depth %d and format %d", task->size, task->depth, pixelSize, getFormatFromInternalFormat(task->internal_format));
+	// According to this, we don't need depth: https://github.com/sirjuddington/SLADE/blob/4959a4ab95de4eb59b9dd0c9a05ccd2641aa9bea/src/UI/Canvas/MapPreviewCanvas.cpp#L963
+	task->size = task->width * task->height * 3;
+
+	// The format is GL_UNSIGNED_BYTE which is correct.
+	log("Task size %d with pixel size %d and depth %d and format %d and byte format %d", task->size, task->depth, pixelSize, getFormatFromInternalFormat(task->internal_format), getTypeFromInternalFormat(task->internal_format));
 
     if (task->size == 0
         || getFormatFromInternalFormat(task->internal_format) == 0
