@@ -11,7 +11,7 @@
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "<=2.0.3",
+      "versionRange": "^2.0.3",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -29,8 +29,8 @@
       "additionalData": {}
     },
     {
-      "id": "mimalloc",
-      "versionRange": "*",
+      "id": "codegen",
+      "versionRange": "^0.12.0",
       "additionalData": {}
     }
   ],

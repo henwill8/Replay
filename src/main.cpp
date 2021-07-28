@@ -2447,10 +2447,10 @@ MAKE_HOOK_MATCH(NoteController_NoteWasMissed, &NoteController::SendNoteWasMissed
     NoteController_NoteWasMissed(self);
 }
 
-MAKE_HOOK_MATCH(NoteController_NoteWasCut, &NoteController::SendNoteWasCutEvent, void, NoteController* self, NoteCutInfo& noteCutInfo) {
+MAKE_HOOK_MATCH(NoteController_NoteWasCut, &NoteController::SendNoteWasCutEvent, void, NoteController* self, ByRef<NoteCutInfo> noteCutInfo) {
 
     if(!recording) {
-        bool allIsOk = noteCutInfo.get_allIsOK();
+        bool allIsOk = noteCutInfo.heldRef.get_allIsOK();
 
         if(!allIsOk && (((deathReplay || failedReplay) && songTime < songStartTime+0.2f) || HasFakeMiss())) {
             return;
