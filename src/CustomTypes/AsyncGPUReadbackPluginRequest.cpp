@@ -26,6 +26,7 @@ struct Task {
 	int width;
 	int depth;
 	GLint internal_format;
+	bool sRGBEnabled;
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;
@@ -108,6 +109,10 @@ extern "C" void makeRequest_renderThread(int event_id) {
     // Create the fbo (frame buffer object) from the given texture
 	glGenFramebuffers(1, &(task->fbo));
 
+    if (!glIsEnabled(GL_FRAMEBUFFER_SRGB)) {
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        task->sRGBEnabled = true;
+    }
 	// Bind the texture to the fbo
 	task->fbo;
 	glBindFramebuffer(GL_FRAMEBUFFER, task->fbo);
@@ -121,7 +126,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 
     // Start the read request
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     glReadPixels(0, 0, task->width, task->height, getFormatFromInternalFormat(task->internal_format), getTypeFromInternalFormat(task->internal_format), 0);
 
 	// if(event_id == 500) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data->data()));
@@ -135,6 +140,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Done init
 	task->initialized = true;
+	if (task->sRGBEnabled) {
+        glDisable(GL_FRAMEBUFFER_SRGB);
+	}
     // log("Finished initializing AsyncGPUReadbackRequest");
 }
 
