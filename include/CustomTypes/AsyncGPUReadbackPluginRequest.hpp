@@ -12,7 +12,7 @@ struct rgb24
 };
 
 DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2CppObject,
-
+    DECLARE_INSTANCE_FIELD_DEFAULT(bool, disposed)
     DECLARE_INSTANCE_FIELD(int, eventId);
     DECLARE_INSTANCE_FIELD(UnityEngine::Texture*, texture);
 

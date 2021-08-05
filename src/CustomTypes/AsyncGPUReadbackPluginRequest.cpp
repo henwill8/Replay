@@ -243,6 +243,7 @@ using namespace AsyncGPUReadbackPlugin;
 DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
 
 void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::Texture* src) {
+    disposed = false;
     texture = src;
     GLuint textureId = reinterpret_cast<uintptr_t>(src->GetNativeTexturePtr().m_value);
     eventId = makeRequest_mainThread(textureId, 0);
@@ -262,7 +263,10 @@ void AsyncGPUReadbackPluginRequest::Update() {
 }
 
 void AsyncGPUReadbackPluginRequest::Dispose() {
-    dispose(eventId);
+    if (!disposed) {
+        dispose(eventId);
+        disposed = true;
+    }
     // Comment if using the same texture
     //    UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
 }
