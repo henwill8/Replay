@@ -201,10 +201,10 @@ void VideoCapture::flipFrames() {
     log("Starting flipping thread");
 
     while (initialized) {
-        rgb24 *frameData = nullptr;
+        QueueContent frameDataPair;
 
         // Block instead?
-        if (!framebuffers.try_dequeue(frameData)) {
+        if (!framebuffers.try_dequeue(frameDataPair)) {
             continue;
         }
 
@@ -213,12 +213,12 @@ void VideoCapture::flipFrames() {
         //Flip the screen
         for (int line = 0; line != height / 2; ++line) {
             std::swap_ranges(
-                    frameData + width * line,
-                    frameData + width * (line + 1),
-                    frameData + width * (height - line - 1));
+                    frameDataPair->data + width * line,
+                    frameDataPair->data + width * (line + 1),
+                    frameDataPair->data + width * (height - line - 1));
         }
 
-        while (!flippedframebuffers.try_enqueue(frameData));
+        while (!flippedframebuffers.try_enqueue(frameDataPair));
 
         auto currentTime = std::chrono::high_resolution_clock::now();
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
@@ -232,7 +232,7 @@ void VideoCapture::encodeFrames() {
     log("Starting encoding thread");
 
     while (initialized) {
-        rgb24 *frameData = nullptr;
+        QueueContent frameData = nullptr;
 
         // Block instead?
         if (!flippedframebuffers.try_dequeue(frameData)) {
@@ -240,19 +240,21 @@ void VideoCapture::encodeFrames() {
         }
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        this->AddFrame(frameData);
+        this->AddFrame(frameData->data);
         auto currentTime = std::chrono::high_resolution_clock::now();
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
 
         log("Took %lldms to add and encode frame", (long long) duration);
 
-        free(frameData);
+        free(frameData->data);
+        frameData->encoded = true;
     }
     log("Ending encoding thread");
 }
 
-void VideoCapture::queueFrame(rgb24*& queuedFrame) {
-    while(!framebuffers.enqueue(queuedFrame));
+std::shared_ptr<FrameStatus> VideoCapture::queueFrame(rgb24*& queuedFrame) {
+    std::shared_ptr<FrameStatus> status = std::make_shared<FrameStatus>(queuedFrame);
+    while(!framebuffers.enqueue(status));
     log("Frame queue: %zu", framebuffers.size_approx());
 }
 
@@ -267,4 +269,15 @@ VideoCapture::~VideoCapture()
         flippingThread.join();
 
     delete[] emptyFrame;
+
+    QueueContent frame;
+    while (flippedframebuffers.try_dequeue(frame)) {
+        free(frame->data);
+        frame->encoded = true;
+    }
+
+    while (framebuffers.try_dequeue(frame)) {
+        free(frame->data);
+        frame->encoded = true;
+    }
 }

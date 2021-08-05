@@ -49,7 +49,9 @@ void CameraCapture::ctor()
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "ultrafast", "/sdcard/video.h264");
 
-
+    if (slowGameRender) {
+        Time::set_captureDeltaTime(1.0f / capture->getFpsrate());
+    }
 
     // StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
 //    UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("RequestFrame"), 1.0f, 1.0f/capture->getFpsrate());
@@ -121,6 +123,10 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
 }
 
 void CameraCapture::OnPostRender() {
+    if (slowGameRender) {
+        return;
+    }
+
     bool render = false;
 
     if (!lastRecordedTime) {
@@ -184,34 +190,69 @@ void CameraCapture::Update()
     static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
     static auto get_Item = FPtrWrapper<&RequestList::get_Item>::get();
 
-    for (int i = 0; i < get_Count(requests); i++) {
-        auto req = get_Item(requests, i);
+    if (slowGameRender) {
+        // Force the game to wait until ffmpeg rendered a frame.
+        AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *request;
 
-        if(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
-            req->Update();
-
-            if (req->HasError()) {
-                req->Dispose();
-                toRemove.push_back(req);
-            } else if (req->IsDone()) {
-                // log("Finished %d", i);
-                size_t length;
-                rgb24* buffer;
-                req->GetRawData(buffer, length);
-
-                capture->queueFrame(buffer);
-
-                req->Dispose();
-                toRemove.push_back(req);
-            } else
-                break;
+        if (get_Count(requests) == 0) {
+            request = AsyncGPUReadbackPlugin::Request(texture);
+            requests->Add(request);
         } else {
-            req->Dispose();
-            toRemove.push_back(req);
+            request = get_Item(requests, 0);
         }
-    }
-    for (auto req : toRemove) {
-        requests->Remove(req);
+
+        CRASH_UNLESS(request); // should not happen
+
+        // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
+        //  while (!(request->HasError() || request->IsDone())) continue;
+
+        if (!request->HasError() && request->IsDone()) {
+            size_t length;
+            rgb24 *buffer;
+            request->GetRawData(buffer, length);
+
+            auto frameStatus = capture->queueFrame(buffer);
+
+            // Lock. Sleep to save CPU cycles?
+            while (!frameStatus->encoded)
+                continue;
+        }
+
+        if (request->HasError() || request->IsDone()) {
+            request->Dispose();
+            requests->Remove(request);
+        }
+
+    } else {
+        for (int i = 0; i < get_Count(requests); i++) {
+            auto req = get_Item(requests, i);
+
+            if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+                req->Update();
+
+                if (req->HasError()) {
+                    req->Dispose();
+                    toRemove.push_back(req);
+                } else if (req->IsDone()) {
+                    // log("Finished %d", i);
+                    size_t length;
+                    rgb24 *buffer;
+                    req->GetRawData(buffer, length);
+
+                    capture->queueFrame(buffer);
+
+                    req->Dispose();
+                    toRemove.push_back(req);
+                } else
+                    break;
+            } else {
+                req->Dispose();
+                toRemove.push_back(req);
+            }
+        }
+        for (auto req : toRemove) {
+            requests->Remove(req);
+        }
     }
 }
 
@@ -219,6 +260,9 @@ void CameraCapture::dtor() {
     log("Camera Capture is being destroyed, finishing the capture");
     capture->Finish();
     CancelInvoke();
+    if (slowGameRender) {
+        Time::set_captureDeltaTime(0.0f);
+    }
 }
 
 // void CameraCapture::OnRenderImage(RenderTexture *source, RenderTexture *destination)

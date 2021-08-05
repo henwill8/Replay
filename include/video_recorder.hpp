@@ -18,6 +18,13 @@ extern "C"
 #include "libswscale/swscale.h"
 }
 
+struct FrameStatus {
+    std::atomic<bool> encoded;
+    rgb24* data;
+
+    explicit FrameStatus(rgb24 *data) : encoded(false), data(data) {}
+};
+
 class VideoCapture
 {
 public:
@@ -25,7 +32,7 @@ public:
 
     void AddFrame(rgb24*& data);
     
-    void queueFrame(rgb24*& queuedFrame);
+    std::shared_ptr<FrameStatus> queueFrame(rgb24*& queuedFrame);
 
     void Finish();
 
@@ -88,10 +95,11 @@ private:
     std::string filename;
     std::ofstream f;
 
-    moodycamel::ReaderWriterQueue<rgb24*> framebuffers;
+    using QueueContent = std::shared_ptr<FrameStatus>;
+    moodycamel::ReaderWriterQueue<QueueContent> framebuffers;
 
     // Flipped frames ready to encode
-    moodycamel::ReaderWriterQueue<rgb24*> flippedframebuffers;
+    moodycamel::ReaderWriterQueue<QueueContent> flippedframebuffers;
 //    std::list<rgb24*> framebuffers;
     std::thread encodingThread;
     std::thread flippingThread;
