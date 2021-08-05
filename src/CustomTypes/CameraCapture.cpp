@@ -45,6 +45,7 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<&RequestList::get_Item>
 
 void CameraCapture::ctor()
 {
+    INVOKE_CTOR();
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "ultrafast", "/sdcard/video.h264");
