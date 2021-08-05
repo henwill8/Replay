@@ -171,6 +171,9 @@ extern "C" void update_renderThread(int event_id) {
 
 		// Map the buffer and copy it to data
 		auto* ptr = reinterpret_cast<rgb24*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT));
+
+        // sRGB conversion. Not sure if this belongs here or before glReadPixels
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, task->width, task->height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptr);
         memcpy(task->data, ptr, task->size);
 
 		// Unmap and unbind
