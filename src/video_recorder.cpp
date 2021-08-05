@@ -253,9 +253,14 @@ void VideoCapture::encodeFrames() {
 }
 
 std::shared_ptr<FrameStatus> VideoCapture::queueFrame(rgb24*& queuedFrame) {
+    if(!initialized)
+        throw std::runtime_error("Video capture is not initialized");
+
     std::shared_ptr<FrameStatus> status = std::make_shared<FrameStatus>(queuedFrame);
     while(!framebuffers.enqueue(status));
     log("Frame queue: %zu", framebuffers.size_approx());
+
+    return status;
 }
 
 VideoCapture::~VideoCapture()
@@ -269,6 +274,8 @@ VideoCapture::~VideoCapture()
         flippingThread.join();
 
     delete[] emptyFrame;
+
+    log("Deleting video capture %p", this);
 
     QueueContent frame;
     while (flippedframebuffers.try_dequeue(frame)) {

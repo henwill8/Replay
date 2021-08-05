@@ -24,7 +24,7 @@ private:
     std::shared_ptr<VideoCapture> capture;
     int frameRequestCount = 0;
     // Make this a const constructor argument
-    const bool slowGameRender = true;
+    bool slowGameRender;
 
     DECLARE_INSTANCE_FIELD(RequestList*, requests);
  

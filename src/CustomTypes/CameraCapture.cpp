@@ -43,15 +43,18 @@ struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<&RequestList::get_Item>
 
 void CameraCapture::ctor()
 {
-    INVOKE_CTOR();
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
+    log("Making video capture");
     capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "ultrafast", "/sdcard/video.h264");
 
-    if (slowGameRender) {
-        Time::set_captureDeltaTime(1.0f / capture->getFpsrate());
-    }
+    slowGameRender = true; // make this constructor param
 
+    if (slowGameRender) {
+        log("Going to set time delta");
+        Time::set_captureDeltaTime(1.0f / capture->getFpsrate());
+        log("Set the delta time");
+    }
     // StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
 //    UnityEngine::MonoBehaviour::InvokeRepeating(newcsstr("RequestFrame"), 1.0f, 1.0f/capture->getFpsrate());
 }
@@ -189,28 +192,45 @@ void CameraCapture::Update()
     static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
     static auto get_Item = FPtrWrapper<&RequestList::get_Item>::get();
 
+    if (!(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr))
+        return;
+
     if (slowGameRender) {
+
+
+
         // Force the game to wait until ffmpeg rendered a frame.
         AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *request;
 
         if (get_Count(requests) == 0) {
-            request = AsyncGPUReadbackPlugin::Request(texture);
-            requests->Add(request);
+            log("Making request");
+            requests->Add(request = AsyncGPUReadbackPlugin::Request(texture));
         } else {
-            request = get_Item(requests, 0);
+
+            for (int i = 0; i < get_Count(requests); i++) {
+                log("Getting request");
+                request = get_Item(requests, 0);
+                if (request)
+                    break;
+            }
         }
 
+        log("Request %p", request);
         CRASH_UNLESS(request); // should not happen
 
         // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
         //  while (!(request->HasError() || request->IsDone())) continue;
 
-        if (!request->HasError() && request->IsDone()) {
+        log("Request done %s or error %s", request->IsDone() ? "true" : "false", request->HasError() ? "true" : "false");
+        if (request->IsDone() && !request->HasError()) {
             size_t length;
             rgb24 *buffer;
+            log("Getting raw data");
             request->GetRawData(buffer, length);
 
+            log("Queued frame");
             auto frameStatus = capture->queueFrame(buffer);
+            log("Frame status retrieved, waiting");
 
             // Lock. Sleep to save CPU cycles?
             while (!frameStatus->encoded)
@@ -257,6 +277,10 @@ void CameraCapture::Update()
 
 void CameraCapture::dtor() {
     log("Camera Capture is being destroyed, finishing the capture");
+    for (int i = 0; i < requests->get_Count(); i++) {
+        auto req = requests->get_Item(i);
+        req->Dispose();
+    }
     capture->Finish();
     CancelInvoke();
     if (slowGameRender) {
