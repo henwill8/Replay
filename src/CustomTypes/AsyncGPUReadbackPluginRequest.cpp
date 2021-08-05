@@ -193,7 +193,7 @@ extern "C" void update_renderThread(int event_id) {
 
 extern "C" void getData_mainThread(int event_id, rgb24*& buffer, size_t& length) {
 	// Get task back
-    std::shared_lock lock(tasks_mutex);;
+    std::shared_lock lock(tasks_mutex);
 	std::shared_ptr<Task> task = tasks[event_id];
 	lock.unlock();
 
@@ -209,7 +209,7 @@ extern "C" void getData_mainThread(int event_id, rgb24*& buffer, size_t& length)
 
 extern "C" bool isRequestDone(int event_id) {
 	// Get task back
-    std::shared_lock lock(tasks_mutex);;
+    std::shared_lock lock(tasks_mutex);
 	std::shared_ptr<Task> task = tasks[event_id];
 	lock.unlock();
 

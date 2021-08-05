@@ -198,7 +198,6 @@ void CameraCapture::Update()
     if (slowGameRender) {
 
 
-
         // Force the game to wait until ffmpeg rendered a frame.
         AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *request;
 
@@ -217,9 +216,10 @@ void CameraCapture::Update()
 
         log("Request %p", request);
         CRASH_UNLESS(request); // should not happen
-
+        request->Update();
         // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
-        //  while (!(request->HasError() || request->IsDone())) continue;
+        // This doesn't freeze OpenGL. Should this still be done though?
+        while (!(request->HasError() || request->IsDone())) { request->Update(); }
 
         log("Request done %s or error %s", request->IsDone() ? "true" : "false", request->HasError() ? "true" : "false");
         if (request->IsDone() && !request->HasError()) {
@@ -231,10 +231,6 @@ void CameraCapture::Update()
             log("Queued frame");
             auto frameStatus = capture->queueFrame(buffer);
             log("Frame status retrieved, waiting");
-
-            // Lock. Sleep to save CPU cycles?
-            while (!frameStatus->encoded)
-                continue;
         }
 
         if (request->HasError() || request->IsDone()) {
@@ -258,7 +254,7 @@ void CameraCapture::Update()
                     rgb24 *buffer;
                     req->GetRawData(buffer, length);
 
-                    capture->queueFrame(buffer);
+                   capture->queueFrame(buffer);
 
                     req->Dispose();
                     toRemove.push_back(req);
