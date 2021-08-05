@@ -1,7 +1,7 @@
 #pragma once
 
 // Comment if no FFMPEG recording with smooth camera
-// #define DO_FPS_RECORD
+#define DO_FPS_RECORD
 
 #include "codegen.hpp"
 

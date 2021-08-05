@@ -24,8 +24,6 @@ DEFINE_TYPE(Replay, CameraCapture);
 
 extern UnityEngine::RenderTexture *texture;
 
-extern float songTime;
-extern float maxSongTime;
 std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTime;
 
 template<>

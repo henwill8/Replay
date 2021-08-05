@@ -54,3 +54,4 @@ Android.mk.backup
 *.qmod
 
 ffmpeg/
+*.log
