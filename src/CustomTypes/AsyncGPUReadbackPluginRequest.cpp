@@ -109,12 +109,10 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGenFramebuffers(1, &(task->fbo));
 
 	// Bind the texture to the fbo
-	task->fbo;
 	glBindFramebuffer(GL_FRAMEBUFFER, task->fbo);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, task->texture, 0);
 
 	// Create and bind pbo (pixel buffer object) to fbo
-	task->pbo;
 	glGenBuffers(1, &(task->pbo));
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, task->pbo);
 	glBufferData(GL_PIXEL_PACK_BUFFER, task->size, 0, GL_DYNAMIC_READ);
