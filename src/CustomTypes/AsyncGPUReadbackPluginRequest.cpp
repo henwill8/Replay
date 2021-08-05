@@ -3,6 +3,7 @@
 #include "main.hpp"
 
 #include <string>
+#include <shared_mutex>
 
 #include <GLES3/gl32.h>
 #include <GLES3/gl3ext.h>
@@ -29,7 +30,7 @@ struct Task {
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;
-static std::mutex tasks_mutex;
+static std::shared_mutex tasks_mutex;
 static int next_event_id = 1;
 
 extern "C" int makeRequest_mainThread(GLuint texture, int miplevel) {
@@ -41,9 +42,9 @@ extern "C" int makeRequest_mainThread(GLuint texture, int miplevel) {
 	next_event_id++;
 
 	// Save it (lock because possible vector resize)
-	tasks_mutex.lock();
+	std::unique_lock lock(tasks_mutex);
 	tasks[event_id] = task;
-	tasks_mutex.unlock();
+	lock.unlock();
 
 	return event_id;
 }
@@ -72,9 +73,9 @@ static void create_ppm(int frame_id, unsigned int width, unsigned int height, un
 extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Get task back
-	tasks_mutex.lock();
+    std::shared_lock lock(tasks_mutex);
 	std::shared_ptr<Task> task = tasks[event_id];
-	tasks_mutex.unlock();
+	lock.unlock();
 
 	// Get texture informations
 	glBindTexture(GL_TEXTURE_2D, task->texture);
@@ -139,9 +140,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 extern "C" void update_renderThread(int event_id) {
     // Get task back
-	tasks_mutex.lock();
+    std::shared_lock lock(tasks_mutex);
 	std::shared_ptr<Task> task = tasks[event_id];
-	tasks_mutex.unlock();
+	lock.unlock();
 
 	// Check if task has not been already deleted by main thread
 	if(task == nullptr) {
@@ -192,9 +193,9 @@ extern "C" void update_renderThread(int event_id) {
 
 extern "C" void getData_mainThread(int event_id, rgb24*& buffer, size_t& length) {
 	// Get task back
-	tasks_mutex.lock();
+    std::shared_lock lock(tasks_mutex);;
 	std::shared_ptr<Task> task = tasks[event_id];
-	tasks_mutex.unlock();
+	lock.unlock();
 
 	// Do something only if initialized (thread safety)
 	if (!task->done) {
@@ -208,27 +209,27 @@ extern "C" void getData_mainThread(int event_id, rgb24*& buffer, size_t& length)
 
 extern "C" bool isRequestDone(int event_id) {
 	// Get task back
-	tasks_mutex.lock();
+    std::shared_lock lock(tasks_mutex);;
 	std::shared_ptr<Task> task = tasks[event_id];
-	tasks_mutex.unlock();
+	lock.unlock();
 
 	return task->done;
 }
 extern "C" bool isRequestError(int event_id) {
 	// Get task back
-	tasks_mutex.lock();
+    std::shared_lock lock(tasks_mutex);;
 	std::shared_ptr<Task> task = tasks[event_id];
-	tasks_mutex.unlock();
+	lock.unlock();
 
 	return task->error;
 }
 extern "C" void dispose(int event_id) {
 	// Remove from tasks
-	tasks_mutex.lock();
+    std::unique_lock lock(tasks_mutex);
 	std::shared_ptr<Task> task = tasks[event_id];
 	// free(task->data);
 	tasks.erase(event_id);
-	tasks_mutex.unlock();
+	lock.unlock();
 }
 
 using GLIssuePluginEvent = function_ptr_t<void, void*, int>;
@@ -264,6 +265,10 @@ void AsyncGPUReadbackPluginRequest::Dispose() {
     dispose(eventId);
     // Comment if using the same texture
     //    UnityEngine::RenderTexture::ReleaseTemporary((UnityEngine::RenderTexture*)texture);
+}
+
+AsyncGPUReadbackPluginRequest::~AsyncGPUReadbackPluginRequest() {
+    Dispose();
 }
 
 void AsyncGPUReadbackPluginRequest::GetRawData(rgb24*& buffer, size_t& length) const {

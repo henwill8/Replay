@@ -17,6 +17,7 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
     DECLARE_INSTANCE_FIELD(UnityEngine::Texture*, texture);
 
     DECLARE_CTOR(ctor, UnityEngine::Texture* src);
+    DECLARE_SIMPLE_DTOR();
 
     DECLARE_INSTANCE_METHOD(bool, IsDone);
     DECLARE_INSTANCE_METHOD(bool, HasError);
@@ -26,6 +27,7 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
 
     public:
         void GetRawData(rgb24*& buffer, size_t& length) const;
+        ~AsyncGPUReadbackPluginRequest();
 )
 
 namespace AsyncGPUReadbackPlugin {
