@@ -1,6 +1,7 @@
 #include "CustomTypes/AsyncGPUReadbackPluginRequest.hpp"
 
 #include "main.hpp"
+#include "opengl_replay/Shader.hpp"
 
 #include <string>
 #include <shared_mutex>
@@ -78,6 +79,12 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	std::shared_ptr<Task> task = tasks[event_id];
 	lock.unlock();
 
+	// Enable sRGB shader
+	static Shader sRGBShader = Shader::shaderGammaConvert();
+
+
+
+
 	// Get texture informations
 	glBindTexture(GL_TEXTURE_2D, task->texture);
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
@@ -85,6 +92,13 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_DEPTH, &(task->depth));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
 	auto pixelSize = getPixelSizeFromInternalFormat(task->internal_format);
+
+	// Configure shader
+	int resolution[2] = {task->width, task->height};
+	glUniform2iv(glGetUniformLocation(sRGBShader.ID, "resolution"), 2, resolution);
+
+	sRGBShader.use();
+
 
 	// In our current state, this turns out to be 32 * 1920 * 1080 * 1 (66,355,200)
 	// However, we've been expecting this to be 1920 * 1080 * 3 (6,220,800)

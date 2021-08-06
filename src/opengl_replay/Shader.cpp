@@ -33,6 +33,28 @@ Shader Shader::fromFile(const char * vertexPath, const char *fragmentPath) {
     return Shader(vertexCode.c_str(), fragmentCode.c_str());
 }
 
+void checkCompileErrors(unsigned int shader, const char* name) {
+    GLint isCompiled = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+    if(isCompiled == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+
+        // The maxLength includes the NULL character
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
+
+        // Provide the infolog in whatever manor you deem best.
+        // Exit with failure.
+        glDeleteShader(shader); // Don't leak the shader.
+        std::string s = std::string(errorLog.begin(), errorLog.end());
+        loggingFunction().error("Unable to create %s shader: %s", name, s.c_str());
+
+        throw std::runtime_error("Unable to create shader");
+    }
+}
+
 Shader::Shader(const char *vShaderCode, const char *fShaderCode) {
     // 2. compile shaders
     unsigned int vertex, fragment;
@@ -40,12 +62,12 @@ Shader::Shader(const char *vShaderCode, const char *fShaderCode) {
     vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vShaderCode, NULL);
     glCompileShader(vertex);
-//    checkCompileErrors(vertex, "VERTEX");
+    checkCompileErrors(vertex, "VERTEX");
     // fragment Shader
     fragment = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment, 1, &fShaderCode, NULL);
     glCompileShader(fragment);
-//    checkCompileErrors(fragment, "FRAGMENT");
+    checkCompileErrors(fragment, "FRAGMENT");
     // shader Program
     ID = glCreateProgram();
     glAttachShader(ID, vertex);

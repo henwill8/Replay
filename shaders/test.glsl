@@ -1,4 +1,4 @@
-#version 120
+#version 310 es
 
 void main() {
 

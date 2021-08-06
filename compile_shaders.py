@@ -17,7 +17,10 @@ def shader_file(shader_name, shader_contents):
 
     for line in shader_contents:
         line = line.replace("\n", "")
-        lines += f"\"{line}\"\n"
+        # If we do this, the shader lines won't be as expected.
+        # if line.strip() == "":
+        #     continue
+        lines += f"\"{line}\\n\"\n"
 
     return f"""
 constexpr const char* {shader_name.replace(".","_")} = {lines};
