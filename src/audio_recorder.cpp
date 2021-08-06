@@ -98,5 +98,5 @@ void AudioRenderer::AddHeader() {
 }
 
 void AudioCapture::OnAudioFilterRead(Array<float>* data, int channels) {
-    //Empty as it is in a different thread, have to hook it to stop crashes
+    OnAudioFilterRead(data, channels);
 }

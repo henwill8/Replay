@@ -2632,20 +2632,6 @@ MAKE_HOOK_MATCH(GameEnergyUIPanel_RefreshEnergyUI,
     GameEnergyUIPanel_RefreshEnergyUI(self, energy);
 }
 
-// TODO: HENWILL DON'T DO THIS WHAT IS WRONG WITH YOU
-// FIX THIS SOON!
-#warning "HENWILL THIS IS WRONG PLEASE DON'T DO THIS"
-MAKE_HOOK_FIND_CLASS_UNSAFE_INSTANCE(AudioCapture_OnAudioFilterRead,
-                     "Replay", "AudioCapture", "OnAudioFilterRead",
-                     void, Il2CppObject* self, Array<float>* data, int channels) {
-
-    AudioCapture_OnAudioFilterRead(self, data, channels);
-
-    if(!recording && !inPauseMenu && !inResumeAnimation) {
-        audioRenderer.OnAudioFilterRead(data, channels);
-    }
-}
-
 extern "C" void setup(ModInfo& info) {
     info.id = "Replay";
     info.version = "0.6.0";

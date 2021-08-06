@@ -46,7 +46,7 @@ void CameraCapture::ctor()
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     log("Making video capture");
-    capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "ultrafast", "/sdcard/video.h264");
+    capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "medium", "/sdcard/video.h264");
 
     slowGameRender = true; // make this constructor param
 
