@@ -1,6 +1,7 @@
 #include "opengl_replay/Shader.hpp"
+#include "main.hpp"
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath) {
+Shader Shader::fromFile(const char * vertexPath, const char *fragmentPath) {
     // 1. retrieve the vertex/fragment source code from filePath
     std::string vertexCode;
     std::string fragmentCode;
@@ -27,10 +28,12 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
     }
     catch (std::ifstream::failure& e)
     {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        loggingFunction().error("ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ");
     }
-    const char* vShaderCode = vertexCode.c_str();
-    const char * fShaderCode = fragmentCode.c_str();
+    return Shader(vertexCode.c_str(), fragmentCode.c_str());
+}
+
+Shader::Shader(const char *vShaderCode, const char *fShaderCode) {
     // 2. compile shaders
     unsigned int vertex, fragment;
     // vertex shader
