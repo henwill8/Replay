@@ -74,8 +74,11 @@ void VideoCapture::AddFrame(rgb24*& data) {
     // sws_scale(swsCtx, (const uint8_t *const *)&data, inLinesize, 0, c->height, frame->data, frame->linesize);
 
     frame->data[0] = (uint8_t*) data;
-    frame->pts = TotalLength();
-
+    if (stabilizeFPS) {
+        frame->pts = TotalLength();
+    } else {
+        frame->pts = (int) ((1.0f / (float) fps) * (float) frameCounter);
+    }
     /* encode the image */
     Encode(c, frame, pkt, f, framesToWrite);
 

@@ -46,9 +46,10 @@ void CameraCapture::ctor()
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     log("Making video capture");
-    capture->Init(texture->get_width(), texture->get_height(), 45, 500, true, "medium", "/sdcard/video.h264");
-
     slowGameRender = true; // make this constructor param
+    capture->Init(texture->get_width(), texture->get_height(), 45, 500, !slowGameRender, "ultrafast", "/sdcard/video.h264");
+
+
 
     if (slowGameRender) {
         log("Going to set time delta");
@@ -217,6 +218,7 @@ void CameraCapture::Update() {
         }
     }
 
+    log("Request count %i", count);
 
     for (int i = 0; i < count; i++) {
         auto req = get_Item(requests, i);
@@ -227,14 +229,19 @@ void CameraCapture::Update() {
             if (slowGameRender) {
                 // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
                 // This doesn't freeze OpenGL. Should this still be done though?
-//                while (!(req->HasError() || req->IsDone())) { req->Update(); }
+                while (!(req->HasError() || req->IsDone())) {
+                    req->Update();
+                    std::this_thread::sleep_for(std::chrono::microseconds(1));
+                }
+
 
                 // This is to avoid having a frame queue so big that you run out of memory.
                 // TODO: MAKE THIS NUMBER CONFIGURABLE
-                while (capture->approximateFramesToRender() >= 10) {
-                    req->Update();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+//                if (req->IsDone() && !req->HasError()) {
+//                    while (capture->approximateFramesToRender() >= 10) {
+//                        std::this_thread::sleep_for(std::chrono::microseconds(10));
+//                    }
+//                }
             }
 
             if (req->HasError()) {
