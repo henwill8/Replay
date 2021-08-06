@@ -227,7 +227,14 @@ void CameraCapture::Update() {
             if (slowGameRender) {
                 // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
                 // This doesn't freeze OpenGL. Should this still be done though?
-                while (!(req->HasError() || req->IsDone())) { req->Update(); }
+//                while (!(req->HasError() || req->IsDone())) { req->Update(); }
+
+                // This is to avoid having a frame queue so big that you run out of memory.
+                // TODO: MAKE THIS NUMBER CONFIGURABLE
+                while (capture->approximateFramesToRender() >= 10) {
+                    req->Update();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
             }
 
             if (req->HasError()) {

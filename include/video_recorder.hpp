@@ -70,6 +70,10 @@ public:
         return height;
     }
 
+    size_t approximateFramesToRender() {
+        return framebuffers.size_approx() + flippedframebuffers.size_approx();
+    }
+
 private:
     const AVCodec *codec;
     AVCodecContext *c = NULL;
