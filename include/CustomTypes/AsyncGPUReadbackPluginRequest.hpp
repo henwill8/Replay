@@ -14,9 +14,10 @@ struct rgb24
 DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2CppObject,
     DECLARE_INSTANCE_FIELD(bool, disposed);
     DECLARE_INSTANCE_FIELD(int, eventId);
+    DECLARE_INSTANCE_FIELD(bool, tempTexture);
     DECLARE_INSTANCE_FIELD(UnityEngine::Texture*, texture);
 
-    DECLARE_CTOR(ctor, UnityEngine::Texture* src);
+    DECLARE_CTOR(ctor, UnityEngine::Texture* src, bool tempTexture);
     DECLARE_SIMPLE_DTOR();
 
     DECLARE_INSTANCE_METHOD(bool, IsDone);
@@ -32,6 +33,6 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
 
 namespace AsyncGPUReadbackPlugin {
 
-    AsyncGPUReadbackPluginRequest* Request(UnityEngine::Texture* src);
+    AsyncGPUReadbackPluginRequest* Request(UnityEngine::Texture* src, bool tempTexture = false);
     
 }

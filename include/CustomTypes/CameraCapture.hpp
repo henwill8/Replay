@@ -36,6 +36,9 @@ private:
     DECLARE_INSTANCE_METHOD(void, RequestFrame);
 
     DECLARE_INSTANCE_METHOD(void, OnPostRender);
+
+    // Return true if done
+    DECLARE_INSTANCE_METHOD(UnityEngine::RenderTexture *, GetProperTexture);
 //    void OnPostRender();
 
     // We do this to avoid compile error

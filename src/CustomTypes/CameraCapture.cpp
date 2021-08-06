@@ -114,7 +114,7 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
             if (requests->get_Count() <= 10) {
 
                 log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
-                requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture));
+                requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture, true));
             } else {
                 log("Too many requests currently, not adding more");
             }
@@ -183,10 +183,20 @@ void CameraCapture::OnPostRender() {
     }
 }
 
+RenderTexture* CameraCapture::GetProperTexture() {
+    auto newTexture = GetTemporaryRenderTexture(capture.get(), texture->get_format());
+
+    // Blit
+    Graphics::Blit(texture, newTexture);
+
+    // TODO: SRGB and shader!
+
+    return newTexture;
+}
+
 // https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
-void CameraCapture::Update()
-{
-    
+void CameraCapture::Update() {
+
     std::vector<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *> toRemove;
 
     static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
@@ -195,80 +205,54 @@ void CameraCapture::Update()
     if (!(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr))
         return;
 
+    int count = get_Count(requests);
+
     if (slowGameRender) {
-
-
-        // Force the game to wait until ffmpeg rendered a frame.
-        AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *request;
-
-        if (get_Count(requests) == 0) {
+        // Add requests over time?
+        if (count == 0) {
             log("Making request");
-            requests->Add(request = AsyncGPUReadbackPlugin::Request(texture));
-        } else {
+            auto newTexture = GetProperTexture();
 
-            for (int i = 0; i < get_Count(requests); i++) {
-                log("Getting request");
-                request = get_Item(requests, 0);
-                if (request)
-                    break;
+            requests->Add(AsyncGPUReadbackPlugin::Request(newTexture), true);
+        }
+    }
+
+
+    for (int i = 0; i < count; i++) {
+        auto req = get_Item(requests, i);
+
+        if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+            req->Update();
+
+            if (slowGameRender) {
+                // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
+                // This doesn't freeze OpenGL. Should this still be done though?
+                while (!(req->HasError() || req->IsDone())) { req->Update(); }
             }
-        }
 
-        log("Request %p", request);
-        CRASH_UNLESS(request); // should not happen
-        request->Update();
-        // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
-        // This doesn't freeze OpenGL. Should this still be done though?
-        while (!(request->HasError() || request->IsDone())) { request->Update(); }
+            if (req->HasError()) {
+                req->Dispose();
+                toRemove.push_back(req);
+            } else if (req->IsDone()) {
+                // log("Finished %d", i);
+                size_t length;
+                rgb24 *buffer;
+                req->GetRawData(buffer, length);
 
-        log("Request done %s or error %s", request->IsDone() ? "true" : "false", request->HasError() ? "true" : "false");
-        if (request->IsDone() && !request->HasError()) {
-            size_t length;
-            rgb24 *buffer;
-            log("Getting raw data");
-            request->GetRawData(buffer, length);
+                capture->queueFrame(buffer);
 
-            log("Queued frame");
-            auto frameStatus = capture->queueFrame(buffer);
-            log("Frame status retrieved, waiting");
-        }
-
-        if (request->HasError() || request->IsDone()) {
-            request->Dispose();
-            requests->Remove(request);
-        }
-
-    } else {
-        for (int i = 0; i < get_Count(requests); i++) {
-            auto req = get_Item(requests, i);
-
-            if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
-                req->Update();
-
-                if (req->HasError()) {
-                    req->Dispose();
-                    toRemove.push_back(req);
-                } else if (req->IsDone()) {
-                    // log("Finished %d", i);
-                    size_t length;
-                    rgb24 *buffer;
-                    req->GetRawData(buffer, length);
-
-                   capture->queueFrame(buffer);
-
-                    req->Dispose();
-                    toRemove.push_back(req);
-                } else
-                    break;
-            } else {
                 req->Dispose();
                 toRemove.push_back(req);
             }
-        }
-        for (auto req : toRemove) {
-            requests->Remove(req);
+        } else {
+            req->Dispose();
+            toRemove.push_back(req);
         }
     }
+    for (auto req : toRemove) {
+        requests->Remove(req);
+    }
+
 }
 
 void CameraCapture::dtor() {

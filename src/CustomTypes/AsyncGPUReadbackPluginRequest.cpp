@@ -27,6 +27,7 @@ struct Task {
 	int width;
 	int depth;
 	GLint internal_format;
+	bool sRGBEnabled;
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;
@@ -77,6 +78,10 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	std::shared_ptr<Task> task = tasks[event_id];
 	lock.unlock();
 
+    if (!glIsEnabled(GL_FRAMEBUFFER_SRGB)) {
+        glEnable(GL_FRAMEBUFFER_SRGB);
+        task->sRGBEnabled = true;
+    }
 	// Get texture informations
 	glBindTexture(GL_TEXTURE_2D, task->texture);
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
@@ -120,7 +125,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 
     // Start the read request
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
+    glReadBuffer(GL_COLOR_ATTACHMENT0);
     glReadPixels(0, 0, task->width, task->height, getFormatFromInternalFormat(task->internal_format), getTypeFromInternalFormat(task->internal_format), 0);
 
 	// if(event_id == 500) create_ppm(event_id, task->width, task->height, 3, reinterpret_cast<GLubyte*>(task->data->data()));
@@ -134,6 +139,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Done init
 	task->initialized = true;
+	if (task->sRGBEnabled) {
+        glDisable(GL_FRAMEBUFFER_SRGB);
+	}
     // log("Finished initializing AsyncGPUReadbackRequest");
 }
 
@@ -172,9 +180,6 @@ extern "C" void update_renderThread(int event_id) {
 
 		// Map the buffer and copy it to data
 		auto* ptr = reinterpret_cast<rgb24*>(glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, task->size, GL_MAP_READ_BIT));
-
-        // sRGB conversion. Not sure if this belongs here or before glReadPixels
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB, task->width, task->height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptr);
         memcpy(task->data, ptr, task->size);
 
 		// Unmap and unbind
@@ -242,9 +247,10 @@ using namespace AsyncGPUReadbackPlugin;
 
 DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
 
-void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::Texture* src) {
+void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::Texture* src, bool tempTexture) {
     disposed = false;
     texture = src;
+    this->tempTexture = tempTexture;
     GLuint textureId = reinterpret_cast<uintptr_t>(src->GetNativeTexturePtr().m_value);
     eventId = makeRequest_mainThread(textureId, 0);
     GetGLIssuePluginEvent()(reinterpret_cast<void*>(makeRequest_renderThread), eventId);
@@ -265,6 +271,9 @@ void AsyncGPUReadbackPluginRequest::Update() {
 void AsyncGPUReadbackPluginRequest::Dispose() {
     if (!disposed) {
         dispose(eventId);
+        if (tempTexture && il2cpp_utils::AssignableFrom<UnityEngine::RenderTexture*>(texture->klass)) {
+            UnityEngine::RenderTexture::ReleaseTemporary(reinterpret_cast<UnityEngine::RenderTexture *>(texture));
+        }
         disposed = true;
     }
     // Comment if using the same texture
@@ -279,6 +288,6 @@ void AsyncGPUReadbackPluginRequest::GetRawData(rgb24*& buffer, size_t& length) c
     getData_mainThread(eventId, buffer, length);
 }
 
-AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::Texture* src) {
-    return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src).value();
+AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::Texture* src, bool tempTexture) {
+    return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src, tempTexture).value();
 }
