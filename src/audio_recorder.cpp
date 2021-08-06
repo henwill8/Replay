@@ -4,7 +4,12 @@ using namespace Replay;
 
 DEFINE_TYPE(Replay, AudioCapture);
 
-void AudioRenderer::OpenFile(std::string filename) {
+void AudioCapture::OpenFile(std::string filename) {
+    static int SAMPLE_RATE = 48000;
+    static const int HEADER_SIZE = 44;
+    static const short BITS_PER_SAMPLE = 16;
+    static int channels = 2;
+
     Rendering = true;
     
     SAMPLE_RATE = UnityEngine::AudioSettings::get_outputSampleRate();
@@ -17,7 +22,7 @@ void AudioRenderer::OpenFile(std::string filename) {
 }
 
 /// Write a chunk of data to the output stream.
-void AudioRenderer::Write(Array<float>* audioData) {
+void AudioCapture::Write(Array<float>* audioData) {
     if(Rendering) {
         for (int i = 0; i < audioData->Length(); i++) {
             // write the short to the stream
@@ -27,24 +32,13 @@ void AudioRenderer::Write(Array<float>* audioData) {
     }
 }
 
-// write the incoming audio to the output string
-void AudioRenderer::OnAudioFilterRead(Array<float>* data, int audioChannels) {
-    if(Rendering) {
-        // store the number of channels we are rendering
-        if(audioChannels > 0) channels = audioChannels;
-
-        // store the data stream
-        Write(data);
-    }
-}
-
-void AudioRenderer::Save() {
+void AudioCapture::Save() {
     AddHeader();
     writer.close();
     Rendering = false;
 }
 
-void AudioRenderer::AddHeader() {
+void AudioCapture::AddHeader() {
     if(Rendering) {
         long samples = writer.tellp() / (BITS_PER_SAMPLE / 8);
 
@@ -97,6 +91,13 @@ void AudioRenderer::AddHeader() {
     }
 }
 
-void AudioCapture::OnAudioFilterRead(Array<float>* data, int channels) {
-    OnAudioFilterRead(data, channels);
+void AudioCapture::OnAudioFilterRead(Array<float>* data, int audioChannels) {
+    log("Test");
+    if(Rendering) {
+        // store the number of channels we are rendering
+        if(audioChannels > 0) channels = audioChannels;
+
+        // store the data stream
+        Write(data);
+    }
 }

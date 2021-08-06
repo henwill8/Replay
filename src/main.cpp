@@ -475,8 +475,6 @@ bool createText;
 
 float modifierSpeed;
 
-AudioRenderer audioRenderer;
-
 GameEnergyUIPanel* gameEnergyUIPanel;
 GameEnergyUIPanel* failedEnergyEffect;
 float failedEffectTimer;
@@ -1840,9 +1838,7 @@ MAKE_HOOK_MATCH(RefreshRank,&ImmediateRankUIPanel::RefreshUI, void, ImmediateRan
     RefreshRank(self);
 }
 
-MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank,
-                &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank,
-                void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedScore, int maxPossibleScore, int maxPossibleModifiedScore) {
+MAKE_HOOK_MATCH(RelativeScoreAndImmediateRankCounter_UpdateRelativeScoreAndImmediateRank, &RelativeScoreAndImmediateRankCounter::UpdateRelativeScoreAndImmediateRank, void, RelativeScoreAndImmediateRankCounter* self, int score, int modifiedScore, int maxPossibleScore, int maxPossibleModifiedScore) {
 
     // log("Score Changed");
  
@@ -2042,7 +2038,8 @@ MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed,&PauseMenuManager::MenuButton
     failedReplay = false;
     deathReplay = false;
 
-    audioRenderer.Save();
+    Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
+    if(audioCapture != nullptr) audioCapture->Save();
 
     log("Set inSongOrResults to false 1 %d", inSongOrResults);
 }
@@ -2078,9 +2075,9 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             UnityEngine::Camera* camera = nullptr;
 
             #ifdef DO_FPS_RECORD
-            if(!audioRenderer.IsRendering()) {
-                audioRenderer.OpenFile("sdcard/"+songName+".wav");
-                GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
+            if(GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject() == nullptr) {
+                Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
+                audioCapture->OpenFile("sdcard/"+songName+".wav");
             }
             if(!cameraGameObject) {
                 // Set to 60 hz
@@ -2344,7 +2341,8 @@ MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init,void, R
 
     SaveRecording(levelCompletionResults, practice);
 
-    audioRenderer.Save();
+    Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
+    if(audioCapture != nullptr) audioCapture->Save();
 
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }
@@ -2462,9 +2460,7 @@ MAKE_HOOK_MATCH(MultiplayerSongStart, &MultiplayerLevelScenesTransitionSetupData
     log("Finished song setup");
 }
 
-MAKE_HOOK_MATCH(MultiplayerLevelFinishedController_HandlePlayerDidFinish,
-                &MultiplayerLevelFinishedController::HandlePlayerDidFinish,
-                void, MultiplayerLevelFinishedController* self, MultiplayerLevelCompletionResults* levelCompletionResults) {
+MAKE_HOOK_MATCH(MultiplayerLevelFinishedController_HandlePlayerDidFinish, &MultiplayerLevelFinishedController::HandlePlayerDidFinish, void, MultiplayerLevelFinishedController* self, MultiplayerLevelCompletionResults* levelCompletionResults) {
 
     log("Multiplayer song finished");
 
@@ -2477,18 +2473,14 @@ MAKE_HOOK_MATCH(MultiplayerLevelFinishedController_HandlePlayerDidFinish,
     MultiplayerLevelFinishedController_HandlePlayerDidFinish(self, levelCompletionResults);
 }
 
-MAKE_HOOK_MATCH(LevelFailedTextEffect_ShowEffect,
-                &LevelFailedTextEffect::ShowEffect,
-                void, LevelFailedTextEffect* self) {
+MAKE_HOOK_MATCH(LevelFailedTextEffect_ShowEffect, &LevelFailedTextEffect::ShowEffect, void, LevelFailedTextEffect* self) {
 
     levelFailedTextEffect = true;
 
     LevelFailedTextEffect_ShowEffect(self);
 }
 
-MAKE_HOOK_MATCH(GameSongController_LateUpdate,
-                &GameSongController::LateUpdate,
-                void, GameSongController* self) {
+MAKE_HOOK_MATCH(GameSongController_LateUpdate, &GameSongController::LateUpdate, void, GameSongController* self) {
 
     // log("GameSongController_LateUpdate");
 
@@ -2604,9 +2596,7 @@ MAKE_HOOK_MATCH(GameSongController_LateUpdate,
     }
 }
 
-MAKE_HOOK_MATCH(GameEnergyUIPanel_RefreshEnergyUI,
-                &GameEnergyUIPanel::RefreshEnergyUI,
-                void, GameEnergyUIPanel* self, float energy) {
+MAKE_HOOK_MATCH(GameEnergyUIPanel_RefreshEnergyUI, &GameEnergyUIPanel::RefreshEnergyUI, void, GameEnergyUIPanel* self, float energy) {
     if(!recording && didReach0Energy && replaySaveBools.noFail) {
         if(songTime < reached0Time) {
             doneFailedEffect = false;
