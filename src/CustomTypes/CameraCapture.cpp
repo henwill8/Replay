@@ -210,12 +210,11 @@ void CameraCapture::Update() {
 
     if (slowGameRender) {
         // Add requests over time?
-        if (count == 0) {
-            log("Making request");
-            auto newTexture = GetProperTexture();
 
-            requests->Add(AsyncGPUReadbackPlugin::Request(newTexture, true));
-        }
+        log("Making request");
+        auto newTexture = GetProperTexture();
+
+        requests->Add(AsyncGPUReadbackPlugin::Request(newTexture, true));
     }
 
     log("Request count %i", count);
