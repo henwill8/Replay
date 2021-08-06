@@ -2689,9 +2689,6 @@ extern "C" void load() {
     INSTALL_HOOK(loggingFunction(), LevelFailedTextEffect_ShowEffect);
     INSTALL_HOOK(loggingFunction(), GameSongController_LateUpdate);
     INSTALL_HOOK(loggingFunction(), GameEnergyUIPanel_RefreshEnergyUI);
-#ifdef DO_FPS_RECORD
-    INSTALL_HOOK(loggingFunction(), AudioCapture_OnAudioFilterRead);
-#endif
     log("Installed all hooks!");
 
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
