@@ -78,10 +78,6 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	std::shared_ptr<Task> task = tasks[event_id];
 	lock.unlock();
 
-    if (!glIsEnabled(GL_FRAMEBUFFER_SRGB)) {
-        glEnable(GL_FRAMEBUFFER_SRGB);
-        task->sRGBEnabled = true;
-    }
 	// Get texture informations
 	glBindTexture(GL_TEXTURE_2D, task->texture);
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
@@ -139,9 +135,6 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Done init
 	task->initialized = true;
-	if (task->sRGBEnabled) {
-        glDisable(GL_FRAMEBUFFER_SRGB);
-	}
     // log("Finished initializing AsyncGPUReadbackRequest");
 }
 
