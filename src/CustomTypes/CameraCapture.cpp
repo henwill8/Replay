@@ -213,7 +213,7 @@ void CameraCapture::Update() {
             log("Making request");
             auto newTexture = GetProperTexture();
 
-            requests->Add(AsyncGPUReadbackPlugin::Request(newTexture), true);
+            requests->Add(AsyncGPUReadbackPlugin::Request(newTexture, true));
         }
     }
 
