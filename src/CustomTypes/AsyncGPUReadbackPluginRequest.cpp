@@ -11,6 +11,8 @@
 #include "video_recorder.hpp"
 #include "CustomTypes/TypeHelpers.hpp"
 
+#include "UnityEngine/GL.hpp"
+
 // Looks like this was from https://github.com/Alabate/AsyncGPUReadbackPlugin
 
 struct Task {
@@ -79,8 +81,6 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	std::shared_ptr<Task> task = tasks[event_id];
 	lock.unlock();
 
-	// Enable sRGB shader
-	static Shader sRGBShader = Shader::shaderGammaConvert();
 
 
 
@@ -93,11 +93,15 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_INTERNAL_FORMAT, &(task->internal_format));
 	auto pixelSize = getPixelSizeFromInternalFormat(task->internal_format);
 
-	// Configure shader
-	int resolution[2] = {task->width, task->height};
-	glUniform2iv(glGetUniformLocation(sRGBShader.ID, "resolution"), 2, resolution);
 
-	sRGBShader.use();
+
+	// // Do blit magic
+	// GLuint vertexQuad;
+	// glGenVertexArrays(1, &vertexQuad);
+	// glBindVertexArray(vertexQuad);
+	// glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+	
 
 
 	// In our current state, this turns out to be 32 * 1920 * 1080 * 1 (66,355,200)
@@ -143,6 +147,9 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	// Unbind buffers
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// // Cleanup vao
+	// glDeleteVertexArrays(vao);
 
 	// Fence to know when it's ready
 	task->fence = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
@@ -243,6 +250,21 @@ extern "C" void dispose(int event_id) {
 	tasks.erase(event_id);
 	lock.unlock();
 }
+extern "C" void doShader_renderThread(int event_id) {
+    // Enable sRGB shader
+    static Shader sRGBShader = Shader::shaderGammaConvert();
+
+    // Get task back
+    std::shared_lock lock(tasks_mutex);
+    std::shared_ptr<Task> task = tasks[event_id];
+    lock.unlock();
+
+    // Configure shader
+    sRGBShader.use();
+
+    // Get texture informations
+    glBindTexture(GL_TEXTURE_2D, task->texture);
+}
 
 using GLIssuePluginEvent = function_ptr_t<void, void*, int>;
 
@@ -254,12 +276,30 @@ using namespace AsyncGPUReadbackPlugin;
 
 DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
 
+void AsyncGPUReadbackPluginRequest::BlitShader() {
+    UnityEngine::GL::PushMatrix();
+    UnityEngine::GL::LoadOrtho();
+
+    GetGLIssuePluginEvent()(reinterpret_cast<void*>(doShader_renderThread), eventId);
+
+    static const int QUADS = 0x0007; // QUADS CONSTANT
+    // Immediate mode!
+    UnityEngine::GL::Begin(QUADS);
+    UnityEngine::GL::Vertex3(0.0f, 0.0f, 0.0f);
+    UnityEngine::GL::Vertex3(0.0f, 1.0f, 0.0f);
+    UnityEngine::GL::Vertex3(1.0f, 1.0f, 0.0f);
+    UnityEngine::GL::Vertex3(1.0f, 0.0f, 0.0f);
+    UnityEngine::GL::End();
+    UnityEngine::GL::PopMatrix();
+}
+
 void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::Texture* src, bool tempTexture) {
     disposed = false;
     texture = src;
     this->tempTexture = tempTexture;
     GLuint textureId = reinterpret_cast<uintptr_t>(src->GetNativeTexturePtr().m_value);
     eventId = makeRequest_mainThread(textureId, 0);
+    BlitShader();
     GetGLIssuePluginEvent()(reinterpret_cast<void*>(makeRequest_renderThread), eventId);
 }
 
