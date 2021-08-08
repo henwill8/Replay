@@ -291,9 +291,29 @@ void AsyncGPUReadbackPluginRequest::BlitShader() {
     UnityEngine::GL::Vertex3(1.0f, 0.0f, 0.0f);
     UnityEngine::GL::End();
     UnityEngine::GL::PopMatrix();
+
+    GLuint fbo = 0;
+    GLuint colorTexture = 0; // color texture for color attachment
+    GLuint depthRBO = 0; // render buffer object for depth buffer
+
+
+    UnityEngine::RenderTexture* newTexture = UnityEngine::RenderTexture::GetTemporary(texture->get_descriptor());
+    GLuint newTextureId = reinterpret_cast<uintptr_t>(newTexture->GetNativeTexturePtr().m_value);
+
+    // Get texture informations
+    glBindTexture(GL_TEXTURE_2D, newTextureId);
+
+    GLuint newTextureFbo;
+
+    // Create the fbo (frame buffer object) from the given texture
+    glGenFramebuffers(1, &(newTextureFbo));
+
+    // Bind the texture to the fbo
+    glBindFramebuffer(GL_FRAMEBUFFER, newTextureFbo);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, newTextureId, 0);
 }
 
-void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::Texture* src, bool tempTexture) {
+void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool tempTexture) {
     disposed = false;
     texture = src;
     this->tempTexture = tempTexture;
@@ -335,6 +355,6 @@ void AsyncGPUReadbackPluginRequest::GetRawData(rgb24*& buffer, size_t& length) c
     getData_mainThread(eventId, buffer, length);
 }
 
-AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::Texture* src, bool tempTexture) {
+AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::RenderTexture* src, bool tempTexture) {
     return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src, tempTexture).value();
 }

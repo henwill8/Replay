@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UnityEngine/Texture.hpp"
+#include "UnityEngine/RenderTexture.hpp"
 
 #include "custom-types/shared/macros.hpp"
 
@@ -15,9 +16,9 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
     DECLARE_INSTANCE_FIELD(bool, disposed);
     DECLARE_INSTANCE_FIELD(int, eventId);
     DECLARE_INSTANCE_FIELD(bool, tempTexture);
-    DECLARE_INSTANCE_FIELD(UnityEngine::Texture*, texture);
+    DECLARE_INSTANCE_FIELD(UnityEngine::RenderTexture*, texture);
 
-    DECLARE_CTOR(ctor, UnityEngine::Texture* src, bool tempTexture);
+    DECLARE_CTOR(ctor, UnityEngine::RenderTexture* src, bool tempTexture);
     DECLARE_SIMPLE_DTOR();
 
     DECLARE_INSTANCE_METHOD(bool, IsDone);
@@ -34,6 +35,6 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
 
 namespace AsyncGPUReadbackPlugin {
 
-    AsyncGPUReadbackPluginRequest* Request(UnityEngine::Texture* src, bool tempTexture = false);
+    AsyncGPUReadbackPluginRequest* Request(UnityEngine::RenderTexture* src, bool tempTexture = false);
     
 }
