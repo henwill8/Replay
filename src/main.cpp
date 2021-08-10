@@ -2075,7 +2075,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             UnityEngine::Camera* camera = nullptr;
 
             #ifdef DO_FPS_RECORD
-            if(GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject() == nullptr) {
+            if(GetFirstEnabledComponent<Replay::AudioCapture*>()->get_gameObject() == nullptr) {
                 Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
                 audioCapture->OpenFile("sdcard/"+songName+".wav");
             }
