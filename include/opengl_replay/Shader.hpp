@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "shaders/gamma_convert_vs.glsl.hpp"
-#include "shaders/gamma_convert_fs.glsl.hpp"
+#include "shaders/gamma_rgb_convert_fs.glsl.hpp"
 
 
 class Shader
@@ -31,7 +31,7 @@ public:
     void setFloat(const std::string &name, float value) const;
 
     static Shader shaderGammaConvert() {
-        return {gamma_convert_vs_glsl, gamma_convert_fs_glsl};
+        return {gamma_convert_vs_glsl, gamma_rgb_convert_fs_glsl};
     }
 };
 

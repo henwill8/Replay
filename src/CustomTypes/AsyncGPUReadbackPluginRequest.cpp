@@ -297,21 +297,20 @@ using namespace AsyncGPUReadbackPlugin;
 
 DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
 
-void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool tempTexture) {
+void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src) {
     disposed = false;
-    texture = src;
-    this->tempTexture = tempTexture;
     GLuint textureId = reinterpret_cast<uintptr_t>(src->GetNativeTexturePtr().m_value);
 
-    UnityEngine::RenderTexture* newTexture = UnityEngine::RenderTexture::GetTemporary(texture->get_descriptor());
+
+    UnityEngine::RenderTexture* newTexture = UnityEngine::RenderTexture::GetTemporary(src->get_descriptor());
     newTexture->Create();
 
-    // TODO: Cleanup
     this->texture = newTexture;
+
+    // TODO: Should this be configurable if someone didn't want the gamma correction?
     this->tempTexture = true;
 
     GLuint newTextureId = reinterpret_cast<uintptr_t>(newTexture->GetNativeTexturePtr().m_value);
-
     eventId = makeRequest_mainThread(textureId, newTextureId, 0);
     GetGLIssuePluginEvent()(reinterpret_cast<void*>(makeRequest_renderThread), eventId);
 }
@@ -348,6 +347,6 @@ void AsyncGPUReadbackPluginRequest::GetRawData(rgb24*& buffer, size_t& length) c
     getData_mainThread(eventId, buffer, length);
 }
 
-AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::RenderTexture* src, bool tempTexture) {
-    return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src, tempTexture).value();
+AsyncGPUReadbackPluginRequest* AsyncGPUReadbackPlugin::Request(UnityEngine::RenderTexture* src) {
+    return il2cpp_utils::New<AsyncGPUReadbackPluginRequest*>(src).value();
 }

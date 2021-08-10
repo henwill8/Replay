@@ -12,7 +12,6 @@ out vec4 out_rgba;
 
 void main()
 {
-//    out_rgba = vec4(1.0, 0.0, 0.0, 1.0);
     const float gamma = 1.0 / 2.2;
     vec3 color = texture(cameraTexture, texCoords).rgb;
     color = pow(color, vec3(gamma));

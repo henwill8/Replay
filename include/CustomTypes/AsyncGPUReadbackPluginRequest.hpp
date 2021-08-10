@@ -18,7 +18,7 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
     DECLARE_INSTANCE_FIELD(bool, tempTexture);
     DECLARE_INSTANCE_FIELD(UnityEngine::RenderTexture*, texture);
 
-    DECLARE_CTOR(ctor, UnityEngine::RenderTexture* src, bool tempTexture);
+    DECLARE_CTOR(ctor, UnityEngine::RenderTexture* src);
     DECLARE_SIMPLE_DTOR();
 
     DECLARE_INSTANCE_METHOD(bool, IsDone);
@@ -34,6 +34,6 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
 
 namespace AsyncGPUReadbackPlugin {
 
-    AsyncGPUReadbackPluginRequest* Request(UnityEngine::RenderTexture* src, bool tempTexture = false);
+    AsyncGPUReadbackPluginRequest* Request(UnityEngine::RenderTexture* src);
     
 }

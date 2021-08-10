@@ -74,6 +74,7 @@ UnityEngine::RenderTexture* GetTemporaryRenderTexture(VideoCapture* capture, int
 }
 
 
+// TODO: Remove?
 void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngine::RenderTexture *destination) {
     bool render = false;
 
@@ -109,7 +110,7 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
             if (requests->get_Count() <= 10) {
 
                 log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
-                requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture, true));
+                requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture));
             } else {
                 log("Too many requests currently, not adding more");
             }
@@ -201,7 +202,7 @@ void CameraCapture::Update() {
         log("Making request");
         auto newTexture = GetProperTexture();
 
-        requests->Add(AsyncGPUReadbackPlugin::Request(newTexture, false));
+        requests->Add(AsyncGPUReadbackPlugin::Request(newTexture));
     }
 
     log("Request count %i", count);
