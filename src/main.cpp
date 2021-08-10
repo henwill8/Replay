@@ -2127,7 +2127,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 
                 cameraGameObject->get_transform()->set_eulerAngles(UnityEngine::Vector3(0.0f, 0.0f, 0.0f));
                 cameraGameObject->get_transform()->set_position(UnityEngine::Vector3(0.0f, 2.0f, 0.0f));
-                texture = UnityEngine::RenderTexture::New_ctor(width, height, 16, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Default);
+                texture = UnityEngine::RenderTexture::New_ctor(width, height, 24, (UnityEngine::RenderTextureFormat)UnityEngine::RenderTextureFormat::Default, (UnityEngine::RenderTextureReadWrite)UnityEngine::RenderTextureReadWrite::Default);
                 texture->set_wrapMode(UnityEngine::TextureWrapMode::Clamp);
                 texture->set_filterMode(UnityEngine::FilterMode::Bilinear);
                 texture->Create();
