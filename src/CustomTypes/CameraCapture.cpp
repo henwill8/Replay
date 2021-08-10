@@ -63,16 +63,10 @@ void CameraCapture::ctor()
 void CameraCapture::RequestFrame() {
     frameRequestCount++;
 }
-UnityEngine::RenderTexture* _RecycledRenderTexture;
 
 UnityEngine::RenderTexture* GetTemporaryRenderTexture(VideoCapture* capture, int format)
 {
-    auto rt = _RecycledRenderTexture;
-    _RecycledRenderTexture = nullptr;
-
-    if (rt != nullptr) return rt;
-
-    rt = RenderTexture::GetTemporary(capture->getWidth(), capture->getHeight(), 0, (RenderTextureFormat) format, RenderTextureReadWrite::Default);
+    UnityEngine::RenderTexture* rt = RenderTexture::GetTemporary(capture->getWidth(), capture->getHeight(), 0, (RenderTextureFormat) format, RenderTextureReadWrite::Default);
     rt->set_wrapMode(TextureWrapMode::Clamp);
     rt->set_filterMode(FilterMode::Bilinear);
 
@@ -185,14 +179,7 @@ void CameraCapture::OnPostRender() {
 }
 
 RenderTexture* CameraCapture::GetProperTexture() {
-    auto newTexture = GetTemporaryRenderTexture(capture.get(), texture->get_format());
-
-    // Blit
-    Graphics::Blit(texture, newTexture);
-
-    // TODO: SRGB and shader!
-
-    return newTexture;
+    return texture;
 }
 
 // https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
@@ -214,7 +201,7 @@ void CameraCapture::Update() {
         log("Making request");
         auto newTexture = GetProperTexture();
 
-        requests->Add(AsyncGPUReadbackPlugin::Request(newTexture, true));
+        requests->Add(AsyncGPUReadbackPlugin::Request(newTexture, false));
     }
 
     log("Request count %i", count);

@@ -17,6 +17,7 @@
 
 struct Task {
 	GLuint texture;
+	GLuint newTexture;
 	GLuint fbo;
 	GLuint pbo;
 	GLsync fence;
@@ -37,10 +38,11 @@ static std::map<int,std::shared_ptr<Task>> tasks;
 static std::shared_mutex tasks_mutex;
 static int next_event_id = 1;
 
-extern "C" int makeRequest_mainThread(GLuint texture, int miplevel) {
+extern "C" int makeRequest_mainThread(GLuint texture, GLuint texture2, int miplevel) {
 	// Create the task
 	std::shared_ptr<Task> task = std::make_shared<Task>();
 	task->texture = texture;
+	task->newTexture = texture2;
 	task->miplevel = miplevel;
 	int event_id = next_event_id;
 	next_event_id++;
@@ -264,6 +266,36 @@ extern "C" void doShader_renderThread(int event_id) {
 
     // Get texture informations
     glBindTexture(GL_TEXTURE_2D, task->texture);
+
+
+    // // Do blit magic
+     GLuint vertexQuad;
+     glGenVertexArrays(1, &vertexQuad);
+     glBindVertexArray(vertexQuad);
+     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+
+
+
+     GLuint fbo = 0;
+     GLuint colorTexture = 0; // color texture for color attachment
+     GLuint depthRBO = 0; // render buffer object for depth buffer
+
+
+
+
+     // Get texture informations
+     glBindTexture(GL_TEXTURE_2D, task->newTextureId);
+
+     GLuint newTextureFbo;
+
+     // Create the fbo (frame buffer object) from the given texture
+     glGenFramebuffers(1, &(newTextureFbo));
+
+     // Bind the texture to the fbo
+     glBindFramebuffer(GL_FRAMEBUFFER, newTextureFbo);
+     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, newTextureId, 0);
+
 }
 
 using GLIssuePluginEvent = function_ptr_t<void, void*, int>;
@@ -277,40 +309,7 @@ using namespace AsyncGPUReadbackPlugin;
 DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
 
 void AsyncGPUReadbackPluginRequest::BlitShader() {
-    UnityEngine::GL::PushMatrix();
-    UnityEngine::GL::LoadOrtho();
-
     GetGLIssuePluginEvent()(reinterpret_cast<void*>(doShader_renderThread), eventId);
-
-    static const int QUADS = 0x0007; // QUADS CONSTANT
-    // Immediate mode!
-    UnityEngine::GL::Begin(QUADS);
-    UnityEngine::GL::Vertex3(0.0f, 0.0f, 0.0f);
-    UnityEngine::GL::Vertex3(0.0f, 1.0f, 0.0f);
-    UnityEngine::GL::Vertex3(1.0f, 1.0f, 0.0f);
-    UnityEngine::GL::Vertex3(1.0f, 0.0f, 0.0f);
-    UnityEngine::GL::End();
-    UnityEngine::GL::PopMatrix();
-
-    GLuint fbo = 0;
-    GLuint colorTexture = 0; // color texture for color attachment
-    GLuint depthRBO = 0; // render buffer object for depth buffer
-
-
-    UnityEngine::RenderTexture* newTexture = UnityEngine::RenderTexture::GetTemporary(texture->get_descriptor());
-    GLuint newTextureId = reinterpret_cast<uintptr_t>(newTexture->GetNativeTexturePtr().m_value);
-
-    // Get texture informations
-    glBindTexture(GL_TEXTURE_2D, newTextureId);
-
-    GLuint newTextureFbo;
-
-    // Create the fbo (frame buffer object) from the given texture
-    glGenFramebuffers(1, &(newTextureFbo));
-
-    // Bind the texture to the fbo
-    glBindFramebuffer(GL_FRAMEBUFFER, newTextureFbo);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, newTextureId, 0);
 }
 
 void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool tempTexture) {
@@ -318,7 +317,16 @@ void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool t
     texture = src;
     this->tempTexture = tempTexture;
     GLuint textureId = reinterpret_cast<uintptr_t>(src->GetNativeTexturePtr().m_value);
-    eventId = makeRequest_mainThread(textureId, 0);
+
+    UnityEngine::RenderTexture* newTexture = UnityEngine::RenderTexture::GetTemporary(texture->get_descriptor());
+
+    // TODO: Cleanup
+    this->texture = newTexture;
+    this->tempTexture = true;
+
+    GLuint newTextureId = reinterpret_cast<uintptr_t>(newTexture->GetNativeTexturePtr().m_value);
+
+    eventId = makeRequest_mainThread(textureId, newTextureId, 0);
     BlitShader();
     GetGLIssuePluginEvent()(reinterpret_cast<void*>(makeRequest_renderThread), eventId);
 }
