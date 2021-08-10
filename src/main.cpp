@@ -568,11 +568,17 @@ UnityEngine::GameObject* FindObjectByIndex(std::string name, bool byParent = fal
 template<class T>
 T GetFirstEnabledComponent() {
     Array<T>* trs = UnityEngine::Resources::FindObjectsOfTypeAll<T>();
+    if (!trs) return nullptr;
+
     for(int i = 0; i < trs->Length(); i++) {
-        UnityEngine::GameObject* go = trs->values[i]->get_gameObject();
+        auto item = trs->values[i];
+        if (!item)
+            continue;
+
+        UnityEngine::GameObject* go = item->get_gameObject();
         // log(to_utf8(csstrtostr(UnityEngine::Transform::GetName(trs->values[i]))));
-        if(go->get_activeInHierarchy()){
-            return trs->values[i];
+        if(go && go->get_activeInHierarchy()){
+            return item;
         }
     }
     return nullptr;
@@ -2075,11 +2081,14 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             UnityEngine::Camera* camera = nullptr;
 
             #ifdef DO_FPS_RECORD
-            if(GetFirstEnabledComponent<Replay::AudioCapture*>()->get_gameObject() == nullptr) {
+            log("Getting audio");
+            Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
+            if(audioCapture == nullptr || audioCapture->get_gameObject() == nullptr) {
                 log("Adding Audio Capture component to the AudioListener");
-                Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
+                audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
                 audioCapture->OpenFile("sdcard/"+songName+".wav");
             }
+            log("getting camera");
             if(!cameraGameObject) {
                 // Set to 60 hz
                 setRefreshRate(std::make_optional(60.0f));

@@ -4,7 +4,7 @@ using namespace Replay;
 
 DEFINE_TYPE(Replay, AudioCapture);
 
-void AudioCapture::OpenFile(std::string filename) {
+void AudioCapture::OpenFile(const std::string& filename) {
     static int SAMPLE_RATE = 48000;
     static const int HEADER_SIZE = 44;
     static const short BITS_PER_SAMPLE = 16;
@@ -17,7 +17,8 @@ void AudioCapture::OpenFile(std::string filename) {
     if(writer.is_open()) {
         writer.close();
     }
-    
+
+    log("Audio file %s", filename.c_str());
     writer.open(filename, std::ios::binary);
 }
 

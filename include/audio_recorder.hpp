@@ -11,10 +11,12 @@
 #include <math.h>
 #include <string.h>
 #include <algorithm>
-#include <string> 
+#include <string>
 
 DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
-    
+
+    DECLARE_DEFAULT_CTOR();
+
     DECLARE_INSTANCE_METHOD(void, OnAudioFilterRead, Array<float>* data, int audioChannels);
 
     public:
@@ -22,11 +24,11 @@ DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
 
         void Save();
 
-        void OpenFile(std::string fileName);
+        void OpenFile(const std::string& filename);
 
         std::ofstream writer;
 
-        bool IsRendering() {
+        bool IsRendering() const {
             return Rendering;
         }
 
