@@ -46,12 +46,13 @@ void CameraCapture::ctor()
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     log("Making video capture");
-    slowGameRender = true; // make this constructor param
-    capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !slowGameRender, "faster", "/sdcard/video.h264");
+    movieModeRendering = true; // make this constructor param
+    maxFramesAllowedInQueue = 10;
+    capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
 
 
 
-    if (slowGameRender) {
+    if (movieModeRendering) {
         log("Going to set time delta");
         Time::set_captureDeltaTime(1.0f / capture->getFpsrate());
         log("Set the delta time");
@@ -121,7 +122,7 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
 }
 
 void CameraCapture::OnPostRender() {
-    if (slowGameRender) {
+    if (movieModeRendering) {
         return;
     }
 
@@ -150,15 +151,7 @@ void CameraCapture::OnPostRender() {
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
 
-            if (get_Count(requests) <= 10) {
-                // This is unnnecessary work, no worky
-//                auto targetRenderTexture = GetTemporaryRenderTexture(capture.get(), texture->get_format());
-//
-//                UnityEngine::RenderTexture::set_active(targetRenderTexture);
-//
-//
-//                Graphics::Blit(texture, targetRenderTexture);
-
+            if (capture->approximateFramesToRender() < maxFramesAllowedInQueue && get_Count(requests) <= 10) {
                 requests->Add(AsyncGPUReadbackPlugin::Request(texture));
             } else {
                 log("Too many requests currently, not adding more");
@@ -196,7 +189,7 @@ void CameraCapture::Update() {
 
     int count = get_Count(requests);
 
-    if (slowGameRender) {
+    if (movieModeRendering) {
         // Add requests over time?
 
         log("Making request");
@@ -213,7 +206,7 @@ void CameraCapture::Update() {
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             req->Update();
 
-            if (slowGameRender) {
+            if (movieModeRendering) {
                 // TODO: Should we lock on waiting for the request to be done? Would that cause the OpenGL thread to freeze?
                 // This doesn't freeze OpenGL. Should this still be done though?
                 while (!(req->HasError() || req->IsDone())) {
@@ -223,9 +216,8 @@ void CameraCapture::Update() {
 
 
                 // This is to avoid having a frame queue so big that you run out of memory.
-                // TODO: MAKE THIS NUMBER CONFIGURABLE
-                if (req->IsDone() && !req->HasError()) {
-                    while (capture->approximateFramesToRender() >= 10) {
+                if (req->IsDone() && !req->HasError() && maxFramesAllowedInQueue > 0) {
+                    while (capture->approximateFramesToRender() >= maxFramesAllowedInQueue) {
                         std::this_thread::sleep_for(std::chrono::microseconds(10));
                     }
                 }
@@ -264,7 +256,7 @@ void CameraCapture::dtor() {
     }
     capture->Finish();
     CancelInvoke();
-    if (slowGameRender) {
+    if (movieModeRendering) {
         Time::set_captureDeltaTime(0.0f);
     }
 }

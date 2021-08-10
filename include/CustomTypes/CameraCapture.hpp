@@ -23,8 +23,9 @@ private:
 
     std::shared_ptr<VideoCapture> capture;
     int frameRequestCount = 0;
+    uint32_t maxFramesAllowedInQueue;
     // Make this a const constructor argument
-    bool slowGameRender;
+    bool movieModeRendering;
 
     DECLARE_INSTANCE_FIELD(RequestList*, requests);
  
