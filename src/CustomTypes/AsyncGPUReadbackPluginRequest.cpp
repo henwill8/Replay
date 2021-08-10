@@ -16,7 +16,7 @@
 // Looks like this was from https://github.com/Alabate/AsyncGPUReadbackPlugin
 
 struct Task {
-	GLuint texture;
+	GLuint origTexture;
 	GLuint newTexture;
 	GLuint fbo;
 	GLuint pbo;
@@ -41,7 +41,7 @@ static int next_event_id = 1;
 extern "C" int makeRequest_mainThread(GLuint texture, GLuint texture2, int miplevel) {
 	// Create the task
 	std::shared_ptr<Task> task = std::make_shared<Task>();
-	task->texture = texture;
+	task->origTexture = texture;
 	task->newTexture = texture2;
 	task->miplevel = miplevel;
 	int event_id = next_event_id;
@@ -76,6 +76,27 @@ static void create_ppm(int frame_id, unsigned int width, unsigned int height, un
     //t.detach();
 }
 
+// Code from xyonico, thank you very much!
+void BlitShader(GLuint cameraSrcTexture, Shader& shader)
+{
+    // This function assumes that a framebuffer has already been bound with a texture different from cameraSrcTexture.
+
+    // Prepare the shader
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, cameraSrcTexture);
+    shader.use();
+
+    // Prepare the VBO
+    GLuint quadVertices;
+    glGenVertexArrays(1, &quadVertices);
+
+    glBindVertexArray(quadVertices);
+
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glDeleteVertexArrays(1, &quadVertices);
+}
+
 extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Get task back
@@ -88,7 +109,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 
 	// Get texture informations
-	glBindTexture(GL_TEXTURE_2D, task->texture);
+	glBindTexture(GL_TEXTURE_2D, task->newTexture);
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_WIDTH, &(task->width));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_HEIGHT, &(task->height));
 	glGetTexLevelParameteriv(GL_TEXTURE_2D, task->miplevel, GL_TEXTURE_DEPTH, &(task->depth));
@@ -132,7 +153,12 @@ extern "C" void makeRequest_renderThread(int event_id) {
 
 	// Bind the texture to the fbo
 	glBindFramebuffer(GL_FRAMEBUFFER, task->fbo);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, task->texture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, task->newTexture, 0);
+
+	// Enable sRGB shader
+	static Shader sRGBShader = Shader::shaderGammaConvert();
+
+	BlitShader(task->origTexture, sRGBShader);
 
 	// Create and bind pbo (pixel buffer object) to fbo
 	glGenBuffers(1, &(task->pbo));
@@ -252,52 +278,6 @@ extern "C" void dispose(int event_id) {
 	tasks.erase(event_id);
 	lock.unlock();
 }
-extern "C" void doShader_renderThread(int event_id) {
-    // Enable sRGB shader
-    static Shader sRGBShader = Shader::shaderGammaConvert();
-
-    // Get task back
-    std::shared_lock lock(tasks_mutex);
-    std::shared_ptr<Task> task = tasks[event_id];
-    lock.unlock();
-
-    // Configure shader
-    sRGBShader.use();
-
-    // Get texture informations
-    glBindTexture(GL_TEXTURE_2D, task->texture);
-
-
-    // // Do blit magic
-     GLuint vertexQuad;
-     glGenVertexArrays(1, &vertexQuad);
-     glBindVertexArray(vertexQuad);
-     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-
-
-
-     GLuint fbo = 0;
-     GLuint colorTexture = 0; // color texture for color attachment
-     GLuint depthRBO = 0; // render buffer object for depth buffer
-
-
-
-
-     // Get texture informations
-     glBindTexture(GL_TEXTURE_2D, task->newTextureId);
-
-     GLuint newTextureFbo;
-
-     // Create the fbo (frame buffer object) from the given texture
-     glGenFramebuffers(1, &(newTextureFbo));
-
-     // Bind the texture to the fbo
-     glBindFramebuffer(GL_FRAMEBUFFER, newTextureFbo);
-     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, newTextureId, 0);
-
-}
-
 using GLIssuePluginEvent = function_ptr_t<void, void*, int>;
 
 GLIssuePluginEvent GetGLIssuePluginEvent() {
@@ -307,10 +287,6 @@ GLIssuePluginEvent GetGLIssuePluginEvent() {
 using namespace AsyncGPUReadbackPlugin;
 
 DEFINE_TYPE(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest);
-
-void AsyncGPUReadbackPluginRequest::BlitShader() {
-    GetGLIssuePluginEvent()(reinterpret_cast<void*>(doShader_renderThread), eventId);
-}
 
 void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool tempTexture) {
     disposed = false;
@@ -327,7 +303,6 @@ void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool t
     GLuint newTextureId = reinterpret_cast<uintptr_t>(newTexture->GetNativeTexturePtr().m_value);
 
     eventId = makeRequest_mainThread(textureId, newTextureId, 0);
-    BlitShader();
     GetGLIssuePluginEvent()(reinterpret_cast<void*>(makeRequest_renderThread), eventId);
 }
 

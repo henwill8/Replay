@@ -26,7 +26,6 @@ DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2
 
     DECLARE_INSTANCE_METHOD(void, Update);
     DECLARE_INSTANCE_METHOD(void, Dispose);
-    DECLARE_INSTANCE_METHOD(void, BlitShader);
 
     public:
         void GetRawData(rgb24*& buffer, size_t& length) const;

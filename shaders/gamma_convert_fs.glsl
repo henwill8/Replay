@@ -1,18 +1,20 @@
 #version 310 es
 
+// Shader from xyonico, thank you very much!
+
 precision mediump float;
 
-uniform vec2 resolution;
-uniform sampler2D myTexture;
+uniform sampler2D cameraTexture;
 
-//layout (location = 0) in vec2 texCoords;
-out vec4 out_rgb;
+layout (location = 0) in vec2 texCoords;
 
-void main() {
-    float gamma = 2.2;
-    vec3 textureColor = texture(myTexture, resolution).rgb;
-    vec3 diffuseColor = pow(textureColor, vec3(gamma));
+out vec4 out_rgba;
 
-    out_rgb = vec4(diffuseColor, 1.0f);
+void main()
+{
+    const float gamma = 1.0 / 2.2;
+    vec3 color = texture(cameraTexture, texCoords).rgb;
+    color = pow(textureColor, vec3(gamma));
+
+    out_rgba = vec4(color, 1.0f);
 }
-
