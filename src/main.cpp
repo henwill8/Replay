@@ -2076,6 +2076,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
 
             #ifdef DO_FPS_RECORD
             if(GetFirstEnabledComponent<Replay::AudioCapture*>()->get_gameObject() == nullptr) {
+                log("Adding Audio Capture component to the AudioListener");
                 Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
                 audioCapture->OpenFile("sdcard/"+songName+".wav");
             }
