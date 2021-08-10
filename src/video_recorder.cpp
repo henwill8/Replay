@@ -193,7 +193,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     log("Finished initializing video at path %s", filename.c_str());
 
     encodingThread = std::thread(&VideoCapture::encodeFrames, this);
-    flippingThread = std::thread(&VideoCapture::flipFrames, this);
+//    flippingThread = std::thread(&VideoCapture::flipFrames, this);
 
     emptyFrame = new rgb24[width * height];
 }
@@ -260,8 +260,8 @@ std::shared_ptr<FrameStatus> VideoCapture::queueFrame(rgb24*& queuedFrame) {
         throw std::runtime_error("Video capture is not initialized");
 
     std::shared_ptr<FrameStatus> status = std::make_shared<FrameStatus>(queuedFrame);
-    while(!framebuffers.enqueue(status));
-    log("Frame queue: %zu", framebuffers.size_approx());
+    while(!flippedframebuffers.enqueue(status));
+    log("Frame queue: %zu", flippedframebuffers.size_approx());
 
     return status;
 }

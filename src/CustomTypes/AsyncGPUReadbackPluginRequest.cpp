@@ -92,6 +92,10 @@ void BlitShader(GLuint cameraSrcTexture, Shader& shader)
 
     glBindVertexArray(quadVertices);
 
+    // For some reason this is needed. Likely as an optimization
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     glDeleteVertexArrays(1, &quadVertices);
@@ -154,6 +158,11 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	// Bind the texture to the fbo
 	glBindFramebuffer(GL_FRAMEBUFFER, task->fbo);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, task->newTexture, 0);
+
+	GLenum DrawBuffers = GL_COLOR_ATTACHMENT0;
+	glDrawBuffers(1, &DrawBuffers);
+
+	glViewport(0,0, task->width, task->height);
 
 	// Enable sRGB shader
 	static Shader sRGBShader = Shader::shaderGammaConvert();
@@ -295,6 +304,7 @@ void AsyncGPUReadbackPluginRequest::ctor(UnityEngine::RenderTexture* src, bool t
     GLuint textureId = reinterpret_cast<uintptr_t>(src->GetNativeTexturePtr().m_value);
 
     UnityEngine::RenderTexture* newTexture = UnityEngine::RenderTexture::GetTemporary(texture->get_descriptor());
+    newTexture->Create();
 
     // TODO: Cleanup
     this->texture = newTexture;

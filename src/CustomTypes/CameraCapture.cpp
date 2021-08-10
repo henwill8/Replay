@@ -47,7 +47,7 @@ void CameraCapture::ctor()
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     log("Making video capture");
     slowGameRender = true; // make this constructor param
-    capture->Init(texture->get_width(), texture->get_height(), 45, 500, !slowGameRender, "ultrafast", "/sdcard/video.h264");
+    capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !slowGameRender, "faster", "/sdcard/video.h264");
 
 
 
@@ -223,11 +223,11 @@ void CameraCapture::Update() {
 
                 // This is to avoid having a frame queue so big that you run out of memory.
                 // TODO: MAKE THIS NUMBER CONFIGURABLE
-//                if (req->IsDone() && !req->HasError()) {
-//                    while (capture->approximateFramesToRender() >= 10) {
-//                        std::this_thread::sleep_for(std::chrono::microseconds(10));
-//                    }
-//                }
+                if (req->IsDone() && !req->HasError()) {
+                    while (capture->approximateFramesToRender() >= 10) {
+                        std::this_thread::sleep_for(std::chrono::microseconds(10));
+                    }
+                }
             }
 
             if (req->HasError()) {
