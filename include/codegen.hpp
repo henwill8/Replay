@@ -34,6 +34,8 @@
 #include "GlobalNamespace/IDifficultyBeatmapSet.hpp"
 #include "GlobalNamespace/LevelBar.hpp"
 #include "GlobalNamespace/HMTask.hpp"
+#include "GlobalNamespace/PauseController.hpp"
+#include "GlobalNamespace/IGamePause.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/RectTransform.hpp"

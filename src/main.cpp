@@ -20,6 +20,8 @@
 
 #include "MathUtils.hpp"
 
+#include "CustomTypes/CameraCapture.hpp"
+
 #include <sstream>
 #include <iostream>
 #include <cstdlib>
@@ -1947,6 +1949,16 @@ MAKE_HOOK_MATCH(PauseStart, &PauseMenuManager::Start, void, PauseMenuManager* se
     inPauseMenu = true;
     setSongTime = true;
 
+#ifdef DO_FPS_RECORD
+    Replay::CameraCapture* cameraCapture = GetFirstEnabledComponent<Replay::CameraCapture*>();
+    if(cameraCapture != nullptr) {
+        auto controller = GetFirstEnabledComponent<GlobalNamespace::PauseController*>();
+        if (controller) {
+            controller->gamePause->Resume();
+        }
+    }
+#endif
+
     if(!recording) {
         if(failedTimeSlider != nullptr) {
             UnityEngine::Object::Destroy(*RunMethod<UnityEngine::GameObject*>(failedTimeSlider, "get_gameObject"));
@@ -2062,8 +2074,6 @@ MAKE_HOOK_MATCH(ResultsScreenEnd, &ResultsViewController::DidDeactivate, void, R
 }
 
 UnityEngine::RenderTexture* texture;
-
-#include "CustomTypes/CameraCapture.hpp"
 
 MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObject, void, LightManager* self) {
 
