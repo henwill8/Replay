@@ -2403,11 +2403,10 @@ MAKE_HOOK_MATCH(NoteDebrisSpawner_SpawnDebris, &NoteDebrisSpawner::SpawnDebris, 
 
 MAKE_HOOK_MATCH(MainFlowCoordinator_DidActivate, &MainFlowCoordinator::DidActivate, void, GlobalNamespace::MainFlowCoordinator* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 
-    log("MainFlowCoordinator_DidActivate");
-
     MainFlowCoordinator_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 
     if(firstActivation) {
+        log("Main Flow Coordinator First Activation");
         std::string oldPath = "sdcard/Android/data/com.beatgames.beatsaber/files/replays/";
         replayDirectory = bs_utils::getDataDir(modInfo) + "replays/";
         log("Replay Directory is %s", replayDirectory.c_str());

@@ -34,6 +34,7 @@ void AudioCapture::Write(Array<float>* audioData) {
 }
 
 void AudioCapture::Save() {
+    log("Closing audio file and adding header");
     AddHeader();
     writer.close();
     Rendering = false;
@@ -93,7 +94,6 @@ void AudioCapture::AddHeader() {
 }
 
 void AudioCapture::OnAudioFilterRead(Array<float>* data, int audioChannels) {
-    log("Test");
     if(Rendering) {
         // store the number of channels we are rendering
         if(audioChannels > 0) channels = audioChannels;
