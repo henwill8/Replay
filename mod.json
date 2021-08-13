@@ -9,8 +9,8 @@
   "modFiles": ["libreplay.so"],
   "libraryFiles": [
     "libbeatsaber-hook_2_2_4.so",
+    "libbeatsaber-hook_2_2_5.so",
     "libbs-utils.so",
-    "libquestui.so",
     "libavcodec.so",
     "libavdevice.so",
     "libavfilter.so",
