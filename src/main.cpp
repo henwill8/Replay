@@ -2082,6 +2082,17 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
         int width = 1920;
         int height = 1080;
 
+        #ifdef DO_FPS_RECORD
+        if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera") {
+            Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
+            if(audioCapture == nullptr || audioCapture->get_gameObject() == nullptr) {
+                log("Adding Audio Capture component to the AudioListener");
+                audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
+                audioCapture->OpenFile("sdcard/"+songName+".wav");
+            }
+        }
+        #endif
+
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle != HEADSET) {
 
             static UnityEngine::GameObject* cameraGameObject = nullptr;
