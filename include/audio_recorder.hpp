@@ -18,6 +18,7 @@ DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
     DECLARE_DEFAULT_CTOR();
 
     DECLARE_INSTANCE_METHOD(void, OnAudioFilterRead, Array<float>* data, int audioChannels);
+    DECLARE_INSTANCE_METHOD(void, OnDestroy);
 
     public:
         int SAMPLE_RATE = 48000;

@@ -94,6 +94,7 @@ void AudioCapture::AddHeader() {
 }
 
 void AudioCapture::OnAudioFilterRead(Array<float>* data, int audioChannels) {
+    log("Got data");
     if(Rendering) {
         // store the number of channels we are rendering
         if(audioChannels > 0) channels = audioChannels;
@@ -101,4 +102,8 @@ void AudioCapture::OnAudioFilterRead(Array<float>* data, int audioChannels) {
         // store the data stream
         Write(data);
     }
+}
+
+void AudioCapture::OnDestroy() {
+    Save();
 }

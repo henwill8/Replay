@@ -138,7 +138,7 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	task->size = task->width * task->height * 3;
 
 	// The format is GL_UNSIGNED_BYTE which is correct.
-	log("Task size %d with pixel size %d and depth %d and format %d and byte format %d", task->size, task->depth, pixelSize, getFormatFromInternalFormat(task->internal_format), getTypeFromInternalFormat(task->internal_format));
+	// log("Task size %d with pixel size %d and depth %d and format %d and byte format %d", task->size, task->depth, pixelSize, getFormatFromInternalFormat(task->internal_format), getTypeFromInternalFormat(task->internal_format));
 
     if (task->size == 0
         || getFormatFromInternalFormat(task->internal_format) == 0

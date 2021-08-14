@@ -46,7 +46,7 @@ void CameraCapture::ctor()
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     log("Making video capture");
-    movieModeRendering = true; // make this constructor param
+    movieModeRendering = false; // make this constructor param
     maxFramesAllowedInQueue = 10;
     capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
 
@@ -110,10 +110,10 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
         if (capture->IsInitialized()) {
             if (requests->get_Count() <= 10) {
 
-                log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
+                // log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
                 requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture));
             } else {
-                log("Too many requests currently, not adding more");
+                // log("Too many requests currently, not adding more");
             }
         }
     }
@@ -154,7 +154,7 @@ void CameraCapture::OnPostRender() {
             if (capture->approximateFramesToRender() < maxFramesAllowedInQueue && get_Count(requests) <= 10) {
                 requests->Add(AsyncGPUReadbackPlugin::Request(texture));
             } else {
-                log("Too many requests currently, not adding more");
+                // log("Too many requests currently, not adding more");
             }
 
         } else if(texture->m_CachedPtr.m_value == nullptr) {
@@ -166,7 +166,7 @@ void CameraCapture::OnPostRender() {
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 
         // The time consumption is from AsyncGPUReadbackPlugin::Request which is weird since it's a callback
-        log("Took %lldms to create request, remaining requests to process %d", (long long) duration, frameRequestCount);
+        // log("Took %lldms to create request, remaining requests to process %d", (long long) duration, frameRequestCount);
 
         frameRequestCount--;
     }
@@ -192,13 +192,13 @@ void CameraCapture::Update() {
     if (movieModeRendering) {
         // Add requests over time?
 
-        log("Making request");
+        // log("Making request");
         auto newTexture = GetProperTexture();
 
         requests->Add(AsyncGPUReadbackPlugin::Request(newTexture));
     }
 
-    log("Request count %i", count);
+    // log("Request count %i", count);
 
     for (int i = 0; i < count; i++) {
         auto req = get_Item(requests, i);

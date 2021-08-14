@@ -247,7 +247,7 @@ void VideoCapture::encodeFrames() {
         auto currentTime = std::chrono::high_resolution_clock::now();
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
 
-        log("Took %lldms to add and encode frame", (long long) duration);
+        // log("Took %lldms to add and encode frame", (long long) duration);
 
         free(frameData->data);
         frameData->encoded = true;
@@ -261,7 +261,7 @@ std::shared_ptr<FrameStatus> VideoCapture::queueFrame(rgb24*& queuedFrame) {
 
     std::shared_ptr<FrameStatus> status = std::make_shared<FrameStatus>(queuedFrame);
     while(!flippedframebuffers.enqueue(status));
-    log("Frame queue: %zu", flippedframebuffers.size_approx());
+    // log("Frame queue: %zu", flippedframebuffers.size_approx());
 
     return status;
 }

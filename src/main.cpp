@@ -2056,9 +2056,6 @@ MAKE_HOOK_MATCH(PauseMenuManager_MenuButtonPressed,&PauseMenuManager::MenuButton
     failedReplay = false;
     deathReplay = false;
 
-    Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
-    if(audioCapture != nullptr) audioCapture->Save();
-
     log("Set inSongOrResults to false 1 %d", inSongOrResults);
 }
 
@@ -2091,14 +2088,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             UnityEngine::Camera* camera = nullptr;
 
             #ifdef DO_FPS_RECORD
-            log("Getting audio");
-            Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
-            if(audioCapture == nullptr || audioCapture->get_gameObject() == nullptr) {
-                log("Adding Audio Capture component to the AudioListener");
-                audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
-                audioCapture->OpenFile("sdcard/"+songName+".wav");
-            }
-            log("getting camera");
+            // log("getting camera");
             if(!cameraGameObject) {
                 // Set to 60 hz
                 setRefreshRate(std::make_optional(60.0f));
@@ -2360,9 +2350,6 @@ MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init,void, R
     inSong = false;
 
     SaveRecording(levelCompletionResults, practice);
-
-    Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
-    if(audioCapture != nullptr) audioCapture->Save();
 
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }
