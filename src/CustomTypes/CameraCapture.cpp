@@ -50,8 +50,6 @@ void CameraCapture::ctor()
     maxFramesAllowedInQueue = 10;
     capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
 
-
-
     if (movieModeRendering) {
         log("Going to set time delta");
         Time::set_captureDeltaTime(1.0f / capture->getFpsrate());
