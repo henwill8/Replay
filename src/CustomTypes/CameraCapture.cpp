@@ -46,7 +46,7 @@ void CameraCapture::ctor()
     capture = std::make_shared<VideoCapture>();
     requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
     log("Making video capture");
-    movieModeRendering = false; // make this constructor param
+    movieModeRendering = true; // make this constructor param
     maxFramesAllowedInQueue = 10;
     capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
 
