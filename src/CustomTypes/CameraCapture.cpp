@@ -1,20 +1,9 @@
 #include "CustomTypes/CameraCapture.hpp"
 
 #include "main.hpp"
-
-#include "beatsaber-hook/shared/utils/il2cpp-type-check.hpp"
+#include "gc-util.hpp"
 
 #include <string>
-
-#include "UnityEngine/WaitForEndOfFrame.hpp"
-#include "UnityEngine/WaitForSecondsRealtime.hpp"
-#include "UnityEngine/RenderTextureFormat.hpp"
-#include "UnityEngine/RenderTexture.hpp"
-#include "UnityEngine/RenderTextureReadWrite.hpp"
-#include "UnityEngine/TextureWrapMode.hpp"
-#include "UnityEngine/FilterMode.hpp"
-
-#include "UnityEngine/Graphics.hpp"
 
 using namespace custom_types::Helpers;
 using namespace Replay;
@@ -26,25 +15,10 @@ extern UnityEngine::RenderTexture *texture;
 
 std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTime;
 
-template<>
-struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<&RequestList::get_Count> {
-    static const MethodInfo* get() {
-        return THROW_UNLESS((::il2cpp_utils::FindMethod(classof(RequestList*), "get_Count", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{})));
-    }
-};
-
-template<>
-struct ::il2cpp_utils::il2cpp_type_check::MetadataGetter<&RequestList::get_Item> {
-    static const MethodInfo* get() {
-        int index = 0;
-        return THROW_UNLESS((::il2cpp_utils::FindMethod(classof(RequestList*), "get_Item", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{::il2cpp_utils::ExtractType(index)})));
-    }
-};
-
 void CameraCapture::ctor()
 {
     capture = std::make_shared<VideoCapture>();
-    requests = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *>::New_ctor();
+    requests = RequestList();
     log("Making video capture");
     movieModeRendering = true; // make this constructor param
     maxFramesAllowedInQueue = 10;
@@ -106,10 +80,10 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
         Graphics::Blit(source, targetRenderTexture);
 
         if (capture->IsInitialized()) {
-            if (requests->get_Count() <= 10) {
+            if (requests.size() <= 10) {
 
                 // log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
-                requests->Add(AsyncGPUReadbackPlugin::Request(targetRenderTexture));
+                requests.push_back(AsyncGPUReadbackPlugin::Request(targetRenderTexture));
             } else {
                 // log("Too many requests currently, not adding more");
             }
@@ -147,12 +121,10 @@ void CameraCapture::OnPostRender() {
         auto startTime = std::chrono::high_resolution_clock::now();
 
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
-            static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
-
-            if (capture->approximateFramesToRender() < maxFramesAllowedInQueue && get_Count(requests) <= 10) {
-                requests->Add(AsyncGPUReadbackPlugin::Request(texture));
+            if (capture->approximateFramesToRender() < maxFramesAllowedInQueue && requests.size() <= 10) {
+                requests.push_back(AsyncGPUReadbackPlugin::Request(texture));
             } else {
-                // log("Too many requests currently, not adding more");
+                 log("Too many requests currently, not adding more");
             }
 
         } else if(texture->m_CachedPtr.m_value == nullptr) {
@@ -176,30 +148,24 @@ RenderTexture* CameraCapture::GetProperTexture() {
 
 // https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
 void CameraCapture::Update() {
-
-    std::vector<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest *> toRemove;
-
-    static auto get_Count = FPtrWrapper<&RequestList::get_Count>::get();
-    static auto get_Item = FPtrWrapper<&RequestList::get_Item>::get();
-
     if (!(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr))
         return;
 
-    int count = get_Count(requests);
+
 
     if (movieModeRendering) {
         // Add requests over time?
-
-        // log("Making request");
         auto newTexture = GetProperTexture();
 
-        requests->Add(AsyncGPUReadbackPlugin::Request(newTexture));
+        requests.push_back(AsyncGPUReadbackPlugin::Request(newTexture));
     }
 
     // log("Request count %i", count);
 
-    for (int i = 0; i < count; i++) {
-        auto req = get_Item(requests, i);
+    auto it = requests.begin();
+    while (it != requests.end()) {
+        AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest* req = *it;
+        bool remove = false;
 
         if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             req->Update();
@@ -209,21 +175,21 @@ void CameraCapture::Update() {
                 // This doesn't freeze OpenGL. Should this still be done though?
                 while (!(req->HasError() || req->IsDone())) {
                     req->Update();
-                    std::this_thread::sleep_for(std::chrono::microseconds(1));
+                    std::this_thread::yield();
                 }
 
 
                 // This is to avoid having a frame queue so big that you run out of memory.
                 if (req->IsDone() && !req->HasError() && maxFramesAllowedInQueue > 0) {
                     while (capture->approximateFramesToRender() >= maxFramesAllowedInQueue) {
-                        std::this_thread::sleep_for(std::chrono::microseconds(10));
+                        std::this_thread::yield();
                     }
                 }
             }
 
             if (req->HasError()) {
                 req->Dispose();
-                toRemove.push_back(req);
+                remove = true;
             } else if (req->IsDone()) {
                 // log("Finished %d", i);
                 size_t length;
@@ -233,23 +199,24 @@ void CameraCapture::Update() {
                 capture->queueFrame(buffer);
 
                 req->Dispose();
-                toRemove.push_back(req);
+                remove = true;
             }
         } else {
             req->Dispose();
-            toRemove.push_back(req);
+            remove = true;
         }
-    }
-    for (auto req : toRemove) {
-        requests->Remove(req);
+        if (remove) {
+            it = requests.erase(it);
+        } else {
+            it++;
+        }
     }
 
 }
 
 void CameraCapture::dtor() {
     log("Camera Capture is being destroyed, finishing the capture");
-    for (int i = 0; i < requests->get_Count(); i++) {
-        auto req = requests->get_Item(i);
+    for (auto& req : requests) {
         req->Dispose();
     }
     capture->Finish();
@@ -257,13 +224,5 @@ void CameraCapture::dtor() {
     if (movieModeRendering) {
         Time::set_captureDeltaTime(0.0f);
     }
+    this->~CameraCapture();
 }
-
-// void CameraCapture::OnRenderImage(RenderTexture *source, RenderTexture *destination)
-// {
-//     Graphics::Blit(source, destination);
-//     // if (Time::get_frameCount() % 60 == 0) {
-//     if (requests->get_Count() < 8)
-//         requests->Add(AsyncGPUReadbackPlugin::Request(texture));
-//     // }
-// }

@@ -216,9 +216,9 @@ void VideoCapture::flipFrames() {
         //Flip the screen
         for (int line = 0; line != height / 2; ++line) {
             std::swap_ranges(
-                    frameDataPair->data + width * line,
-                    frameDataPair->data + width * (line + 1),
-                    frameDataPair->data + width * (height - line - 1));
+                    frameDataPair + width * line,
+                    frameDataPair + width * (line + 1),
+                    frameDataPair + width * (height - line - 1));
         }
 
         while (!flippedframebuffers.try_enqueue(frameDataPair));
@@ -239,31 +239,28 @@ void VideoCapture::encodeFrames() {
 
         // Block instead?
         if (!flippedframebuffers.try_dequeue(frameData)) {
+            std::this_thread::yield();
             continue;
         }
 
         auto startTime = std::chrono::high_resolution_clock::now();
-        this->AddFrame(frameData->data);
+        this->AddFrame(frameData);
         auto currentTime = std::chrono::high_resolution_clock::now();
         int64_t duration = std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime).count();
 
         // log("Took %lldms to add and encode frame", (long long) duration);
 
-        free(frameData->data);
-        frameData->encoded = true;
+        free(frameData);
     }
     log("Ending encoding thread");
 }
 
-std::shared_ptr<FrameStatus> VideoCapture::queueFrame(rgb24*& queuedFrame) {
+void VideoCapture::queueFrame(rgb24*& queuedFrame) {
     if(!initialized)
         throw std::runtime_error("Video capture is not initialized");
 
-    std::shared_ptr<FrameStatus> status = std::make_shared<FrameStatus>(queuedFrame);
-    while(!flippedframebuffers.enqueue(status));
-    // log("Frame queue: %zu", flippedframebuffers.size_approx());
-
-    return status;
+    while(!flippedframebuffers.enqueue(queuedFrame));
+//    log("Frame queue: %zu", flippedframebuffers.size_approx());
 }
 
 VideoCapture::~VideoCapture()
@@ -282,12 +279,10 @@ VideoCapture::~VideoCapture()
 
     QueueContent frame;
     while (flippedframebuffers.try_dequeue(frame)) {
-        free(frame->data);
-        frame->encoded = true;
+        free(frame);
     }
 
     while (framebuffers.try_dequeue(frame)) {
-        free(frame->data);
-        frame->encoded = true;
+        free(frame);
     }
 }

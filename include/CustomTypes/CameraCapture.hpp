@@ -1,6 +1,11 @@
 #pragma once
  
 #include "AsyncGPUReadbackPluginRequest.hpp"
+
+#include "gc-util.hpp"
+
+#include <string>
+#include <deque>
  
 #include "UnityEngine/MonoBehaviour.hpp"
 #include "UnityEngine/RenderTexture.hpp"
@@ -15,7 +20,7 @@
 
 #include <memory>
 
-using RequestList = System::Collections::Generic::List_1<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>;
+using RequestList = std::deque<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*, gc_allocator_replay<AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest*>>;
 
 DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
 
@@ -27,7 +32,7 @@ private:
     // Make this a const constructor argument
     bool movieModeRendering;
 
-    DECLARE_INSTANCE_FIELD(RequestList*, requests);
+    RequestList requests;
  
     DECLARE_CTOR(ctor);
     DECLARE_DTOR(dtor);
