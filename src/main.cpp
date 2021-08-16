@@ -1,5 +1,6 @@
 #include <dlfcn.h>
 #include "main.hpp"
+#include "TrickSaber/TrickSaberAPI.hpp"
 #include "codegen.hpp"
 #include "UI.hpp"
 #include "video_recorder.hpp"
@@ -480,13 +481,6 @@ float modifierSpeed;
 GameEnergyUIPanel* gameEnergyUIPanel;
 GameEnergyUIPanel* failedEnergyEffect;
 float failedEffectTimer;
-
-bool checkedForTricksaber = false;
-bool usesTricksaber = false;
-UnityEngine::GameObject* leftTrickSaber = nullptr;
-UnityEngine::GameObject* rightTrickSaber = nullptr;
-UnityEngine::Transform* leftRealModel = nullptr;
-UnityEngine::Transform* rightRealModel = nullptr;
 
 std::string songHash;
 std::string songName;
@@ -1160,8 +1154,6 @@ void ResetVariables() {
     createText = true;
     firstTimeInPause = true;
     didReach0Energy = false;
-    checkedForTricksaber = false;
-    usesTricksaber = false;
     resetModifiers = true;
     modifiersModel = nullptr;
     songTime = 0;
@@ -1172,11 +1164,6 @@ void ResetVariables() {
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();
     smoothPositionOffset.y = getConfig().config["SmoothCameraOffset"]["y"].GetFloat();
     smoothPositionOffset.z = getConfig().config["SmoothCameraOffset"]["z"].GetFloat();
-
-    leftTrickSaber = nullptr;
-    rightTrickSaber = nullptr;
-    leftRealModel = nullptr;
-    rightRealModel = nullptr;
     log("Finished resetting variables");
 }
 
@@ -1281,52 +1268,17 @@ MAKE_HOOK_MATCH(Saber_ManualUpdate, &Saber::ManualUpdate, void, GlobalNamespace:
     int saberType = int(self->get_saberType());
     
     if(recording) {
-        if(!checkedForTricksaber && songTime > 0.75f) {
-            // TODO: HENWILL I MADE TRICK SABER API FOR A REASON
-            // SAVE YOURSELF FROM THIS HORRIFYING CODE WHICH IS MY FAULT
-            checkedForTricksaber = true;
-            log("Checking for TrickSaber");
-            
-            UnityEngine::Transform* VRGameCore = self->get_transform()->GetParent()->GetParent();
-            for(int i = 0; i < VRGameCore->get_childCount(); i++) {
-                UnityEngine::Transform* child = VRGameCore->GetChild(i);
-                std::string name = to_utf8(csstrtostr(UnityEngine::Transform::GetName(child)));
-                log("%s",name.c_str());
-                if(name == "trick_saber_LeftSaber_0") {
-                    usesTricksaber = true;
-                    leftTrickSaber = child->get_gameObject();
-                    leftRealModel = self->get_transform()->Find(self->get_name());
-                    log("Found left trick saber");
-                } else if(name == "trick_saber_RightSaber_1") {
-                    usesTricksaber = true;
-                    rightTrickSaber = child->get_gameObject();
-                    log("Found right trick saber");
-                }
-            }
-        }
-        if(checkedForTricksaber && usesTricksaber && rightRealModel == nullptr && saberType == 1) rightRealModel = self->get_transform()->Find(self->get_name());
+        std::optional<UnityEngine::GameObject*> saberGameObject = TrickSaber::TrickSaberAPI::getActiveSaber(saberType);
+        if(!saberGameObject) saberGameObject.emplace(self->get_gameObject());
+
+        UnityEngine::Transform* saberTransform = saberGameObject.value()->get_transform();
+
         if(saberType == 0) {
-            auto* leftSaberTransform = self->get_transform();
-            if(leftTrickSaber != nullptr) {
-                if(leftTrickSaber->get_activeInHierarchy()) {
-                    leftSaberTransform = leftTrickSaber->get_transform();
-                } else if(usesTricksaber) {
-                    leftSaberTransform = leftRealModel;
-                }
-            }
-            leftSaberPos = leftSaberTransform->get_position();
-            leftSaberRot = leftSaberTransform->get_eulerAngles();
+            leftSaberPos = saberTransform->get_position();
+            leftSaberRot = saberTransform->get_eulerAngles();
         } else {
-            auto* rightSaberTransform = self->get_transform();
-            if(rightTrickSaber != nullptr) {
-                if(rightTrickSaber->get_activeInHierarchy()) {
-                    rightSaberTransform = rightTrickSaber->get_transform();
-                } else if(usesTricksaber && rightRealModel != nullptr) {
-                    rightSaberTransform = rightRealModel;
-                }
-            }
-            rightSaberPos = rightSaberTransform->get_position();
-            rightSaberRot = rightSaberTransform->get_eulerAngles();
+            rightSaberPos = saberTransform->get_position();
+            rightSaberRot = saberTransform->get_eulerAngles();
         }
     } else {
         int offsetIndex;
@@ -1358,7 +1310,7 @@ MAKE_HOOK_MATCH(Saber_ManualUpdate, &Saber::ManualUpdate, void, GlobalNamespace:
             self->get_transform()->set_position(lerpedRightHandPosition);
             self->get_transform()->set_rotation(lerpedRightHandRotation);
         }
-        if(customAvatar != nullptr && getConfig().config["Avatars"].GetBool() && !inPauseMenu) {
+        if(customAvatar != nullptr && getConfig().config["Avatars"].GetBool() && !inPauseMenu && cameraAngle != SMOOTH) {
             customAvatar->get_transform()->SetParent(self->get_transform()->GetParent()->GetParent()->GetParent());
             customAvatar->get_transform()->set_position(UnityEngine::Vector3{0, 0, 0});
             customAvatar->get_transform()->set_localScale(UnityEngine::Vector3{1, 1, 1});
@@ -2648,8 +2600,8 @@ MAKE_HOOK_MATCH(GameEnergyUIPanel_RefreshEnergyUI, &GameEnergyUIPanel::RefreshEn
 }
 
 extern "C" void setup(ModInfo& info) {
-    info.id = "Replay";
-    info.version = "0.6.0";
+    info.id = ID;
+    info.version = VERSION;
     modInfo = info;
     
     getConfig().Load();
