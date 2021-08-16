@@ -1444,11 +1444,13 @@ MAKE_HOOK_MATCH(SongUpdate, &AudioTimeSyncController::Update, void, AudioTimeSyn
     // log("Song Update, in song or results is "+std::to_string(inSongOrResults));
     if(!inSongOrResults && !inPauseMenu) inSongOrResults = true;
 
-    #ifdef DO_FPS_RECORD
-    if(!recording && cameraAngle != HEADSET) {
-        self->timeScale = 1.0f / UnityEngine::Time::get_captureFramerate();
-    }
-    #endif
+    // #ifdef DO_FPS_RECORD
+    // if(!recording && cameraAngle != HEADSET) {
+    //     return;
+    //     // self->timeScale = UnityEngine::Time::get_timeScale();
+    //     // log("Time scale is %f", UnityEngine::Time::get_timeScale());
+    // }
+    // #endif
 
     SongUpdate(self);
 
