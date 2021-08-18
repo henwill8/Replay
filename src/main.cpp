@@ -1900,7 +1900,18 @@ MAKE_HOOK_MATCH(ProgressUpdate, &SongProgressUIController::Update, void, GlobalN
     ProgressUpdate(self);
 }
 
-MAKE_HOOK_MATCH(PauseStart, &PauseMenuManager::Start, void, PauseMenuManager* self) {
+MAKE_HOOK_MATCH(PauseController_get_canPause, &PauseController::get_canPause, bool, PauseController* self) {
+    #ifdef DO_FPS_RECORD
+    Replay::CameraCapture* cameraCapture = GetFirstEnabledComponent<Replay::CameraCapture*>();
+    if(cameraCapture != nullptr) {
+        return false;
+    }
+    #endif
+
+    return PauseController_get_canPause(self);
+}
+
+MAKE_HOOK_MATCH(PauseStart, &PauseMenuManager::ShowMenu, void, PauseMenuManager* self) {
 
     log("PauseStart");
 
@@ -1908,16 +1919,6 @@ MAKE_HOOK_MATCH(PauseStart, &PauseMenuManager::Start, void, PauseMenuManager* se
 
     inPauseMenu = true;
     setSongTime = true;
-
-#ifdef DO_FPS_RECORD
-    Replay::CameraCapture* cameraCapture = GetFirstEnabledComponent<Replay::CameraCapture*>();
-    if(cameraCapture != nullptr) {
-        auto controller = GetFirstEnabledComponent<GlobalNamespace::PauseController*>();
-        if (controller) {
-            controller->gamePause->Resume();
-        }
-    }
-#endif
 
     if(!recording) {
         if(failedTimeSlider != nullptr) {
@@ -2071,7 +2072,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 // Idk what this does
                 mainCamera->set_orthographic(false);
 
-                mainCamera->set_fieldOfView(110.0f);
+                mainCamera->set_fieldOfView(66.0f);
 
                 // Force it to render into texture
                 mainCamera->set_forceIntoRenderTexture(true);
@@ -2636,6 +2637,7 @@ extern "C" void load() {
     INSTALL_HOOK(loggingFunction(), Triggers);
     INSTALL_HOOK(loggingFunction(), ControllerUpdate);
     INSTALL_HOOK(loggingFunction(), ProgressUpdate);
+    INSTALL_HOOK(loggingFunction(), PauseController_get_canPause);
     INSTALL_HOOK(loggingFunction(), PauseStart);
     INSTALL_HOOK(loggingFunction(), PauseFinish);
     INSTALL_HOOK(loggingFunction(), PauseAnimationFinish);
