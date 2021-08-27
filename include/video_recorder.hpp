@@ -18,10 +18,24 @@ extern "C"
 #include "libswscale/swscale.h"
 }
 
+enum class Encoder {
+    MEDIACODEC_GPU,
+    LIBX264_RGB_CPU
+};
+
+constexpr std::string_view encoderName(Encoder enc) {
+    switch (enc) {
+        case Encoder::MEDIACODEC_GPU:
+            return "h264_mediacodec";
+        case Encoder::LIBX264_RGB_CPU:
+            return "libx264rgb";
+    }
+}
+
 class VideoCapture
 {
 public:
-    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath);
+    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath, std::string_view encoderStr = encoderName(Encoder::LIBX264_RGB_CPU));
 
     void AddFrame(rgb24*& data);
     
@@ -76,6 +90,7 @@ private:
     AVFormatContext *ofctx = nullptr;
     AVOutputFormat *oformat = nullptr;
 
+    Encoder encoder;
     float startTime = 0;
 
     int frameCounter = 0;

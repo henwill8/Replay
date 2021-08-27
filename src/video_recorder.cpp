@@ -106,7 +106,7 @@ void VideoCapture::Finish()
     initialized = false;
 }
 
-void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath)
+void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath, std::string_view encoderStr)
 {
     log("Setting up video at path %s", filepath.c_str());
     fps = fpsrate;
@@ -119,7 +119,8 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     int ret;
 
-    codec = avcodec_find_encoder_by_name("libx264rgb");
+    codec = avcodec_find_encoder_by_name(std::string(encoderStr).c_str());
+
     // codec = avcodec_find_encoder(AV_CODEC_ID_H264);
     if (!codec)
     {
@@ -259,7 +260,9 @@ void VideoCapture::queueFrame(rgb24*& queuedFrame) {
     if(!initialized)
         throw std::runtime_error("Video capture is not initialized");
 
-    while(!flippedframebuffers.enqueue(queuedFrame));
+    while(!flippedframebuffers.enqueue(queuedFrame)) {
+        std::this_thread::yield();
+    }
 //    log("Frame queue: %zu", flippedframebuffers.size_approx());
 }
 
