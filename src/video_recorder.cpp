@@ -106,7 +106,8 @@ void VideoCapture::Finish()
     initialized = false;
 }
 
-void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath, std::string_view encoderStr)
+void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath,
+                        std::string_view encoderStr, AVPixelFormat pxlFormat)
 {
     log("Setting up video at path %s", filepath.c_str());
     fps = fpsrate;
@@ -147,7 +148,7 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     c->gop_size = 10;
     c->max_b_frames = 1;
-    c->pix_fmt = AV_PIX_FMT_RGB24;
+    c->pix_fmt = pxlFormat;
     // c->pix_fmt = AV_PIX_FMT_YUV420P;
 
     if (codec->id == AV_CODEC_ID_H264) {

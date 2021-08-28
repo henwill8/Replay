@@ -15,6 +15,12 @@
 
 // Looks like this was from https://github.com/Alabate/AsyncGPUReadbackPlugin
 
+enum struct ColorConvert {
+    NONE,
+    RGB,
+    YUV
+};
+
 struct Task {
 	GLuint origTexture;
 	GLuint newTexture;
@@ -31,7 +37,7 @@ struct Task {
 	int width;
 	int depth;
 	GLint internal_format;
-	bool sRGBEnabled;
+	ColorConvert colorConvert = ColorConvert::RGB; // TODO: Allow configuring
 };
 
 static std::map<int,std::shared_ptr<Task>> tasks;
@@ -165,9 +171,19 @@ extern "C" void makeRequest_renderThread(int event_id) {
 	glViewport(0,0, task->width, task->height);
 
 	// Enable sRGB shader
-	static Shader sRGBShader = Shader::shaderGammaConvert();
+	static Shader sRGBShader = Shader::shaderRGBGammaConvert();
+	static Shader yuvShader = Shader::shaderYUVGammaConvert();
 
-	BlitShader(task->origTexture, sRGBShader);
+	switch (task->colorConvert) {
+	    default:
+            break;
+        case ColorConvert::RGB:
+            BlitShader(task->origTexture, sRGBShader);
+            break;
+        case ColorConvert::YUV:
+            BlitShader(task->origTexture, yuvShader);
+            break;
+    }
 
 	// Create and bind pbo (pixel buffer object) to fbo
 	glGenBuffers(1, &(task->pbo));

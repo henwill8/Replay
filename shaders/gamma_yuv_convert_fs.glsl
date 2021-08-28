@@ -12,20 +12,35 @@ out vec4 out_rgba;
 
 void main()
 {
-    vec3 color = texture(cameraTexture, texCoords).rgb;
+    const float gamma = 1.0 / 2.2;
+    vec3 rgb = texture(cameraTexture, texCoords).rgb;
+    rgb = rgb(color, vec3(gamma));
 
-    out_rgba = vec4(rgba, 1.0);
+
     mat4 RGBtoYUV = mat4(
-    0.257,  0.439, -0.148, 0.0,
-    0.504, -0.368, -0.291, 0.0,
-    0.098, -0.071,  0.439, 0.0,
-    0.0625, 0.500,  0.500, 1.0
+        0.257,  0.439, -0.148, 0.0,
+        0.504, -0.368, -0.291, 0.0,
+        0.098, -0.071,  0.439, 0.0,
+        0.0625, 0.500,  0.500, 1.0
     );
+    vec4 yuv = RGBtoYUV * vec4(rgb, 1.0);
 
-    // YUV transform
-    vec3 colorYUV = (RGBtoYUV * vec4(color, 1.0)).rgb;
+    out_rgba = yuv;
 
-    out_rgba = vec4(colorYUV, 1.0);
+//    vec3 color = texture(cameraTexture, texCoords).rgb;
+//
+//    out_rgba = vec4(rgba, 1.0);
+//    mat4 RGBtoYUV = mat4(
+//    0.257,  0.439, -0.148, 0.0,
+//    0.504, -0.368, -0.291, 0.0,
+//    0.098, -0.071,  0.439, 0.0,
+//    0.0625, 0.500,  0.500, 1.0
+//    );
+//
+//    // YUV transform
+//    vec3 colorYUV = (RGBtoYUV * vec4(color, 1.0)).rgb;
+//
+//    out_rgba = vec4(colorYUV, 1.0);
 
 //    vec3 rgba = texture(cameraTexture, texCoords).rgb;
 

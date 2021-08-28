@@ -20,6 +20,7 @@ extern "C"
 
 enum class Encoder {
     MEDIACODEC_GPU,
+    LIBX264_YUV_444_CPU,
     LIBX264_RGB_CPU
 };
 
@@ -29,13 +30,30 @@ constexpr std::string_view encoderName(Encoder enc) {
             return "h264_mediacodec";
         case Encoder::LIBX264_RGB_CPU:
             return "libx264rgb";
+        case Encoder::LIBX264_YUV_444_CPU:
+            return "libx264";
+    }
+}
+
+constexpr AVPixelFormat pixelFormat(Encoder enc) {
+    // AV_PIX_FMT_RGB24
+    switch (enc) {
+        case Encoder::MEDIACODEC_GPU:
+            return AV_PIX_FMT_YUV444P;
+        case Encoder::LIBX264_RGB_CPU:
+            return AV_PIX_FMT_RGB24;
+        case Encoder::LIBX264_YUV_444_CPU:
+            return AV_PIX_FMT_YUV444P;
     }
 }
 
 class VideoCapture
 {
 public:
-    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath, std::string_view encoderStr = encoderName(Encoder::LIBX264_RGB_CPU));
+    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, const std::string& encodeSpeed,
+              const std::string& filepath,
+              std::string_view encoderStr = encoderName(Encoder::LIBX264_RGB_CPU),
+              AVPixelFormat pxlFormat = pixelFormat(Encoder::LIBX264_RGB_CPU));
 
     void AddFrame(rgb24*& data);
     
