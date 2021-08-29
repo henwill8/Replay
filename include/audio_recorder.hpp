@@ -17,7 +17,6 @@ DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
 
     DECLARE_DEFAULT_CTOR();
 
-    DECLARE_INSTANCE_METHOD(void, OnAudioFilterRead, Array<float>* data, int audioChannels);
     DECLARE_INSTANCE_METHOD(void, OnDestroy);
 
     public:
@@ -26,6 +25,8 @@ DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
         void Save();
 
         void OpenFile(const std::string& filename);
+
+        void Write(Array<float>* audioData);
 
         std::ofstream writer;
 
@@ -40,8 +41,6 @@ DECLARE_CLASS_CODEGEN(Replay, AudioCapture, UnityEngine::MonoBehaviour,
         int channels = 2;
 
         void AddHeader();
-
-        void Write(Array<float>* audioData);
         
         bool Rendering = false;
 )

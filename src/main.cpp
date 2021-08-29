@@ -2072,7 +2072,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 // Idk what this does
                 mainCamera->set_orthographic(false);
 
-                mainCamera->set_fieldOfView(66.0f);
+                mainCamera->set_fieldOfView(90.0f);
 
                 // Force it to render into texture
                 mainCamera->set_forceIntoRenderTexture(true);
@@ -2202,6 +2202,38 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
     }
     
     LightManager_OnWillRenderObject(self);
+}
+
+MAKE_HOOK_MATCH(AudioSource_Play, static_cast<void (UnityEngine::AudioSource::*)()>(&UnityEngine::AudioSource::Play), void, UnityEngine::AudioSource* self) {
+
+    AudioSource_Play(self);
+
+    log("AudioSource_Play");
+
+    #ifdef DO_FPS_RECORD
+    if(inSong && !recording) {
+        UnityEngine::AudioClip* clip = self->get_clip();
+        if(clip == nullptr) {
+            log("Clip is null");
+            return;
+        }
+
+        Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
+        if(audioCapture == nullptr) {
+            log("AudioCapture is null");
+            return;
+        }
+        audioCapture->SAMPLE_RATE = clip->get_frequency();
+
+        typedef function_ptr_t<void, UnityEngine::AudioSource*, Array<float>*, int> outputDataType;
+        auto GetOutputDataHelper = *reinterpret_cast<outputDataType>(il2cpp_functions::resolve_icall("UnityEngine.AudioSource::GetOutputDataHelper"));
+
+        Array<float>* samples = Array<float>::NewLength(clip->get_samples() * clip->get_channels());
+        GetOutputDataHelper(self, samples, 0);
+
+        audioCapture->Write(samples);
+    }
+    #endif
 }
 
 MAKE_HOOK_MATCH(HapticFeedbackController_Rumble, &HapticFeedbackController::PlayHapticFeedback, void, HapticFeedbackController* self, UnityEngine::XR::XRNode node, Libraries::HM::HMLib::VR::HapticPresetSO* hapticPreset) {
@@ -2644,6 +2676,7 @@ extern "C" void load() {
     INSTALL_HOOK(loggingFunction(), PauseMenuManager_MenuButtonPressed);
     INSTALL_HOOK(loggingFunction(), ResultsScreenEnd);
     INSTALL_HOOK(loggingFunction(), LightManager_OnWillRenderObject);
+    INSTALL_HOOK(loggingFunction(), AudioSource_Play);
     INSTALL_HOOK(loggingFunction(), HapticFeedbackController_Rumble);
     INSTALL_HOOK(loggingFunction(), ResultsViewController_SetDataToUI);
     INSTALL_HOOK(loggingFunction(), ResultsViewController_Init);
