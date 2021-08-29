@@ -12,9 +12,10 @@ out vec4 out_rgba;
 
 void main()
 {
+    // TODO: Fix conversion
     const float gamma = 1.0 / 2.2;
     vec3 rgb = texture(cameraTexture, texCoords).rgb;
-    rgb = rgb(color, vec3(gamma));
+    rgb = pow(rgb, vec3(gamma));
 
 
     mat4 RGBtoYUV = mat4(

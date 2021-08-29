@@ -19,15 +19,16 @@ extern "C"
 }
 
 enum class Encoder {
-    MEDIACODEC_GPU,
+// TODO: Android does NOT have MediaCodec encoder
+//    MEDIACODEC_GPU,
     LIBX264_YUV_444_CPU,
     LIBX264_RGB_CPU
 };
 
 constexpr std::string_view encoderName(Encoder enc) {
     switch (enc) {
-        case Encoder::MEDIACODEC_GPU:
-            return "h264_mediacodec";
+//        case Encoder::MEDIACODEC_GPU:
+//            return "h264_mediacodec";
         case Encoder::LIBX264_RGB_CPU:
             return "libx264rgb";
         case Encoder::LIBX264_YUV_444_CPU:
@@ -38,8 +39,8 @@ constexpr std::string_view encoderName(Encoder enc) {
 constexpr AVPixelFormat pixelFormat(Encoder enc) {
     // AV_PIX_FMT_RGB24
     switch (enc) {
-        case Encoder::MEDIACODEC_GPU:
-            return AV_PIX_FMT_YUV444P;
+//        case Encoder::MEDIACODEC_GPU:
+//            return AV_PIX_FMT_YUV444P;
         case Encoder::LIBX264_RGB_CPU:
             return AV_PIX_FMT_RGB24;
         case Encoder::LIBX264_YUV_444_CPU:

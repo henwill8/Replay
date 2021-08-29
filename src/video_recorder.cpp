@@ -1,5 +1,12 @@
 #include "include/video_recorder.hpp"
 
+extern "C" {
+#include "libavcodec/mediacodec.h"
+#include "libavcodec/jni.h"
+}
+
+#include "modloader/shared/modloader.hpp"
+
 void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite = 1) {
     int ret;
 
@@ -106,6 +113,43 @@ void VideoCapture::Finish()
     initialized = false;
 }
 
+void* iterate_data = NULL;
+
+const char* Encoder_GetNextCodecName(bool onlyEncoders = true)
+{
+    AVCodec* current_codec = const_cast<AVCodec *>(av_codec_iterate(&iterate_data));
+    while (current_codec != NULL)
+    {
+        if (onlyEncoders && !av_codec_is_encoder(current_codec))
+        {
+            current_codec = const_cast<AVCodec *>(av_codec_iterate(&iterate_data));
+            continue;
+        }
+        return current_codec->name;
+    }
+    return "";
+}
+
+const char* Encoder_GetFirstCodecName()
+{
+    iterate_data = NULL;
+    return Encoder_GetNextCodecName();
+}
+
+std::vector<std::string> GetCodecs()
+{
+    std::vector<std::string> l;
+
+    auto s = std::string(Encoder_GetFirstCodecName());
+    while (!s.empty())
+    {
+        l.push_back(s);
+        s = std::string(Encoder_GetNextCodecName());
+    }
+
+    return l;
+}
+
 void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath,
                         std::string_view encoderStr, AVPixelFormat pxlFormat)
 {
@@ -120,6 +164,21 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
 
     int ret;
 
+    // For MediaCodec Android, though it does not support encoding. We can do this anyways
+    auto jni = Modloader::getJni();
+    JavaVM* myVM;
+    jni->GetJavaVM(&myVM);
+    if (av_jni_set_java_vm(myVM, NULL) < 0) {
+        log("Unable to enable JNI");
+    } else {
+        log("Successfully enabled JNI");
+    }
+
+    for (auto& s : GetCodecs()) {
+        log("codec: %s", s.c_str());
+    }
+
+    log("Attempting to use %s", std::string(encoderStr).c_str());
     codec = avcodec_find_encoder_by_name(std::string(encoderStr).c_str());
 
     // codec = avcodec_find_encoder(AV_CODEC_ID_H264);

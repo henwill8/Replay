@@ -13,13 +13,13 @@ import zipfile
 
 repository = Github().get_repo('Fernthedev/ffmpeg-kit-speed')
 
-release = repository.get_release("v4.4")  # Update as needed
+release = repository.get_release("v4.4.1")  # Update as needed
 
 releaseLibrariesAssetName = "ffmpeg-kit.aar"
 releaseHeadersAssetName = "ffmpeg-kit-headers.zip"
 
-ffmpegFolder = "./ffmpeg"
-ffmpegTempFolder = "./ffmpeg_temp"
+ffmpegFolder = os.path.join(os.getcwd(), "ffmpeg")
+ffmpegTempFolder = os.path.join(os.getcwd(), "ffmpeg_temp")
 
 assets = release.get_assets()
 

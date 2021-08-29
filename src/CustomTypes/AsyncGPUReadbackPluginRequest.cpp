@@ -18,6 +18,7 @@
 enum struct ColorConvert {
     NONE,
     RGB,
+    // TODO: Fix conversion
     YUV
 };
 
