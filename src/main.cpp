@@ -1590,6 +1590,10 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
     
     log("Getting songHash");
     auto* Level = reinterpret_cast<BeatmapLevelSO*>(self->level);
+    if(Level == nullptr) {
+        log("Beatmap Level is null, not adding buttons");
+        return;
+    }
     Il2CppString* LevelID = Level->get_levelID();
 
     log("Getting difficulty and mode");
@@ -2072,7 +2076,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 // Idk what this does
                 mainCamera->set_orthographic(false);
 
-                mainCamera->set_fieldOfView(66.0f);
+                mainCamera->set_fieldOfView(90.0f);
 
                 // Force it to render into texture
                 mainCamera->set_forceIntoRenderTexture(true);
@@ -2147,7 +2151,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 headFollowTransform->SetPositionAndRotation(smoothCameraPosition, UnityEngine::Quaternion::Euler(cameraRotation.x, 0, cameraRotation.z));
                 
                 cameraGO->get_transform()->SetPositionAndRotation(smoothCameraPosition, headFollowTransform->get_rotation());
-                cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::World);
+                cameraGO->get_transform()->Translate(smoothPositionOffset, UnityEngine::Space::Self);
                 cameraGO->get_transform()->set_rotation(smoothCameraRotation);
             } else {
                 if(getConfig().config["ThirdPersonCircularMovement"].GetBool()) {
