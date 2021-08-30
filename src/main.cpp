@@ -2053,7 +2053,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             if(audioCapture == nullptr || audioCapture->get_gameObject() == nullptr) {
                 log("Adding Audio Capture component to the AudioListener");
                 audioCapture = GetFirstEnabledComponent<UnityEngine::AudioListener*>()->get_gameObject()->AddComponent<Replay::AudioCapture*>();
-                audioCapture->OpenFile("sdcard/"+songName+".wav");
+                audioCapture->OpenFile("sdcard/audio.wav");
             }
         }
         #endif
