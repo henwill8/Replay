@@ -30,7 +30,7 @@
     },
     {
       "id": "codegen",
-      "versionRange": "^0.12.0",
+      "versionRange": "^0.13.0",
       "additionalData": {}
     },
     {
