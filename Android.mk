@@ -112,6 +112,7 @@ LOCAL_SRC_FILES += $(call rwildcard,src/,*.cpp)
 LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.cpp)
 LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.c)
 LOCAL_SHARED_LIBRARIES += modloader
+LOCAL_SHARED_LIBRARIES += codegen
 LOCAL_SHARED_LIBRARIES += beatsaber-hook_2_3_0
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += custom-types
@@ -122,7 +123,6 @@ LOCAL_SHARED_LIBRARIES += avutil
 LOCAL_SHARED_LIBRARIES += swscale
 LOCAL_SHARED_LIBRARIES += ffmpegkit
 LOCAL_SHARED_LIBRARIES += ffmpegkitabidetect
-LOCAL_SHARED_LIBRARIES += codegen
 LOCAL_LDLIBS += -llog -lGLESv3 -lGLESv2
 LOCAL_CPPFLAGS += -std=c++2a -O3 -frtti
 LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./ffmpeg
