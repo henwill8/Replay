@@ -1,6 +1,6 @@
 # Builds a .zip file for loading with BMBF
 $NDKPath = Get-Content $PSScriptRoot/ndkpath.txt
-$Name = "replay_v0.6.1"
+$Name = "replay_v0.6.3"
 
 $buildScript = "$NDKPath/build/ndk-build"
 if (-not ($PSVersionTable.PSEdition -eq "Core")) {

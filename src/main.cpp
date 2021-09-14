@@ -1714,7 +1714,7 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
             parent, 
             "Replay", 
             "OkButton", 
-            UnityEngine::Vector2{buttonsPosition.x+13.2f, buttonsPosition.y-3.6f}, 
+            UnityEngine::Vector2{buttonsPosition.x+13.2f, buttonsPosition.y}, 
             []() { replayButtonOnClick(); }
         );
         replayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
@@ -2262,7 +2262,7 @@ MAKE_HOOK_MATCH(ResultsViewController_SetDataToUI, &ResultsViewController::SetDa
             parent, 
             "Replay", 
             "OkButton", 
-            UnityEngine::Vector2{17.25f, -32},
+            UnityEngine::Vector2{17.25f, -28},
             [] { failedReplayButtonOnClick(); }
         );
         failedReplayButton->get_transform()->set_localScale(UnityEngine::Vector3{buttonsScale, buttonsScale, buttonsScale});
@@ -2470,7 +2470,7 @@ MAKE_HOOK_MATCH(GameSongController_LateUpdate, &GameSongController::LateUpdate, 
 
     maxSongTime = self->get_songLength();
 
-    if(failedTimeSlider != nullptr && !inPauseMenu && !inResumeAnimation && !recording && setSongTime && songTime > 0.1f) {
+    if(failedTimeSlider != nullptr && !inPauseMenu && !inResumeAnimation && !recording && setSongTime && songTime > 0.1f && failedTimeSlider->m_CachedPtr.m_value != nullptr) {
         log("Checking to set song time");
         float sliderValue = failedTimeSlider->get_transform()->Find(createcsstr("LatencySlider"))->get_gameObject()->GetComponent<HMUI::TimeSlider*>()->get_value();
 
