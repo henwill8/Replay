@@ -1,5 +1,7 @@
 #include "CustomTypes/CameraCapture.hpp"
 
+#include "hollywood/video_recorder.hpp"
+
 #include "main.hpp"
 #include "gc-util.hpp"
 
@@ -17,16 +19,16 @@ std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTi
 
 void CameraCapture::ctor()
 {
-    capture = std::make_shared<VideoCapture>();
+    // TODO: Inject this through `Init` method?
+    capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
     requests = RequestList();
     log("Making video capture");
-    movieModeRendering = true; // make this constructor param
+    movieModeRendering = true; // todo: make this constructor param
     maxFramesAllowedInQueue = 10;
-    capture->Init(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
 
     if (movieModeRendering) {
         log("Going to set time delta");
-        Time::set_captureDeltaTime(1.0f / capture->getFpsrate());
+        Time::set_captureDeltaTime(1.0f / capture->getFpsRate());
         log("Set the delta time");
     }
     // StartCoroutine(reinterpret_cast<enumeratorT*>(CoroutineHelper::New(RequestPixelsAtEndOfFrame())));
@@ -37,7 +39,7 @@ void CameraCapture::RequestFrame() {
     frameRequestCount++;
 }
 
-UnityEngine::RenderTexture* GetTemporaryRenderTexture(VideoCapture* capture, int format)
+UnityEngine::RenderTexture* GetTemporaryRenderTexture(Hollywood::AbstractVideoEncoder* capture, int format)
 {
     UnityEngine::RenderTexture* rt = RenderTexture::GetTemporary(capture->getWidth(), capture->getHeight(), 0, (RenderTextureFormat) format, RenderTextureReadWrite::Default);
     rt->set_wrapMode(TextureWrapMode::Clamp);
@@ -60,7 +62,7 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
 
         int64_t duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastRecordedTime.value()).count();
 
-        if ((float) duration >= 1.0f/capture->getFpsrate()) {
+        if ((float) duration >= 1.0f/capture->getFpsRate()) {
             render = true;
         }
     }
@@ -79,7 +81,7 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
 
         Graphics::Blit(source, targetRenderTexture);
 
-        if (capture->IsInitialized()) {
+        if (capture->isInitialized()) {
             if (requests.size() <= 10) {
 
                 // log("Requesting! %dx%d", targetRenderTexture->GetDataWidth(), targetRenderTexture->GetDataHeight());
@@ -109,7 +111,7 @@ void CameraCapture::OnPostRender() {
 
         int64_t duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime - lastRecordedTime.value()).count();
 
-        if ((float) duration >= 1.0f/capture->getFpsrate()) {
+        if ((float) duration >= 1.0f/capture->getFpsRate()) {
             render = true;
         }
     }
@@ -120,7 +122,7 @@ void CameraCapture::OnPostRender() {
 
         auto startTime = std::chrono::high_resolution_clock::now();
 
-        if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+        if (capture->isInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             if (capture->approximateFramesToRender() < maxFramesAllowedInQueue && requests.size() <= 10) {
                 requests.push_back(AsyncGPUReadbackPlugin::Request(texture));
             } else {
@@ -148,7 +150,7 @@ RenderTexture* CameraCapture::GetProperTexture() {
 
 // https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
 void CameraCapture::Update() {
-    if (!(capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr))
+    if (!(capture->isInitialized() && texture->m_CachedPtr.m_value != nullptr))
         return;
 
 
@@ -167,7 +169,7 @@ void CameraCapture::Update() {
         AsyncGPUReadbackPlugin::AsyncGPUReadbackPluginRequest* req = *it;
         bool remove = false;
 
-        if (capture->IsInitialized() && texture->m_CachedPtr.m_value != nullptr) {
+        if (capture->isInitialized() && texture->m_CachedPtr.m_value != nullptr) {
             req->Update();
 
             if (movieModeRendering) {
@@ -196,7 +198,11 @@ void CameraCapture::Update() {
                 rgb24 *buffer;
                 req->GetRawData(buffer, length);
 
-                capture->queueFrame(buffer);
+                if (movieModeRendering) {
+                    capture->queueFrame(buffer, std::nullopt);
+                } else {
+                    capture->queueFrame(buffer, UnityEngine::Time::get_time()); // todo: is this the right time method?
+                }
 
                 req->Dispose();
                 remove = true;
@@ -219,8 +225,10 @@ void CameraCapture::dtor() {
     for (auto& req : requests) {
         req->Dispose();
     }
-    capture->Finish();
+    capture.reset(); // force delete of video capture
     CancelInvoke();
+
+    // todo: this shouldn't be done by CameraCapture, rather externally
     if (movieModeRendering) {
         Time::set_captureDeltaTime(0.0f);
     }

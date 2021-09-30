@@ -4,6 +4,8 @@
 #include "CustomTypes/AsyncGPUReadbackPluginRequest.hpp"
 #include "queue/readerwriterqueue.h"
 
+#include "hollywood/AbstractEncoder.hpp"
+
 #include <iostream>
 #include <fstream>
 
@@ -48,17 +50,20 @@ constexpr AVPixelFormat pixelFormat(Encoder enc) {
     }
 }
 
-class VideoCapture
-{
+// TODO: Rename to FFMPEGVideoEncoder?
+class VideoCapture : public Hollywood::AbstractVideoEncoder {
 public:
-    void Init(int width, int height, int fpsrate, int bitrate, bool stabilizeFPS, const std::string& encodeSpeed,
-              const std::string& filepath,
-              std::string_view encoderStr = encoderName(Encoder::LIBX264_RGB_CPU),
-              AVPixelFormat pxlFormat = pixelFormat(Encoder::LIBX264_RGB_CPU));
+    VideoCapture(const uint32_t width, const uint32_t height, const uint32_t fpsRate,
+                 int bitrate, bool stabilizeFPS, std::string_view encodeSpeed,
+                 std::string_view filepath,
+                 std::string_view encoderStr = encoderName(Encoder::LIBX264_RGB_CPU),
+                 AVPixelFormat pxlFormat = pixelFormat(Encoder::LIBX264_RGB_CPU));
 
-    void AddFrame(rgb24*& data);
-    
-    void queueFrame(rgb24*& queuedFrame);
+    void Init() override;
+
+
+
+    void queueFrame(rgb24* queuedFrame, std::optional<float> timeOfFrame) override;
 
     void Finish();
 
@@ -74,30 +79,20 @@ public:
 
     float RecordingLength()
     {
-        return float(frameCounter) * (1.0f / float(fps));
+        return float(frameCounter) * (1.0f / float(fpsRate));
     };
 
-    float TotalLength()
+    float TotalLength() const
     {
         return UnityEngine::Time::get_time() - startTime;
     };
 
-    float getFpsrate() {
-        return fps;
-    }
 
-    ~VideoCapture();
+    ~VideoCapture() override;
 
-    int getWidth() {
-        return width;
-    }
 
-    int getHeight() {
-        return height;
-    }
-
-    size_t approximateFramesToRender() {
-        return framebuffers.size_approx() + flippedframebuffers.size_approx();
+    size_t approximateFramesToRender() override {
+        return framebuffers.size_approx();
     }
 
 private:
@@ -113,17 +108,12 @@ private:
     float startTime = 0;
 
     int frameCounter = 0;
-
-    bool initialized = false;
-
-    int fps;
-    int width;
-    int height;
-    int bitrate;
-
-    bool stabilizeFPS;
-
-    std::string filename;
+    const uint32_t bitrate;
+    const bool stabilizeFPS;
+    const std::string encodeSpeed;
+    const std::string encoderStr; // encoder for FFMPEG to use
+    const std::string filename;
+    const AVPixelFormat pxlFormat;
     std::ofstream f;
 
     using QueueContent = rgb24*;
@@ -138,6 +128,7 @@ private:
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
 
+    void AddFrame(rgb24 *data);
     void encodeFrames();
     void flipFrames();
 

@@ -12,7 +12,7 @@
  
 #include "System/Collections/Generic/List_1.hpp"
 
-#include "video_recorder.hpp"
+#include "hollywood/AbstractEncoder.hpp"
  
 #include "custom-types/shared/macros.hpp"
 #include <experimental/coroutine>
@@ -26,7 +26,7 @@ DECLARE_CLASS_CODEGEN(Replay, CameraCapture, UnityEngine::MonoBehaviour,
 
 private:
 
-    std::shared_ptr<VideoCapture> capture;
+    std::unique_ptr<Hollywood::AbstractVideoEncoder> capture;
     int frameRequestCount = 0;
     uint32_t maxFramesAllowedInQueue;
     // Make this a const constructor argument

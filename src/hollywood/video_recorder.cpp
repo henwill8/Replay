@@ -1,4 +1,4 @@
-#include "include/video_recorder.hpp"
+#include "include/hollywood/video_recorder.hpp"
 
 extern "C" {
 #include "libavcodec/mediacodec.h"
@@ -47,7 +47,7 @@ void VideoCapture::Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt
     }
 }
 
-void VideoCapture::AddFrame(rgb24*& data) {
+void VideoCapture::AddFrame(rgb24 *data) {
     if(!initialized) return;
 
     if(startTime == 0) {
@@ -84,7 +84,7 @@ void VideoCapture::AddFrame(rgb24*& data) {
     if (stabilizeFPS) {
         frame->pts = TotalLength();
     } else {
-        frame->pts = (int) ((1.0f / (float) fps) * (float) frameCounter);
+        frame->pts = (int) ((1.0f / (float) fpsRate) * (float) frameCounter);
     }
     /* encode the image */
     Encode(c, frame, pkt, f, framesToWrite);
@@ -150,28 +150,39 @@ std::vector<std::string> GetCodecs()
     return l;
 }
 
-void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoBitrate, bool stabilizeFPS, const std::string& encodeSpeed, const std::string& filepath,
-                        std::string_view encoderStr, AVPixelFormat pxlFormat)
-{
-    log("Setting up video at path %s", filepath.c_str());
-    fps = fpsrate;
-    width = videoWidth;
-    height = videoHeight;
-    bitrate = videoBitrate * 1000;
-    filename = filepath;
-    this->stabilizeFPS = stabilizeFPS;
-    frameCounter = 0;
+VideoCapture::VideoCapture(const uint32_t width, const uint32_t height, const uint32_t fpsRate,
+                           int bitrate, bool stabilizeFPS, std::string_view encodeSpeed,
+                           std::string_view filepath,
+                           std::string_view encoderStr,
+                           AVPixelFormat pxlFormat)
+                           : AbstractVideoEncoder(width, height, fpsRate),
+                           bitrate(bitrate),
+                           filename(filepath),
+                           stabilizeFPS(stabilizeFPS),
+                           encodeSpeed(encodeSpeed),
+                           encoderStr(encoderStr),
+                           pxlFormat(pxlFormat) {
+    log("Setting up video at path %s", this->filename.c_str());
+}
 
+void VideoCapture::Init() {
+    frameCounter = 0;
     int ret;
 
-    // For MediaCodec Android, though it does not support encoding. We can do this anyways
-    auto jni = Modloader::getJni();
-    JavaVM* myVM;
-    jni->GetJavaVM(&myVM);
-    if (av_jni_set_java_vm(myVM, NULL) < 0) {
-        log("Unable to enable JNI");
-    } else {
-        log("Successfully enabled JNI");
+    // todo: should this be done?
+    static bool jniEnabled = false;
+
+    if (!jniEnabled) {
+        // For MediaCodec Android, though it does not support encoding. We can do this anyways
+        auto jni = Modloader::getJni();
+        JavaVM *myVM;
+        jni->GetJavaVM(&myVM);
+        if (av_jni_set_java_vm(myVM, NULL) < 0) {
+            log("Unable to enable JNI");
+        } else {
+            log("Successfully enabled JNI");
+        }
+        jniEnabled = true;
     }
 
     for (auto& s : GetCodecs()) {
@@ -202,8 +213,8 @@ void VideoCapture::Init(int videoWidth, int videoHeight, int fpsrate, int videoB
     c->bit_rate = bitrate * 1000;
     c->width = width;
     c->height = height;
-    c->time_base = (AVRational){1, fps};
-    c->framerate = (AVRational){fps, 1};
+    c->time_base = (AVRational){1, (int) fpsRate};
+    c->framerate = (AVRational){(int) fpsRate, 1};
 
     c->gop_size = 10;
     c->max_b_frames = 1;
@@ -316,7 +327,7 @@ void VideoCapture::encodeFrames() {
     log("Ending encoding thread");
 }
 
-void VideoCapture::queueFrame(rgb24*& queuedFrame) {
+void VideoCapture::queueFrame(rgb24* queuedFrame, std::optional<float> timeOfFrame) {
     if(!initialized)
         throw std::runtime_error("Video capture is not initialized");
 

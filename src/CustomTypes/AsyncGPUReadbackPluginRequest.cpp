@@ -8,7 +8,6 @@
 
 #include <GLES3/gl32.h>
 #include <GLES3/gl3ext.h>
-#include "video_recorder.hpp"
 #include "CustomTypes/TypeHelpers.hpp"
 
 #include "UnityEngine/GL.hpp"
