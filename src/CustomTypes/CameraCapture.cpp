@@ -13,6 +13,7 @@ using namespace UnityEngine;
 
 DEFINE_TYPE(Replay, CameraCapture);
 
+// TODO: This should be injected by constructor and allow modification at runtime e.g setCameraTexture
 extern UnityEngine::RenderTexture *texture;
 
 std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTime;
@@ -23,9 +24,10 @@ void CameraCapture::ctor()
     capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
     requests = RequestList();
     log("Making video capture");
-    movieModeRendering = true; // todo: make this constructor param
+    movieModeRendering = true; // todo: make this constructor param or set if get_captureDeltaTime is non-zero?
     maxFramesAllowedInQueue = 10;
 
+    // TODO: This should be handled externally
     if (movieModeRendering) {
         log("Going to set time delta");
         Time::set_captureDeltaTime(1.0f / capture->getFpsRate());
@@ -48,7 +50,7 @@ UnityEngine::RenderTexture* GetTemporaryRenderTexture(Hollywood::AbstractVideoEn
     return rt;
 }
 
-
+#pragma region deprecated
 // TODO: Remove?
 void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngine::RenderTexture *destination) {
     bool render = false;
@@ -94,6 +96,8 @@ void CameraCapture::OnRenderImage(UnityEngine::RenderTexture *source, UnityEngin
 
     UnityEngine::Graphics::Blit(source, destination);
 }
+
+#pragma endregion
 
 void CameraCapture::OnPostRender() {
     if (movieModeRendering) {
@@ -144,9 +148,6 @@ void CameraCapture::OnPostRender() {
     }
 }
 
-RenderTexture* CameraCapture::GetProperTexture() {
-    return texture;
-}
 
 // https://github.com/Alabate/AsyncGPUReadbackPlugin/blob/e8d5e52a9adba24bc0f652c39076404e4671e367/UnityExampleProject/Assets/Scripts/UsePlugin.cs#L13
 void CameraCapture::Update() {
@@ -233,4 +234,9 @@ void CameraCapture::dtor() {
         Time::set_captureDeltaTime(0.0f);
     }
     this->~CameraCapture();
+}
+
+
+RenderTexture* CameraCapture::GetProperTexture() {
+    return texture;
 }

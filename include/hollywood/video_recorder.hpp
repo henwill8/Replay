@@ -53,7 +53,7 @@ constexpr AVPixelFormat pixelFormat(Encoder enc) {
 // TODO: Rename to FFMPEGVideoEncoder?
 class VideoCapture : public Hollywood::AbstractVideoEncoder {
 public:
-    VideoCapture(const uint32_t width, const uint32_t height, const uint32_t fpsRate,
+    VideoCapture(uint32_t width, uint32_t height, uint32_t fpsRate,
                  int bitrate, bool stabilizeFPS, std::string_view encodeSpeed,
                  std::string_view filepath,
                  std::string_view encoderStr = encoderName(Encoder::LIBX264_RGB_CPU),
@@ -119,18 +119,12 @@ private:
     using QueueContent = rgb24*;
     moodycamel::ReaderWriterQueue<QueueContent> framebuffers;
 
-    // Flipped frames ready to encode
-    moodycamel::ReaderWriterQueue<QueueContent> flippedframebuffers;
 //    std::list<rgb24*> framebuffers;
     std::thread encodingThread;
-    std::thread flippingThread;
     rgb24* emptyFrame; // constant used to set the frame data to null
 
     void Encode(AVCodecContext *enc_ctx, AVFrame *frame, AVPacket *pkt, std::ofstream& outfile, int framesToWrite);
 
     void AddFrame(rgb24 *data);
-    void encodeFrames();
-    void flipFrames();
-
-    void WaitForEndFrames();
+    void encodeFramesThreadLoop();
 };
