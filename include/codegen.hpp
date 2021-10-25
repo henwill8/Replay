@@ -122,6 +122,8 @@
 #include "GlobalNamespace/OVRPlugin_Step.hpp"
 #include "GlobalNamespace/OVRPlugin_PoseStatef.hpp"
 #include "GlobalNamespace/MultiplayerLevelScenesTransitionSetupDataSO.hpp"
+#include "GlobalNamespace/MainSettingsModelSO.hpp"
+#include "GlobalNamespace/BoolSO.hpp"
 #include "HMUI/TimeSlider.hpp"
 #include "UnityEngine/UI/Slider.hpp"
 #include "UnityEngine/UI/Toggle.hpp"

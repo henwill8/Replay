@@ -21,11 +21,12 @@ std::optional<std::chrono::time_point<std::chrono::steady_clock>> lastRecordedTi
 void CameraCapture::ctor()
 {
     // TODO: Inject this through `Init` method?
-    capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), 45, 1000, !movieModeRendering, "faster", "/sdcard/video.h264");
     requests = RequestList();
     log("Making video capture");
     movieModeRendering = true; // todo: make this constructor param or set if get_captureDeltaTime is non-zero?
     maxFramesAllowedInQueue = 10;
+
+    capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), 60, 30000, !movieModeRendering, "faster", "/sdcard/video.h264");
 
     // TODO: This should be handled externally
     if (movieModeRendering) {

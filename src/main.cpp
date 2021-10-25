@@ -2043,8 +2043,8 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
         
-        int width = 1920;
-        int height = 1080;
+        int width = 3840;
+        int height = 2160;
 
         #ifdef DO_FPS_RECORD
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera") {
@@ -2603,6 +2603,15 @@ MAKE_HOOK_MATCH(GameEnergyUIPanel_RefreshEnergyUI, &GameEnergyUIPanel::RefreshEn
     GameEnergyUIPanel_RefreshEnergyUI(self, energy);
 }
 
+//Temporary probably
+MAKE_HOOK_MATCH(MainSettingsModel_Load, &GlobalNamespace::MainSettingsModelSO::Load, void, GlobalNamespace::MainSettingsModelSO* instance, bool forced)
+{
+    MainSettingsModel_Load(instance, forced);
+    BoolSO* distortionsEnabled = (BoolSO*)UnityEngine::ScriptableObject::CreateInstance(csTypeOf(BoolSO*));
+    distortionsEnabled ->value = true;
+    instance->screenDisplacementEffectsEnabled = distortionsEnabled ;
+}
+
 extern "C" void setup(ModInfo& info) {
     info.id = ID;
     info.version = VERSION;
@@ -2661,6 +2670,7 @@ extern "C" void load() {
     INSTALL_HOOK(loggingFunction(), LevelFailedTextEffect_ShowEffect);
     INSTALL_HOOK(loggingFunction(), GameSongController_LateUpdate);
     INSTALL_HOOK(loggingFunction(), GameEnergyUIPanel_RefreshEnergyUI);
+    // INSTALL_HOOK(loggingFunction(), MainSettingsModel_Load);
     log("Installed all hooks!");
 
     positionSmooth = getConfig().config["PositionSmooth"].GetFloat();

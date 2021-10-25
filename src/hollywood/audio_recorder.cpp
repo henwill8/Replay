@@ -41,6 +41,7 @@ void AudioCapture::Save() {
 }
 
 void AudioCapture::AddHeader() {
+    log("Rendering is %i", Rendering);
     if(Rendering) {
         long samples = writer.tellp() / (BITS_PER_SAMPLE / 8);
 

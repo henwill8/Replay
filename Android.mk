@@ -44,11 +44,11 @@ LOCAL_MODULE := bs-utils
 LOCAL_EXPORT_C_INCLUDES := extern/bs-utils
 LOCAL_SRC_FILES := extern/libbs-utils.so
 include $(PREBUILT_SHARED_LIBRARY)
-# Creating prebuilt for dependency: beatsaber-hook - version: 2.3.0
+# Creating prebuilt for dependency: beatsaber-hook - version: 2.3.2
 include $(CLEAR_VARS)
-LOCAL_MODULE := beatsaber-hook_2_3_0
+LOCAL_MODULE := beatsaber-hook_2_3_2
 LOCAL_EXPORT_C_INCLUDES := extern/beatsaber-hook
-LOCAL_SRC_FILES := extern/libbeatsaber-hook_2_3_0.so
+LOCAL_SRC_FILES := extern/libbeatsaber-hook_2_3_2.so
 include $(PREBUILT_SHARED_LIBRARY)
 # Creating prebuilt for dependency: codegen - version: 0.14.0
 include $(CLEAR_VARS)
@@ -113,7 +113,7 @@ LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.cpp)
 LOCAL_SRC_FILES += $(call rwildcard,extern/beatsaber-hook/src/inline-hook,*.c)
 LOCAL_SHARED_LIBRARIES += modloader
 LOCAL_SHARED_LIBRARIES += codegen
-LOCAL_SHARED_LIBRARIES += beatsaber-hook_2_3_0
+LOCAL_SHARED_LIBRARIES += beatsaber-hook_2_3_2
 LOCAL_SHARED_LIBRARIES += questui
 LOCAL_SHARED_LIBRARIES += custom-types
 LOCAL_SHARED_LIBRARIES += bs-utils
