@@ -105,6 +105,12 @@ LOCAL_MODULE := ffmpegkitabidetect
 LOCAL_SRC_FILES := ffmpeg/libffmpegkit_abidetect.so
 include $(PREBUILT_SHARED_LIBRARY)
 
+# Creating prebuilt for dependency: rav1e
+include $(CLEAR_VARS)
+LOCAL_MODULE := rav1e
+LOCAL_EXPORT_C_INCLUDES := rav1e/include
+LOCAL_SRC_FILES := rav1e/librav1e.a
+include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := replay
@@ -123,6 +129,7 @@ LOCAL_SHARED_LIBRARIES += avutil
 LOCAL_SHARED_LIBRARIES += swscale
 LOCAL_SHARED_LIBRARIES += ffmpegkit
 LOCAL_SHARED_LIBRARIES += ffmpegkitabidetect
+LOCAL_STATIC_LIBRARIES += rav1e
 LOCAL_LDLIBS += -llog -lGLESv3 -lGLESv2
 LOCAL_CPPFLAGS += -std=c++2a -O3 -frtti
 LOCAL_C_INCLUDES += ./include ./shared ./src ./extern ./extern/libil2cpp/il2cpp/libil2cpp ./extern/codegen/include ./ffmpeg

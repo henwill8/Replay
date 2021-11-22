@@ -12,6 +12,10 @@ struct rgb24
     uint8_t b;
 };
 
+constexpr static size_t calculateFrameSize(uint32_t width, uint32_t height) {
+    return sizeof(rgb24) * width * height;
+}
+
 DECLARE_CLASS_CODEGEN(AsyncGPUReadbackPlugin, AsyncGPUReadbackPluginRequest, Il2CppObject,
     DECLARE_INSTANCE_FIELD(bool, disposed);
     DECLARE_INSTANCE_FIELD(int, eventId);
