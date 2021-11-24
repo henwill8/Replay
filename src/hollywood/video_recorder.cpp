@@ -56,10 +56,10 @@ VideoCapture::VideoCapture(uint32_t width, uint32_t height, uint32_t fpsRate,
                            AVPixelFormat pxlFormat)
         : AbstractVideoEncoder(width, height, fpsRate),
           bitrate(bitrate),
-          filename(filepath),
           stabilizeFPS(stabilizeFPS),
           encodeSpeed(encodeSpeed),
           encoderStr(encoderStr),
+          filename(filepath),
           pxlFormat(pxlFormat) {
     log("Setting up video at path %s", this->filename.c_str());
 }

@@ -15,8 +15,12 @@ Rav1eVideoEncoder::Rav1eVideoEncoder(const uint32_t width, const uint32_t height
                                                             filename(std::move(filename)),
                                                             bitrate(bitrate) {}
 void Rav1eVideoEncoder::Init() {
-    if (context || initialized)
+    if (context || initialized) {
+        log("Initialized already, throwing");
         throw std::runtime_error("Context is already initialized");
+    }
+
+    log("Initializing rav1e video encoder");
 
     outfile = std::ofstream(filename);
     if (!outfile)
@@ -66,8 +70,9 @@ void Rav1eVideoEncoder::Init() {
 
     RaColorPrimaries colorPrimaries = RA_COLOR_PRIMARIES_BT709;
 
+    // https://github.com/kornelski/cavif-rs/blob/b0a2d76db91b941ec713e8a1345940223a26f48b/ravif/src/av1encoder.rs#L156-L158
     RaTransferCharacteristics transfer = RA_TRANSFER_CHARACTERISTICS_SRGB;
-    RaMatrixCoefficients matrix = RA_MATRIX_COEFFICIENTS_UNSPECIFIED;
+    RaMatrixCoefficients matrix = RA_MATRIX_COEFFICIENTS_IDENTITY; // https://github.com/kornelski/cavif-rs/blob/b0a2d76db91b941ec713e8a1345940223a26f48b/ravif/src/av1encoder.rs#L152
     uint8_t bit_depth = 8; // 8 bits per pixel, 1 byte (256 color)
 
     HandleError(rav1e_config_set_color_description(config, matrix, colorPrimaries, transfer));
@@ -86,6 +91,8 @@ void Rav1eVideoEncoder::Init() {
     auto sequenceHeader = rav1e_container_sequence_header(context);
     outfile.write(reinterpret_cast<const char *>(sequenceHeader->data), sequenceHeader->len);
     rav1e_data_unref(sequenceHeader);
+
+    log("Finished rav1e setup");
 
     encodingThread = std::thread(&Rav1eVideoEncoder::EncodeLoop, this);
 }
@@ -106,11 +113,40 @@ size_t Rav1eVideoEncoder::approximateFramesToRender() {
 void Rav1eVideoEncoder::Encode(rgb24* data) {
 #define CLEAN Finish(); CRASH_UNLESS(false);
 
+    log("Encoding!");
+    // https://github.com/kornelski/cavif-rs/blob/b0a2d76db91b941ec713e8a1345940223a26f48b/ravif/src/av1encoder.rs#L103
+    std::vector<uint8_t> yPlane, uPlane, vPlane;
+
+    yPlane.reserve(width * height);
+    uPlane.reserve(width * height);
+    vPlane.reserve(width * height);
+
+    for (int i = 0; i < calculateFrameSize(width, height) / sizeof(rgb24); i++) {
+        auto frameData = data[i];
+        yPlane.push_back(frameData.g);
+        uPlane.push_back(frameData.b);
+        vPlane.push_back(frameData.r);
+    }
+
     int ret = 0;
 
-    rav1e_frame_fill_plane(frame, 1, reinterpret_cast<const uint8_t *>(data), calculateFrameSize(width, height),
-                           static_cast<ptrdiff_t>(0), 0); // 0, 0 are just params for testing, NO IDEA WHAT TO DO WITH THIS
+    log("Filling frame");
+    try {
+//        rav1e_frame_fill_plane(frame, 1, reinterpret_cast<uint8_t *>(data), calculateFrameSize(width, height), static_cast<ptrdiff_t>(3), 1); // stride is 3 because 3 data fields
+        rav1e_frame_fill_plane(frame, 0, yPlane.data(), yPlane.size(), static_cast<ptrdiff_t>(1),
+                               1); // 0, 1 are just params for testing, NO IDEA WHAT TO DO WITH THIS
+        rav1e_frame_fill_plane(frame, 1, uPlane.data(), uPlane.size(), static_cast<ptrdiff_t>(1),
+                               1); // 0, 1 are just params for testing, NO IDEA WHAT TO DO WITH THIS
+        rav1e_frame_fill_plane(frame, 2, vPlane.data(), vPlane.size(), static_cast<ptrdiff_t>(1),
+                               1); // 0, 1 are just params for testing, NO IDEA WHAT TO DO WITH THIS
+    } catch (std::exception &e) {
+        log("Crash: %s", e.what());
+        throw e;
+    }
+    log("Frame filled");
+
     HandleError(rav1e_send_frame(context, frame));
+    log("Frame sent");
 
     while (ret >= 0){
         RaPacket *p;
@@ -119,13 +155,22 @@ void Rav1eVideoEncoder::Encode(rgb24* data) {
             log("Unable to receive packet %d", ret);
             CLEAN
         } else if (ret == RA_ENCODER_STATUS_SUCCESS) {
+            log("Write!");
             log("Packet %" PRIu64"", p->len);
 
             outfile.write(reinterpret_cast<const char *>(p->data), p->len);
 
             rav1e_packet_unref(p);
+            break;
         } else if (ret == RA_ENCODER_STATUS_NEED_MORE_DATA) {
-            log("Need more frame data");
+            log("Need more frame data %lu", p->input_frameno);
+
+//            if (p->input_frameno > 0 && p->input_frameno % 10 == 0) {
+//                HandleError(rav1e_send_frame(context, NULL)); // flush every 10 frames
+//                continue;
+//            }
+
+            break;
 //            if (ret < 0) {
 //                log("Unable to send frame %d", 0);
 //                CLEAN
@@ -137,8 +182,15 @@ void Rav1eVideoEncoder::Encode(rgb24* data) {
         } else if (ret == RA_ENCODER_STATUS_LIMIT_REACHED) {
             log("Limit reached");
             break;
+        } else if (ret > 0) {
+            log("Too many frames!");
+            break;
         }
     }
+
+    rav1e_frame_unref(frame);
+    frame = rav1e_frame_new(context);
+    log("Finished encoding");
 #undef CLEAN
 }
 

@@ -1,6 +1,7 @@
 #include "CustomTypes/CameraCapture.hpp"
 
 #include "hollywood/video_recorder.hpp"
+#include "hollywood/rav1e_video_encoder.hpp"
 
 #include "main.hpp"
 #include "gc-util.hpp"
@@ -27,6 +28,8 @@ void CameraCapture::ctor()
     maxFramesAllowedInQueue = 10;
 
     capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), 60, 30000, !movieModeRendering, "faster", "/sdcard/video.h264");
+//    capture = std::make_unique<Hollywood::Rav1eVideoEncoder>(texture->get_width(), texture->get_height(), 60, "/sdcard/video.h264", 30000); //rav1e
+    capture->Init();
 
     // TODO: This should be handled externally
     if (movieModeRendering) {

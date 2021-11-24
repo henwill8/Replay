@@ -10,6 +10,9 @@
 namespace Hollywood {
     class Rav1eVideoEncoder : public Hollywood::AbstractVideoEncoder {
     public:
+        Rav1eVideoEncoder(uint32_t width, uint32_t height, uint32_t fpsRate,
+                          std::string filename, uint32_t bitrate);
+
         void queueFrame(rgb24 *data, std::optional<float> timeOfFrame) override;
 
         void Init() override;
@@ -22,14 +25,11 @@ namespace Hollywood {
         // Blocks until encoding is done
         void Finish();
 
-        Rav1eVideoEncoder(const uint32_t width, const uint32_t height, const uint32_t fpsRate,
-                          std::string filename, const uint32_t bitrate);
-
         const std::string filename;
         const uint32_t bitrate;
     private:
-        RaContext* context;
-        RaFrame* frame;
+        RaContext* context = nullptr;
+        RaFrame* frame = nullptr;
         std::ofstream outfile;
 
         using QueueContent = rgb24*;
