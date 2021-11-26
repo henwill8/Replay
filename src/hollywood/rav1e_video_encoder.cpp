@@ -56,7 +56,8 @@ void Rav1eVideoEncoder::Init() {
     HandleError(rav1e_config_parse_int(config, "height", height));
     HandleError(rav1e_config_parse_int(config, "width", width));
     HandleError(rav1e_config_parse_int(config, "speed", 9));
-    HandleError(rav1e_config_parse_int(config, "threads", 6));
+    HandleError(rav1e_config_parse_int(config, "threads", 3));
+    HandleError(rav1e_config_parse_int(config, "rdo_lookahead_frames", 2));
     HandleError(rav1e_config_parse_int(config, "key_frame_interval", 2));
     HandleError(rav1e_config_parse_int(config, "bitrate", bitrate * 1000));
 
@@ -115,17 +116,19 @@ void Rav1eVideoEncoder::Encode(rgb24* data) {
 
     log("Encoding!");
     // https://github.com/kornelski/cavif-rs/blob/b0a2d76db91b941ec713e8a1345940223a26f48b/ravif/src/av1encoder.rs#L103
-    std::vector<uint8_t> yPlane, uPlane, vPlane;
 
-    yPlane.reserve(width * height);
-    uPlane.reserve(width * height);
-    vPlane.reserve(width * height);
+
+    // use heap array or stack array?
+    auto len = width * height;
+    uint8_t* yPlane = new uint8_t[len];
+    uint8_t* uPlane = new uint8_t[len];
+    uint8_t* vPlane = new uint8_t[len];
 
     for (int i = 0; i < calculateFrameSize(width, height) / sizeof(rgb24); i++) {
         auto frameData = data[i];
-        yPlane.push_back(frameData.g);
-        uPlane.push_back(frameData.b);
-        vPlane.push_back(frameData.r);
+        yPlane[i] = (frameData.g);
+        uPlane[i] = (frameData.b);
+        vPlane[i] = (frameData.r);
     }
 
     int ret = 0;
@@ -133,32 +136,43 @@ void Rav1eVideoEncoder::Encode(rgb24* data) {
     log("Filling frame");
     try {
 //        rav1e_frame_fill_plane(frame, 1, reinterpret_cast<uint8_t *>(data), calculateFrameSize(width, height), static_cast<ptrdiff_t>(3), 1); // stride is 3 because 3 data fields
-        rav1e_frame_fill_plane(frame, 0, yPlane.data(), yPlane.size(), static_cast<ptrdiff_t>(1),
+        rav1e_frame_fill_plane(frame, 0, yPlane, len, static_cast<ptrdiff_t>(1),
                                1); // 0, 1 are just params for testing, NO IDEA WHAT TO DO WITH THIS
-        rav1e_frame_fill_plane(frame, 1, uPlane.data(), uPlane.size(), static_cast<ptrdiff_t>(1),
+        rav1e_frame_fill_plane(frame, 1, uPlane, len, static_cast<ptrdiff_t>(1),
                                1); // 0, 1 are just params for testing, NO IDEA WHAT TO DO WITH THIS
-        rav1e_frame_fill_plane(frame, 2, vPlane.data(), vPlane.size(), static_cast<ptrdiff_t>(1),
+        rav1e_frame_fill_plane(frame, 2, vPlane, len, static_cast<ptrdiff_t>(1),
                                1); // 0, 1 are just params for testing, NO IDEA WHAT TO DO WITH THIS
-    } catch (std::exception &e) {
-        log("Crash: %s", e.what());
-        throw e;
-    }
-    log("Frame filled");
+
+
+    delete[] yPlane;
+    delete[] uPlane;
+    delete[] vPlane;
+    CheckError();
+    log("Frame filled %u", len * 3);
 
     HandleError(rav1e_send_frame(context, frame));
     log("Frame sent");
 
+    } catch (std::exception &e) {
+        log("Crash: %s", e.what());
+        CRASH_UNLESS(false);
+        throw e;
+    }
+
     while (ret >= 0){
         RaPacket *p;
         ret = rav1e_receive_packet(context, &p);
+        CheckError();
         if (ret < 0) {
             log("Unable to receive packet %d", ret);
             CLEAN
         } else if (ret == RA_ENCODER_STATUS_SUCCESS) {
             log("Write!");
             log("Packet %" PRIu64"", p->len);
+            log("Data %p %zu", p->data, p->len);
 
             outfile.write(reinterpret_cast<const char *>(p->data), p->len);
+            outfile.flush();
 
             rav1e_packet_unref(p);
             break;
@@ -181,9 +195,11 @@ void Rav1eVideoEncoder::Encode(rgb24* data) {
 //            }
         } else if (ret == RA_ENCODER_STATUS_LIMIT_REACHED) {
             log("Limit reached");
+            rav1e_packet_unref(p);
             break;
         } else if (ret > 0) {
             log("Too many frames!");
+            rav1e_packet_unref(p);
             break;
         }
     }
