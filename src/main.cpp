@@ -2049,14 +2049,9 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
 
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
-        
-<<<<<<< Updated upstream
-        int width = 3840;
-        int height = 2160;
-=======
+
         int width = getConfig().config["Width"].GetInt();
         int height = getConfig().config["Height"].GetInt();
->>>>>>> Stashed changes
 
         #ifdef DO_FPS_RECORD
         if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle == HEADSET) {
