@@ -491,39 +491,46 @@ unsigned char fileHeader[3] = {
 int fileVersion = 6;
 int openedFileVersion;
 
+#define AppendMember(config, name, value, allocator) if(!config.HasMember(name)) config.AddMember(name, value, allocator)
+
 void SaveConfig() {
-    if(!getConfig().config.HasMember("OverwriteNFPlays")) {
+    if(!getConfig().config.HasMember("FOV")) {
         log("Creating config");
-        getConfig().config.RemoveAllMembers();
         getConfig().config.SetObject();
         rapidjson::Document::AllocatorType& allocator = getConfig().config.GetAllocator();
-        getConfig().config.AddMember("PositionSmooth", 2.0f, allocator);
-        getConfig().config.AddMember("RotationSmooth", 2.0f, allocator);
+        AppendMember(getConfig().config, "PositionSmooth", 2.0f, allocator);
+        AppendMember(getConfig().config, "RotationSmooth", 2.0f, allocator);
 
         rapidjson::Value SmoothCameraObject(rapidjson::kObjectType);
         SmoothCameraObject.AddMember("x", 0, allocator);
         SmoothCameraObject.AddMember("y", 0, allocator);
         SmoothCameraObject.AddMember("z", -0.7f, allocator);
-        getConfig().config.AddMember("SmoothCameraOffset", SmoothCameraObject, allocator);
+        AppendMember(getConfig().config, "SmoothCameraOffset", SmoothCameraObject, allocator);
         
         rapidjson::Value ThirdPersonPosObject(rapidjson::kObjectType);
         ThirdPersonPosObject.AddMember("x", -3, allocator);
         ThirdPersonPosObject.AddMember("y", 1.6f, allocator);
         ThirdPersonPosObject.AddMember("z", -3, allocator);
-        getConfig().config.AddMember("ThirdPersonCameraPos", ThirdPersonPosObject, allocator);
+        AppendMember(getConfig().config, "ThirdPersonCameraPos", ThirdPersonPosObject, allocator);
 
         rapidjson::Value ThirdPersonRotObject(rapidjson::kObjectType);
         ThirdPersonRotObject.AddMember("x", 0, allocator);
         ThirdPersonRotObject.AddMember("y", 45, allocator);
         ThirdPersonRotObject.AddMember("z", 0, allocator);
-        getConfig().config.AddMember("ThirdPersonCameraRot", ThirdPersonRotObject, allocator);
+        AppendMember(getConfig().config, "ThirdPersonCameraRot", ThirdPersonRotObject, allocator);
         
-        getConfig().config.AddMember("ThirdPersonCircularMovement", false, allocator);
+        AppendMember(getConfig().config, "ThirdPersonCircularMovement", false, allocator);
 
-        getConfig().config.AddMember("FullComboOverwrites", false, allocator);
-        getConfig().config.AddMember("DisableVibration", true, allocator);
-        getConfig().config.AddMember("Avatars", true, allocator);
-        getConfig().config.AddMember("OverwriteNFPlays", true, allocator);
+        AppendMember(getConfig().config, "FullComboOverwrites", false, allocator);
+        AppendMember(getConfig().config, "DisableVibration", true, allocator);
+        AppendMember(getConfig().config, "Avatars", true, allocator);
+        AppendMember(getConfig().config, "OverwriteNFPlays", true, allocator);
+
+        AppendMember(getConfig().config, "FOV", 90, allocator);
+        AppendMember(getConfig().config, "FPS", 45, allocator);
+        AppendMember(getConfig().config, "Width", 1920, allocator);
+        AppendMember(getConfig().config, "Height", 1080, allocator);
+        AppendMember(getConfig().config, "Bitrate", 5000, allocator);
 
         getConfig().Write();
     } else {
@@ -2043,11 +2050,16 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
     if(inSong && !inPauseMenu && !recording) {
         UnityEngine::GameObject* cameraGO = UnityEngine::Camera::get_main()->get_gameObject();
         
+<<<<<<< Updated upstream
         int width = 3840;
         int height = 2160;
+=======
+        int width = getConfig().config["Width"].GetInt();
+        int height = getConfig().config["Height"].GetInt();
+>>>>>>> Stashed changes
 
         #ifdef DO_FPS_RECORD
-        if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera") {
+        if(to_utf8(csstrtostr(cameraGO->get_name())) == "MainCamera" && cameraAngle == HEADSET) {
             Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
             if(audioCapture == nullptr || audioCapture->get_gameObject() == nullptr) {
                 log("Adding Audio Capture component to the AudioListener");
@@ -2066,7 +2078,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
             // log("getting camera");
             if(!cameraGameObject) {
                 // Set to 60 hz
-                setRefreshRate(std::make_optional(60.0f));
+                // setRefreshRate(std::make_optional(60.0f));
 
                 auto mainCamera = UnityEngine::Camera::get_main();
 
@@ -2075,7 +2087,7 @@ MAKE_HOOK_MATCH(LightManager_OnWillRenderObject, &LightManager::OnWillRenderObje
                 // Idk what this does
                 mainCamera->set_orthographic(false);
 
-                mainCamera->set_fieldOfView(90.0f);
+                mainCamera->set_fieldOfView(getConfig().config["FOV"].GetFloat());
 
                 // Force it to render into texture
                 mainCamera->set_forceIntoRenderTexture(true);
@@ -2325,6 +2337,9 @@ MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init,void, R
     inSong = false;
 
     SaveRecording(levelCompletionResults, practice);
+
+    Replay::AudioCapture* audioCapture = GetFirstEnabledComponent<Replay::AudioCapture*>();
+    if(audioCapture != nullptr) UnityEngine::Object::Destroy(audioCapture);
 
     ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
 }
@@ -2623,8 +2638,6 @@ extern "C" void setup(ModInfo& info) {
 
 extern "C" void load() {
     il2cpp_functions::Init();
-
-    Modloader::requireMod("TrickSaber", "0.3.1");
 
     QuestUI::Init();
 

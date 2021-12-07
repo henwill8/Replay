@@ -26,8 +26,8 @@ void CameraCapture::ctor()
     log("Making video capture");
     movieModeRendering = true; // todo: make this constructor param or set if get_captureDeltaTime is non-zero?
     maxFramesAllowedInQueue = 10;
-
-    capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), 60, 30000, !movieModeRendering, "faster", "/sdcard/video.h264");
+    
+    capture = std::make_unique<VideoCapture>(texture->get_width(), texture->get_height(), getConfig().config["FPS"].GetInt(), getConfig().config["Bitrate"].GetInt(), !movieModeRendering, "faster", "/sdcard/video.h264");
 //    capture = std::make_unique<Hollywood::Rav1eVideoEncoder>(texture->get_width(), texture->get_height(), 60, "/sdcard/video.h264", 30000); //rav1e
     capture->Init();
 

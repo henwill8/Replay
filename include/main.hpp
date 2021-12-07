@@ -3,7 +3,7 @@
 // Comment if no FFMPEG recording with smooth camera
 #define DO_FPS_RECORD
 #define ID "Replay"
-#define VERSION "0.6.3"
+#define VERSION "0.6.5"
 
 #include "codegen.hpp"
 
