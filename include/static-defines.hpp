@@ -14,6 +14,9 @@
 #define VERSION "1.0.0"
 #endif
 
+#define eventIdBitCount 4
+#define eventSizeBitCount 16
+
 static ModInfo modInfo;
 
 static Logger& getLogger()

@@ -1,4 +1,5 @@
 #include "static-defines.hpp"
+#include "hooks.hpp"
 
 // Hooks
 
@@ -10,5 +11,11 @@ extern "C" void setup(ModInfo& info) {
 }
 
 extern "C" void load() {
-    //Make hook installing class
+    il2cpp_functions::Init();
+
+    custom_types::Register::AutoRegister();
+
+    log("Installing Replay hooks...");
+    Hooks::InstallHooks(getLogger());
+    log("Installed Replay hooks!");
 }
