@@ -47,7 +47,7 @@ ndkpath.txt
 
 extern
 
-build
+build/
 
 qpm.shared.json
 
