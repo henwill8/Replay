@@ -5,12 +5,15 @@ Replay::PlayerRecorder::PlayerRecorder() {
 }
 
 void Replay::PlayerRecorder::AddEvent(PlayerTransforms playerTransforms) {
+    log("ADDING EVENT");
     PlayerEvent event{Replay::SongData::GetSongTime(), playerTransforms};
 
     events.push_back(event);
 }
 
 void Replay::PlayerRecorder::WriteEvents(std::ofstream& output) {
+    log("WRITING EVENTS");
+
     int eventCount = (int)events.size();
 
     //Write events header

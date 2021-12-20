@@ -46,16 +46,20 @@ namespace Replay {
     class PlayerRecorder {
     private:
         const inline static byte eventID = 0b00000000;
-        const inline static int eventSize = sizeof(PlayerEvent);
+        const inline static int eventSize = (int)sizeof(PlayerEvent);
 
-        std::vector<PlayerEvent> events;
+        static inline std::vector<PlayerEvent> events; // Static is temporary, remove once instances are set up
 
     public:
         PlayerRecorder();
 
-        void AddEvent(Replay::PlayerTransforms playerTransforms);
+        static void AddEvent(Replay::PlayerTransforms playerTransforms);
 
-        void WriteEvents(std::ofstream& output);
+        static void WriteEvents(std::ofstream& output);
+
+        static int GetEventCount() {
+            return events.size();
+        }
         
         static Replay::PlayerTransforms TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber);
     };
