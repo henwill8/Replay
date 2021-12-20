@@ -47,6 +47,8 @@ ndkpath.txt
 
 extern
 
+build
+
 qpm.shared.json
 
 Android.mk.backup
