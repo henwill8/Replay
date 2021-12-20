@@ -2,10 +2,10 @@
 # Version defines, pretty useful
 set(MOD_VERSION "1.0.0")
 # take the mod name and just remove spaces, that will be MOD_ID, if you don't like it change it after the include of this file
-set(MOD_ID "replay")
+set(MOD_ID "Replay")
 
 # derived from override .so name or just id_version
-set(COMPILE_ID "replay_1_0_0")
+set(COMPILE_ID "Replay_1_0_0")
 # derived from whichever codegen package is installed, will default to just codegen
 set(CODEGEN_ID "codegen")
 

@@ -37,6 +37,11 @@
       "id": "custom-types",
       "versionRange": "0.12.7",
       "additionalData": {}
+    },
+    {
+      "id": "modloader",
+      "versionRange": "*",
+      "additionalData": {}
     }
   ],
   "additionalData": {}

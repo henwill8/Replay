@@ -1,18 +1,25 @@
+#pragma once
 #include "static-defines.hpp"
 
 #include "UnityEngine/Transform.hpp"
-#include "Recording/ReplayRecorder.hpp"
+#include "SongData.hpp"
+#include "fstream"
 
 namespace Replay {
     struct EulerTransform {
-        UnityEngine::Vector3* position;
-        UnityEngine::Vector3* rotation;
+        UnityEngine::Vector3 position;
+        UnityEngine::Vector3 rotation;
 
         void Write(std::ofstream& writer) const {
-            writer.write(reinterpret_cast<const char*>(&position), sizeof(UnityEngine::Vector3*));
-            writer.write(reinterpret_cast<const char*>(&rotation), sizeof(UnityEngine::Vector3*));
+            writer.write(reinterpret_cast<const char*>(&position.x), sizeof(float));
+            writer.write(reinterpret_cast<const char*>(&position.y), sizeof(float));
+            writer.write(reinterpret_cast<const char*>(&position.z), sizeof(float));
+            
+            writer.write(reinterpret_cast<const char*>(&rotation.x), sizeof(float));
+            writer.write(reinterpret_cast<const char*>(&rotation.y), sizeof(float));
+            writer.write(reinterpret_cast<const char*>(&rotation.z), sizeof(float));
         }
-    }
+    };
 
     struct PlayerTransforms {
         EulerTransform head;
@@ -24,7 +31,7 @@ namespace Replay {
             leftSaber.Write(writer);
             rightSaber.Write(writer);
         }
-    }
+    };
 
     struct PlayerEvent {
         float time;
@@ -34,21 +41,22 @@ namespace Replay {
             writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
             player.Write(writer);
         }
-    }
+    };
 
     class PlayerRecorder {
     private:
-        const static std::bitset<eventIdBitCount> eventID{"0000"};
+        const inline static byte eventID = 0b00000000;
+        const inline static int eventSize = sizeof(PlayerEvent);
 
-        const static std::bitset<eventSizeBitCount> eventSize{};
-
-        ReplayRecorder recorder;
+        std::vector<PlayerEvent> events;
 
     public:
-        void Init();
+        PlayerRecorder();
 
         void AddEvent(Replay::PlayerTransforms playerTransforms);
+
+        void WriteEvents(std::ofstream& output);
         
         static Replay::PlayerTransforms TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber);
-    }
+    };
 }

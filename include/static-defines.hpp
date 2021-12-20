@@ -5,6 +5,7 @@
 #include "beatsaber-hook/shared/utils/hooking.hpp"
 #include "custom-types/shared/register.hpp"
 #include "questui/shared/QuestUI.hpp"
+#include "hooks.hpp"
 
 #ifndef ID
 #define ID "Replay"
@@ -14,8 +15,13 @@
 #define VERSION "1.0.0"
 #endif
 
-#define eventIdBitCount 4
-#define eventSizeBitCount 16
+#define eventIdByteSize 1
+#define eventSizeByteSize 4
+#define eventCountByteSize 4
+
+#define replayFileExtension ".questplay"
+
+typedef unsigned char byte;
 
 static ModInfo modInfo;
 

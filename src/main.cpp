@@ -16,6 +16,6 @@ extern "C" void load() {
     custom_types::Register::AutoRegister();
 
     log("Installing Replay hooks...");
-    Hooks::InstallHooks(getLogger());
+    Replay::Hooks::InstallHooks(getLogger());
     log("Installed Replay hooks!");
 }

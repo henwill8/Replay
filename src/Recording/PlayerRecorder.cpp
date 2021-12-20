@@ -1,10 +1,27 @@
 #include "Recording/PlayerRecorder.hpp"
 
-void Replay::PlayerRecorder::AddEvent(PlayerTransforms playerTransforms) {
-    float songTime;//TODO: Set up class to get this
-    PlayerEvent event{songTime, playerTransforms};
+Replay::PlayerRecorder::PlayerRecorder() {
+    // Is any setup needed?
+}
 
-    event.Write(recorder.tempFile);
+void Replay::PlayerRecorder::AddEvent(PlayerTransforms playerTransforms) {
+    PlayerEvent event{Replay::SongData::GetSongTime(), playerTransforms};
+
+    events.push_back(event);
+}
+
+void Replay::PlayerRecorder::WriteEvents(std::ofstream& output) {
+    int eventCount = (int)events.size();
+
+    //Write events header
+    output.write(reinterpret_cast<const char*>(&eventID), sizeof(byte));
+    output.write(reinterpret_cast<const char*>(&eventSize), sizeof(int));
+    output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
+
+    //Write data
+    for(PlayerEvent event : events) {
+        event.Write(output);
+    }
 }
 
 Replay::PlayerTransforms Replay::PlayerRecorder::TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber) {
