@@ -2,65 +2,26 @@
 #include "static-defines.hpp"
 
 #include "UnityEngine/Transform.hpp"
-#include "SongData.hpp"
+#include "UnityEngine/Time.hpp"
 #include "fstream"
+#include "EventTypes.hpp"
+#include "SongData.hpp"
+
+using namespace Replay;
 
 namespace Replay {
-    struct EulerTransform {
-        UnityEngine::Vector3 position;
-        UnityEngine::Vector3 rotation;
-
-        void Write(std::ofstream& writer) const {
-            writer.write(reinterpret_cast<const char*>(&position.x), sizeof(float));
-            writer.write(reinterpret_cast<const char*>(&position.y), sizeof(float));
-            writer.write(reinterpret_cast<const char*>(&position.z), sizeof(float));
-            
-            writer.write(reinterpret_cast<const char*>(&rotation.x), sizeof(float));
-            writer.write(reinterpret_cast<const char*>(&rotation.y), sizeof(float));
-            writer.write(reinterpret_cast<const char*>(&rotation.z), sizeof(float));
-        }
-    };
-
-    struct PlayerTransforms {
-        EulerTransform head;
-        EulerTransform leftSaber;
-        EulerTransform rightSaber;
-
-        void Write(std::ofstream& writer) const {
-            head.Write(writer);
-            leftSaber.Write(writer);
-            rightSaber.Write(writer);
-        }
-    };
-
-    struct PlayerEvent {
-        float time;
-        PlayerTransforms player;
-
-        void Write(std::ofstream& writer) const {
-            writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
-            player.Write(writer);
-        }
-    };
-
     class PlayerRecorder {
     private:
-        const inline static byte eventID = 0b00000000;
-        const inline static int eventSize = (int)sizeof(PlayerEvent);
+        std::vector<PlayerEventTypes::PlayerEvent> events;
 
-        static inline std::vector<PlayerEvent> events; // Static is temporary, remove once instances are set up
+        int eventsPerSecond = 15;
 
+        float time = 1.0f/(float)eventsPerSecond;
     public:
-        PlayerRecorder();
+        void AddEvent(PlayerEventTypes::PlayerTransforms playerTransforms);
 
-        static void AddEvent(Replay::PlayerTransforms playerTransforms);
-
-        static void WriteEvents(std::ofstream& output);
-
-        static int GetEventCount() {
-            return events.size();
-        }
+        void WriteEvents(std::ofstream& output);
         
-        static Replay::PlayerTransforms TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber);
+        static PlayerEventTypes::PlayerTransforms TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber);
     };
 }

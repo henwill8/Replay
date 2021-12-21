@@ -1,18 +1,25 @@
 #include "Recording/ReplayRecorder.hpp"
 
-Replay::ReplayRecorder::ReplayRecorder() {
-    // TODO: Set up all Recorders in here
+void Replay::ReplayRecorder::Init() {
+    log("Setting up Replay Recorder");
+    playerRecorder = Replay::PlayerRecorder();
+    noteEventRecorder = Replay::NoteEventRecorder();
 }
 
-Replay::ReplayRecorder::~ReplayRecorder() {
-    fileName = Replay::SongData::GetMapID() + replayFileExtension;
+void Replay::ReplayRecorder::StopRecording() {
+    log("Stopping recording");
 
-    WriteReplayFile(replaysDirectory + fileName); // TODO: Check to make sure file should be written
+    WriteReplayFile(ReplayUtils::GetReplayFilePath()); // TODO: Check to make sure file should be written
 }
 
 void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
+    log("Writing Replay file at %s", path.c_str());
+    std::filesystem::create_directories(Replay::ReplayUtils::GetReplaysDirectory());
+
     std::ofstream output = std::ofstream(path, std::ios::binary);
 
+    int magicBytes = replayMagicBytes;
+    output.write(reinterpret_cast<const char*>(&magicBytes), sizeof(int));
+
     playerRecorder.WriteEvents(output);
-    // TODO: Call all recorders writing functions
 }

@@ -1,7 +1,4 @@
 #include "static-defines.hpp"
-#include "hooks.hpp"
-
-// Hooks
 
 extern "C" void setup(ModInfo& info) {
     info.id = ID;
@@ -16,6 +13,6 @@ extern "C" void load() {
     custom_types::Register::AutoRegister();
 
     log("Installing Replay hooks...");
-    Replay::Hooks::InstallHooks(getLogger());
+    Replay::Hooks::InstallHooks(replayLogger());
     log("Installed Replay hooks!");
 }

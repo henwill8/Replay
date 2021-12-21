@@ -3,24 +3,24 @@
 
 #include "fstream"
 #include "vector"
-#include "extern/includes/bs-utils/shared/utils.hpp"
 #include "Recording/PlayerRecorder.hpp"
+#include "Recording/NoteEventRecorder.hpp"
+#include "ReplayUtils.hpp"
+#include <filesystem>
 
 namespace Replay {
     class ReplayRecorder {
     private:
-        const inline static std::string replaysDirectory = bs_utils::getDataDir(modInfo) + "Replays/";
-        std::string fileName;
-        
-        std::ofstream output;
+
+    public:
+        void Init();
+
+        void WriteReplayFile(std::string path);
+
+        void StopRecording();
 
         PlayerRecorder playerRecorder;
 
-    public:
-        ReplayRecorder();
-
-        void WriteReplayFile(std::string path);
-        
-        ~ReplayRecorder();
+        NoteEventRecorder noteEventRecorder;
     };
 }

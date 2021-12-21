@@ -7,28 +7,23 @@
 #include "questui/shared/QuestUI.hpp"
 #include "hooks.hpp"
 
-#ifndef ID
-#define ID "Replay"
-#endif
-
-#ifndef VERSION
-#define VERSION "1.0.0"
-#endif
+typedef unsigned char byte;
 
 #define eventIdByteSize 1
-#define eventSizeByteSize 4
 #define eventCountByteSize 4
 
+#define replayMagicBytes 0x2971B5F8
+#define fileVersion 0b00000000
 #define replayFileExtension ".questplay"
-
-typedef unsigned char byte;
 
 static ModInfo modInfo;
 
-static Logger& getLogger()
+static Logger& replayLogger()
 {
+    modInfo.id = ID;
+    modInfo.version = VERSION;
 	static Logger* logger = new Logger(modInfo, LoggerOptions(false, true));
 	return *logger;
 }
 
-#define log(...) getLogger().info(__VA_ARGS__)
+#define log(...) replayLogger().info(__VA_ARGS__)
