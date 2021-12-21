@@ -22,8 +22,16 @@ void Replay::Replayer::ReadReplayFile(std::string path) {
         while(input.read(reinterpret_cast<char*>(&eventID), sizeof(byte))) {
             int eventsLength;
             input.read(reinterpret_cast<char*>(&eventsLength), sizeof(int));
-            if(eventID == PlayerEventTypes::eventID) {
-                playerReplayer.ReadEvents(input, eventsLength);
+            switch(eventID) {
+                case PlayerEventTypes::eventID:
+                    playerReplayer.ReadEvents(input, eventsLength);
+                    break;
+                case NoteEventTypes::cutEventID:
+                    
+                    break;
+                case NoteEventTypes::missEventID:
+
+                    break;
             }
         }
     } else {

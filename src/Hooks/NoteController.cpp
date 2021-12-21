@@ -16,7 +16,11 @@ MAKE_HOOK_MATCH(NoteController_SendNoteWasCutEvent, &NoteController::SendNoteWas
 }
 
 MAKE_HOOK_MATCH(NoteController_SendNoteWasMissedEvent, &NoteController::SendNoteWasMissedEvent, void, NoteController* self) {
-    
+    NoteController_SendNoteWasMissedEvent(self);
+
+    if(ReplayManager::replayState == ReplayState::RECORDING) {
+        ReplayManager::recorder.noteEventRecorder.AddMissEvent(self);
+    }
 }
 
 void NoteControllerHook(Logger& logger) {

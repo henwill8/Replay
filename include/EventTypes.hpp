@@ -50,18 +50,18 @@ namespace Replay {
         };
     
         struct NoteCutEvent {
-            int hash;
+            DifferentiatingNoteData noteData;
             float time;
             NoteCutInfo noteCutInfo;
 
             void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&hash), sizeof(int));
+                writer.write(reinterpret_cast<const char*>(&noteData), sizeof(DifferentiatingNoteData));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
                 writer.write(reinterpret_cast<const char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
 
             void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&hash), sizeof(int));
+                reader.read(reinterpret_cast<char*>(&noteData), sizeof(DifferentiatingNoteData));
                 reader.read(reinterpret_cast<char*>(&time), sizeof(float));
                 reader.read(reinterpret_cast<char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
@@ -70,16 +70,16 @@ namespace Replay {
         const inline static byte cutEventID = 0b00000001;
 
         struct NoteMissEvent {
-            int hash;
+            DifferentiatingNoteData noteData;
             float time;
 
             void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&hash), sizeof(int));
+                writer.write(reinterpret_cast<const char*>(&noteData), sizeof(DifferentiatingNoteData));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
             }
 
             void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&hash), sizeof(int));
+                reader.read(reinterpret_cast<char*>(&noteData), sizeof(DifferentiatingNoteData));
                 reader.read(reinterpret_cast<char*>(&time), sizeof(float));
             }
         };

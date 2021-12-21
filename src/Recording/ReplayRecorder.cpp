@@ -22,4 +22,7 @@ void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
     output.write(reinterpret_cast<const char*>(&magicBytes), sizeof(int));
 
     playerRecorder.WriteEvents(output);
+
+    noteEventRecorder.WriteCutEvents(output);
+    noteEventRecorder.WriteMissEvents(output);
 }

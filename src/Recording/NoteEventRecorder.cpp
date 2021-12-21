@@ -1,7 +1,7 @@
 #include "Recording/NoteEventRecorder.hpp"
 
 void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo) {
-    NoteCutEvent event{GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef};
+    NoteCutEvent event{GetNoteDataFromController(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef};
 
     cutEvents.push_back(event);
 }
@@ -22,7 +22,7 @@ void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
 }
 
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
-    NoteMissEvent event{GetNoteHash(noteController), Replay::SongData::GetSongTime()};
+    NoteMissEvent event{GetNoteDataFromController(noteController), Replay::SongData::GetSongTime()};
 
     missEvents.push_back(event);
 }
@@ -42,11 +42,9 @@ void Replay::NoteEventRecorder::WriteMissEvents(std::ofstream& output) {
     }
 }
 
-int Replay::NoteEventRecorder::GetNoteHash(NoteController* noteController) {
+DifferentiatingNoteData Replay::NoteEventRecorder::GetNoteDataFromController(NoteController* noteController) {
     GlobalNamespace::NoteData* data = noteController->get_noteData();
     DifferentiatingNoteData noteData{data->time, data->lineIndex, data->noteLineLayer, data->colorType, data->cutDirection};
 
-    std::hash<DifferentiatingNoteData> noteDataHash;
-
-    return (int)noteDataHash(noteData);
+    return noteData;
 }
