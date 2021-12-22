@@ -1,12 +1,17 @@
 #include "Recording/PlayerRecorder.hpp"
 
 void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms playerTransforms) {
+    float songTime = SongData::GetSongTime();
+    if(events.size() > 0) {
+        if(songTime == events[events.size() - 1].time) return;
+    }
+
     time += UnityEngine::Time::get_deltaTime();
     if(time >= 1.0f/(float)eventsPerSecond) {
-        PlayerEventTypes::PlayerEvent event{SongData::GetSongTime(), playerTransforms};
-
+        PlayerEventTypes::PlayerEvent event{songTime, playerTransforms};
+        
         events.push_back(event);
-
+        
         time -= 1.0f/(float)eventsPerSecond;
     }
 }

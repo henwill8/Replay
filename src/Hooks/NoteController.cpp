@@ -57,7 +57,7 @@ MAKE_HOOK_MATCH(NoteController_SendNoteWasMissedEvent, &NoteController::SendNote
 
 void NoteControllerHook(Logger& logger) {
     INSTALL_HOOK(logger, NoteController_Init);
-    INSTALL_HOOK(logger, NoteController_SendNoteWasCutEvent);
+    // INSTALL_HOOK(logger, NoteController_SendNoteWasCutEvent);
     INSTALL_HOOK(logger, NoteController_SendNoteWasMissedEvent);
 }
 

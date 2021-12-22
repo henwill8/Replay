@@ -29,10 +29,10 @@ static const Il2CppType * NoteCutInfoT(ByRef<NoteCutInfo> info) {
 }
 
 //GlobalNamespace::NoteController::
-void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalNamespace::NoteCutInfo> noteCutInfo) {
+void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, GlobalNamespace::NoteCutInfo noteCutInfo) {
     static auto ___internal__logger = ::Logger::get().WithContext("GlobalNamespace::NoteController::SendNoteWasCutEvent");
     static auto* ___internal__method = THROW_UNLESS((::il2cpp_utils::FindMethod(self, "SendNoteWasCutEvent", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{::NoteCutInfoT(noteCutInfo)})));
-    ::il2cpp_utils::RunMethodThrow<void, false>(self, ___internal__method, byref(noteCutInfo));
+    ::il2cpp_utils::RunMethodRethrow<void, false>(self, ___internal__method, byref(noteCutInfo));
 }
 
 custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
@@ -43,8 +43,12 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
 
         for(int i = 0; i < activeCutEvents.size(); i++) {
             if(songTime > activeCutEvents[i].event.time) {
-                // SendNoteWasCutEvent(activeCutEvents[i].note, byref(activeCutEvents[i].event.noteCutInfo));
-                
+                log("%p", il2cpp_utils::ExtractValue(byref(activeCutEvents[i].event.noteCutInfo)));
+                log("%p", &byref(activeCutEvents[i].event.noteCutInfo).heldRef);
+
+                SendNoteWasCutEvent(activeCutEvents[i].note, activeCutEvents[i].event.noteCutInfo);
+                // activeCutEvents[i].note->SendNoteWasCutEvent(byref(activeCutEvents[i].event.noteCutInfo));
+
                 cutDeleteList.push_back(i);
             }
         }
