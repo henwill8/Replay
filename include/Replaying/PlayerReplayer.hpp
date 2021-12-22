@@ -4,6 +4,7 @@
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Vector3.hpp"
+#include "GlobalNamespace/PlayerTransforms.hpp"
 #include "fstream"
 #include "EventTypes.hpp"
 #include "ReplayUtils.hpp"
@@ -21,6 +22,6 @@ namespace Replay {
     public:
         void ReadEvents(std::ifstream& input, int eventsLength);
 
-        void SetPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber);
+        void SetPlayerTransforms(GlobalNamespace::PlayerTransforms* playerTransforms);
     };
 }

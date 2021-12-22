@@ -14,18 +14,21 @@ PlayerEvent Replay::PlayerReplayer::GetCurrentEvent() {
     return events[index];
 }
 
-void Replay::PlayerReplayer::SetPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber) {
+void Replay::PlayerReplayer::SetPlayerTransforms(GlobalNamespace::PlayerTransforms* playerTransforms) {
     PlayerEvent event = GetCurrentEvent();
     PlayerEvent nextEvent = events[index + 1];
     
     float lerpAmount = Replay::ReplayUtils::LerpAmountBetweenEvents(event, nextEvent);
 
-    head->set_eulerAngles(event.player.head.rotation);// This does not work, head still follows headset
+    UnityEngine::Transform* head = playerTransforms->headTransform;
+    head->set_eulerAngles(event.player.head.rotation);
     head->set_position(event.player.head.position);
 
+    UnityEngine::Transform* leftSaber = playerTransforms->leftHandTransform;
     leftSaber->set_rotation(Replay::ReplayUtils::LerpEulerAngles(event.player.leftSaber.rotation, nextEvent.player.leftSaber.rotation, lerpAmount));
     leftSaber->set_position(Replay::ReplayUtils::Lerp(event.player.leftSaber.position, nextEvent.player.leftSaber.position, lerpAmount));
     
+    UnityEngine::Transform* rightSaber = playerTransforms->rightHandTransform;
     rightSaber->set_rotation(Replay::ReplayUtils::LerpEulerAngles(event.player.rightSaber.rotation, nextEvent.player.rightSaber.rotation, lerpAmount));
     rightSaber->set_position(Replay::ReplayUtils::Lerp(event.player.rightSaber.position, nextEvent.player.rightSaber.position, lerpAmount));
 }
