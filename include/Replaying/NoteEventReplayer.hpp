@@ -20,6 +20,11 @@ namespace Replay {
         NoteCutEvent event;
     };
 
+    struct ActiveNoteMissEvent {
+        NoteController* note;
+        NoteMissEvent event;
+    };
+
     class NoteEventReplayer {
     private:
         custom_types::Helpers::Coroutine Update();
@@ -30,6 +35,7 @@ namespace Replay {
         std::vector<ActiveNoteCutEvent> activeCutEvents;
 
         std::vector<NoteMissEvent> missEvents;
+        std::vector<ActiveNoteMissEvent> activeMissEvents;
 
         void ReadCutEvents(std::ifstream& input, int eventsLength);
 

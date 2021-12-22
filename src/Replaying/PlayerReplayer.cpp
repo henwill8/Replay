@@ -18,7 +18,7 @@ void Replay::PlayerReplayer::SetPlayerTransforms(GlobalNamespace::PlayerTransfor
     PlayerEvent event = GetCurrentEvent();
     PlayerEvent nextEvent = events[index + 1];
     
-    float lerpAmount = Replay::ReplayUtils::LerpAmountBetweenEvents(event, nextEvent);
+    float lerpAmount = std::max(0.0f, std::min(1.0f, Replay::ReplayUtils::LerpAmountBetweenEvents(event, nextEvent)));
 
     UnityEngine::Transform* head = playerTransforms->headTransform;
     head->set_eulerAngles(event.player.head.rotation);

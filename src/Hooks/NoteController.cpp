@@ -24,6 +24,18 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
                 break;
             }
         }
+
+        for(int i = 0; i < ReplayManager::replayer.noteEventReplayer.missEvents.size(); i++) {
+            if(noteHash == ReplayManager::replayer.noteEventReplayer.missEvents[i].noteHash) {
+                ActiveNoteMissEvent activeEvent{self, ReplayManager::replayer.noteEventReplayer.missEvents[i]};
+
+                ReplayManager::replayer.noteEventReplayer.activeMissEvents.push_back(activeEvent);
+
+                ReplayManager::replayer.noteEventReplayer.missEvents.erase(ReplayManager::replayer.noteEventReplayer.missEvents.begin() + i);
+
+                break;
+            }
+        }
     }
 }
 

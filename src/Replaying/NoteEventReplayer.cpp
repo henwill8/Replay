@@ -39,23 +39,32 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(true) {
         float songTime = Replay::SongData::GetSongTime();
 
-        std::vector<int> deleteList;
+        std::vector<int> cutDeleteList;
 
         for(int i = 0; i < activeCutEvents.size(); i++) {
             if(songTime > activeCutEvents[i].event.time) {
-                // log("Sending note cut event!");
-                if(activeCutEvents[i].note == nullptr) log("NOTE IS NULL");
                 // SendNoteWasCutEvent(activeCutEvents[i].note, byref(activeCutEvents[i].event.noteCutInfo));
-                // activeCutEvents[i].note->SendNoteWasCutEvent();
-                // log("%i", (int)activeCutEvents[i].event.noteCutInfo.saberType);
-                // log("Successfully cut note!");
-                deleteList.push_back(i);
+                
+                cutDeleteList.push_back(i);
             }
         }
 
-        for(int i = deleteList.size()-1; i >= 0; i--) {
-            log("Erasing finished event");
-            activeCutEvents.erase(activeCutEvents.begin() + deleteList[i]);
+        for(int i = cutDeleteList.size()-1; i >= 0; i--) {
+            activeCutEvents.erase(activeCutEvents.begin() + cutDeleteList[i]);
+        }
+
+        std::vector<int> missDeleteList;
+
+        for(int i = 0; i < activeMissEvents.size(); i++) {
+            if(songTime > activeMissEvents[i].event.time) {
+                activeMissEvents[i].note->SendNoteWasMissedEvent();
+                
+                missDeleteList.push_back(i);
+            }
+        }
+
+        for(int i = missDeleteList.size()-1; i >= 0; i--) {
+            activeMissEvents.erase(activeMissEvents.begin() + missDeleteList[i]);
         }
 
         co_yield nullptr;
