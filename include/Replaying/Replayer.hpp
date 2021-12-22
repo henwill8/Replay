@@ -19,6 +19,6 @@ namespace Replay {
         Replay::PlayerReplayer playerReplayer;
         Replay::NoteEventReplayer noteEventReplayer;
 
-        void ReadReplayFile(std::string path);
+        void ReadReplayFile(std::string_view path);
     };
 }

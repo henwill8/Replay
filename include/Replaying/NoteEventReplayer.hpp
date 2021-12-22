@@ -18,16 +18,24 @@ namespace Replay {
     struct ActiveNoteCutEvent {
         NoteController* note;
         NoteCutEvent event;
+
+        ActiveNoteCutEvent() = default;
+
+        ActiveNoteCutEvent(NoteController *note, const NoteCutEvent &event) : note(note), event(event) {}
     };
 
     struct ActiveNoteMissEvent {
         NoteController* note;
         NoteMissEvent event;
+
+        ActiveNoteMissEvent() = default;
+
+        ActiveNoteMissEvent(NoteController *note, const NoteMissEvent &event) : note(note), event(event) {}
     };
 
     class NoteEventReplayer {
     private:
-        custom_types::Helpers::Coroutine Update();
+        [[noreturn]] custom_types::Helpers::Coroutine Update();
     public:
         void Init();
 

@@ -1,9 +1,7 @@
 #include "Recording/NoteEventRecorder.hpp"
 
 void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo) {
-    NoteCutEvent event{Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef};
-
-    cutEvents.push_back(event);
+    cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef);
 }
 
 void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
@@ -16,15 +14,13 @@ void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
     output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
 
     //Write data
-    for(NoteCutEvent event : cutEvents) {
+    for(NoteCutEvent const& event : cutEvents) {
         event.Write(output);
     }
 }
 
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
-    NoteMissEvent event{Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime()};
-
-    missEvents.push_back(event);
+    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime());
 }
 
 void Replay::NoteEventRecorder::WriteMissEvents(std::ofstream& output) {

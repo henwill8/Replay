@@ -19,7 +19,14 @@ namespace Replay {
         static inline GlobalNamespace::AudioTimeSyncController* audioTimeSyncController;
 
         static float GetSongTime() {
-            return audioTimeSyncController->get_songTime();
+            static auto const *timeSyncControllerClass = classof(GlobalNamespace::AudioTimeSyncController *);
+            auto *timeSourceObject = reinterpret_cast<Il2CppObject *>(audioTimeSyncController);
+            if (timeSourceObject->klass == timeSyncControllerClass) {
+                auto *timeSyncController = reinterpret_cast<GlobalNamespace::AudioTimeSyncController *>(audioTimeSyncController);
+                return timeSyncController->songTime;
+            } else {
+                return audioTimeSyncController->get_songTime();
+            }
         }
 
         static std::string GetMapID();

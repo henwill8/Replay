@@ -18,7 +18,7 @@ namespace Replay {
 
         float time = 1.0f/(float)eventsPerSecond;
     public:
-        void AddEvent(PlayerEventTypes::PlayerTransforms playerTransforms);
+        void AddEvent(PlayerEventTypes::PlayerTransforms const& playerTransforms);
 
         void WriteEvents(std::ofstream& output);
         

@@ -26,7 +26,7 @@ namespace Replay {
         }
 
         template <typename T>
-        static int GetCurrentIndex(std::vector<T> events, int lastIndex) {
+        static int GetCurrentIndex(std::vector<T> const& events, int lastIndex) {
             float songTime = Replay::SongData::GetSongTime();
             int eventsLength = events.size();
 
@@ -45,7 +45,7 @@ namespace Replay {
         }
 
         template <typename T>
-        static float LerpAmountBetweenEvents(T eventA, T eventB) {
+        static float LerpAmountBetweenEvents(T const& eventA, T const& eventB) {
             float timeA = StructTime(eventA);
             float timeB = StructTime(eventB);
 
@@ -54,24 +54,26 @@ namespace Replay {
             return (songTime - timeA) / (timeB - timeA);
         }
 
-        static UnityEngine::Quaternion LerpEulerAngles(UnityEngine::Vector3 angleA, UnityEngine::Vector3 angleB, float amount) {
+        // TODO: Use sombrero!
+        static UnityEngine::Quaternion LerpEulerAngles(UnityEngine::Vector3 const& angleA, UnityEngine::Vector3 const& angleB, float amount) {
             UnityEngine::Quaternion quaternionA = UnityEngine::Quaternion::Euler(angleA);
             UnityEngine::Quaternion quaternionB = UnityEngine::Quaternion::Euler(angleB);
 
             return UnityEngine::Quaternion::Lerp(quaternionA, quaternionB, amount);
         }
 
-        static UnityEngine::Vector3 Lerp(UnityEngine::Vector3 value1, UnityEngine::Vector3 value2, float amount) {
-            return UnityEngine::Vector3(value1.x + (value2.x - value1.x) * amount, value1.y + (value2.y - value1.y) * amount, value1.z + (value2.z - value1.z) * amount);
+        // TODO: Sombrero!
+        static UnityEngine::Vector3 Lerp(UnityEngine::Vector3 const& value1, UnityEngine::Vector3 const& value2, float amount) {
+            return {value1.x + (value2.x - value1.x) * amount, value1.y + (value2.y - value1.y) * amount, value1.z + (value2.z - value1.z) * amount};
         }
 
-        static int GetNoteHash(GlobalNamespace::NoteController* noteController) {
-            GlobalNamespace::NoteData* data = noteController->get_noteData();
+        static size_t GetNoteHash(GlobalNamespace::NoteController* noteController) {
+            GlobalNamespace::NoteData* data = noteController->noteData; // getter not needed?
             NoteEventTypes::DifferentiatingNoteData noteData{data->time, data->lineIndex, (int)data->noteLineLayer, (int)data->colorType, (int)data->cutDirection};
 
             std::hash<NoteEventTypes::DifferentiatingNoteData> noteDataHash;
 
-            return static_cast<int>(noteDataHash(noteData));
+            return noteDataHash(noteData);
         }
     };
 }

@@ -9,8 +9,8 @@ void Replay::Replayer::Init() {
     ReadReplayFile(Replay::ReplayUtils::GetReplayFilePath());
 }
 
-void Replay::Replayer::ReadReplayFile(std::string path) {
-    log("Reading Replay file at %s", path.c_str());
+void Replay::Replayer::ReadReplayFile(std::string_view path) {
+    log("Reading Replay file at %s", path.data());
     std::ifstream input = std::ifstream(path, std::ios::binary);
 
     if(input.is_open()) {

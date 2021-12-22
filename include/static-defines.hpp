@@ -7,7 +7,7 @@
 #include "questui/shared/QuestUI.hpp"
 #include "hooks.hpp"
 
-typedef unsigned char byte;
+using byte = unsigned char;
 
 #define eventIdByteSize 1
 #define eventCountByteSize 4

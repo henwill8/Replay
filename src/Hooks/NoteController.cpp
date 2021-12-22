@@ -12,26 +12,30 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
     NoteController_Init(self, noteData, worldRotation, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, endRotation, uniformScale);
 
     if(ReplayManager::replayState == ReplayState::REPLAYING) {
-        int noteHash = Replay::ReplayUtils::GetNoteHash(self);
-        for(int i = 0; i < ReplayManager::replayer.noteEventReplayer.cutEvents.size(); i++) {
-            if(noteHash == ReplayManager::replayer.noteEventReplayer.cutEvents[i].noteHash) {
-                ActiveNoteCutEvent activeEvent{self, ReplayManager::replayer.noteEventReplayer.cutEvents[i]};
+        size_t noteHash = Replay::ReplayUtils::GetNoteHash(self);
+        auto& replayMissEvents = ReplayManager::replayer.noteEventReplayer.missEvents;
+        auto& replayCutEvents = ReplayManager::replayer.noteEventReplayer.cutEvents;
+        auto& replayActiveMissEvents = ReplayManager::replayer.noteEventReplayer.activeMissEvents;
 
-                ReplayManager::replayer.noteEventReplayer.activeCutEvents.push_back(activeEvent);
+        for (auto eventIt = replayCutEvents.begin(); eventIt != replayCutEvents.end(); eventIt++) {
+            auto const &noteCutEvent = *eventIt;
 
-                ReplayManager::replayer.noteEventReplayer.cutEvents.erase(ReplayManager::replayer.noteEventReplayer.cutEvents.begin() + i);
+            if(noteHash == noteCutEvent.noteHash) {
+                ReplayManager::replayer.noteEventReplayer.activeCutEvents.emplace_back(self, noteCutEvent);
+
+                ReplayManager::replayer.noteEventReplayer.cutEvents.erase(eventIt);
 
                 break;
             }
+
         }
 
-        for(int i = 0; i < ReplayManager::replayer.noteEventReplayer.missEvents.size(); i++) {
-            if(noteHash == ReplayManager::replayer.noteEventReplayer.missEvents[i].noteHash) {
-                ActiveNoteMissEvent activeEvent{self, ReplayManager::replayer.noteEventReplayer.missEvents[i]};
+        for (auto eventIt = replayMissEvents.begin(); eventIt != replayMissEvents.end(); eventIt++) {
+            auto const &noteMissEvent = *eventIt;
+            if(noteHash == noteMissEvent.noteHash) {
+                replayActiveMissEvents.emplace_back(self, noteMissEvent);
 
-                ReplayManager::replayer.noteEventReplayer.activeMissEvents.push_back(activeEvent);
-
-                ReplayManager::replayer.noteEventReplayer.missEvents.erase(ReplayManager::replayer.noteEventReplayer.missEvents.begin() + i);
+                replayMissEvents.erase(eventIt);
 
                 break;
             }

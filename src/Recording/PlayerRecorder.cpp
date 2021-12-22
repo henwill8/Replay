@@ -1,8 +1,8 @@
 #include "Recording/PlayerRecorder.hpp"
 
-void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms playerTransforms) {
+void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms const& playerTransforms) {
     float songTime = SongData::GetSongTime();
-    if(events.size() > 0) {
+    if(!events.empty()) {
         if(songTime == events[events.size() - 1].time) return;
     }
 
@@ -24,7 +24,7 @@ void Replay::PlayerRecorder::WriteEvents(std::ofstream& output) {
     output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
 
     //Write data
-    for(PlayerEventTypes::PlayerEvent event : events) {
+    for(PlayerEventTypes::PlayerEvent const& event : events) {
         event.Write(output);
     }
 }

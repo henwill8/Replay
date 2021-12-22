@@ -9,7 +9,7 @@ void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLe
         NoteCutEvent event;
         event.Read(input);
 
-        cutEvents.push_back(event);
+        cutEvents.emplace_back(event);
     }
 }
 
@@ -18,7 +18,7 @@ void Replay::NoteEventReplayer::ReadMissEvents(std::ifstream& input, int eventsL
         NoteMissEvent event;
         event.Read(input);
 
-        missEvents.push_back(event);
+        missEvents.emplace_back(event);
     }
 }
 
@@ -35,40 +35,39 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, GlobalNamespace:
     ::il2cpp_utils::RunMethodRethrow<void, false>(self, ___internal__method, byref(noteCutInfo));
 }
 
-custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
+[[noreturn]] custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(true) {
         float songTime = Replay::SongData::GetSongTime();
 
-        std::vector<int> cutDeleteList;
 
-        for(int i = 0; i < activeCutEvents.size(); i++) {
-            if(songTime > activeCutEvents[i].event.time) {
-                log("%p", il2cpp_utils::ExtractValue(byref(activeCutEvents[i].event.noteCutInfo)));
-                log("%p", &byref(activeCutEvents[i].event.noteCutInfo).heldRef);
 
-                SendNoteWasCutEvent(activeCutEvents[i].note, activeCutEvents[i].event.noteCutInfo);
+        for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
+            auto const& eventData = *eventIt;
+            if(songTime > eventData.event.time) {
+                log("%p", il2cpp_utils::ExtractValue(byref(eventData.event.noteCutInfo)));
+                log("%p", &byref(eventData.event.noteCutInfo).heldRef);
+
+                SendNoteWasCutEvent(eventData.note, eventData.event.noteCutInfo);
                 // activeCutEvents[i].note->SendNoteWasCutEvent(byref(activeCutEvents[i].event.noteCutInfo));
 
-                cutDeleteList.push_back(i);
+
+                // will return the next iterator, making this safe
+                eventIt = activeCutEvents.erase(eventIt);
+            } else {
+                eventIt++;
             }
         }
 
-        for(int i = cutDeleteList.size()-1; i >= 0; i--) {
-            activeCutEvents.erase(activeCutEvents.begin() + cutDeleteList[i]);
-        }
 
-        std::vector<int> missDeleteList;
+        for (auto eventIt = activeMissEvents.begin(); eventIt != activeMissEvents.end();) {
+            auto const& eventData = *eventIt;
+            if(songTime > eventData.event.time) {
+                eventData.note->SendNoteWasMissedEvent();
 
-        for(int i = 0; i < activeMissEvents.size(); i++) {
-            if(songTime > activeMissEvents[i].event.time) {
-                activeMissEvents[i].note->SendNoteWasMissedEvent();
-                
-                missDeleteList.push_back(i);
+                eventIt = activeMissEvents.erase(eventIt);
+            } else {
+                eventIt++;
             }
-        }
-
-        for(int i = missDeleteList.size()-1; i >= 0; i--) {
-            activeMissEvents.erase(activeMissEvents.begin() + missDeleteList[i]);
         }
 
         co_yield nullptr;
