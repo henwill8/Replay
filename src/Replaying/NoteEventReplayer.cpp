@@ -43,12 +43,12 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
 
         for(int i = 0; i < activeCutEvents.size(); i++) {
             if(songTime > activeCutEvents[i].event.time) {
-                log("Sending note cut event!");
+                // log("Sending note cut event!");
                 if(activeCutEvents[i].note == nullptr) log("NOTE IS NULL");
                 // SendNoteWasCutEvent(activeCutEvents[i].note, byref(activeCutEvents[i].event.noteCutInfo));
                 // activeCutEvents[i].note->SendNoteWasCutEvent();
-                log("%i", (int)activeCutEvents[i].event.noteCutInfo.saberType);
-                log("Successfully cut note!");
+                // log("%i", (int)activeCutEvents[i].event.noteCutInfo.saberType);
+                // log("Successfully cut note!");
                 deleteList.push_back(i);
             }
         }
