@@ -1,9 +1,12 @@
 #pragma once
 #include "static-defines.hpp"
-#include "extern/includes/bs-utils/shared/utils.hpp"
+// #include "extern/includes/bs-utils/shared/utils.hpp"
 #include "SongData.hpp"
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Vector3.hpp"
+#include "GlobalNamespace/NoteController.hpp"
+#include "GlobalNamespace/NoteData.hpp"
+#include "EventTypes.hpp"
 
 #define StructTime(struct) struct.time
 
@@ -60,6 +63,15 @@ namespace Replay {
 
         static UnityEngine::Vector3 Lerp(UnityEngine::Vector3 value1, UnityEngine::Vector3 value2, float amount) {
             return UnityEngine::Vector3(value1.x + (value2.x - value1.x) * amount, value1.y + (value2.y - value1.y) * amount, value1.z + (value2.z - value1.z) * amount);
+        }
+
+        static int GetNoteHash(GlobalNamespace::NoteController* noteController) {
+            GlobalNamespace::NoteData* data = noteController->get_noteData();
+            NoteEventTypes::DifferentiatingNoteData noteData{data->time, data->lineIndex, (int)data->noteLineLayer, (int)data->colorType, (int)data->cutDirection};
+
+            std::hash<NoteEventTypes::DifferentiatingNoteData> noteDataHash;
+
+            return static_cast<int>(noteDataHash(noteData));
         }
     };
 }

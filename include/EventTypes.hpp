@@ -6,6 +6,7 @@
 #include "GlobalNamespace/ColorType.hpp"
 #include "GlobalNamespace/NoteCutDirection.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
+#include "GlobalNamespace/NoteController.hpp"
 
 using namespace GlobalNamespace;
 
@@ -44,24 +45,24 @@ namespace Replay {
         struct DifferentiatingNoteData {
             float time;
             int lineIndex;
-            NoteLineLayer noteLineLayer;
-            ColorType colorType;
-            NoteCutDirection noteCutDirection;
+            int noteLineLayer;
+            int colorType;
+            int noteCutDirection;
         };
     
         struct NoteCutEvent {
-            DifferentiatingNoteData noteData;
+            int noteHash;
             float time;
             NoteCutInfo noteCutInfo;
 
             void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&noteData), sizeof(DifferentiatingNoteData));
+                writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(int));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
                 writer.write(reinterpret_cast<const char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
 
             void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&noteData), sizeof(DifferentiatingNoteData));
+                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(int));
                 reader.read(reinterpret_cast<char*>(&time), sizeof(float));
                 reader.read(reinterpret_cast<char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
@@ -70,16 +71,16 @@ namespace Replay {
         const inline static byte cutEventID = 0b00000001;
 
         struct NoteMissEvent {
-            DifferentiatingNoteData noteData;
+            int noteHash;
             float time;
 
             void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&noteData), sizeof(DifferentiatingNoteData));
+                writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(int));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
             }
 
             void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&noteData), sizeof(DifferentiatingNoteData));
+                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(int));
                 reader.read(reinterpret_cast<char*>(&time), sizeof(float));
             }
         };
@@ -87,3 +88,18 @@ namespace Replay {
         const inline static byte missEventID = 0b00000010;
     }
 }
+
+template<>
+struct std::hash<Replay::NoteEventTypes::DifferentiatingNoteData>
+{
+    std::size_t operator()(Replay::NoteEventTypes::DifferentiatingNoteData const& s) const noexcept
+    {
+        std::size_t h1 = std::hash<float>{}(s.time);
+        std::size_t h2 = std::hash<int>{}(s.lineIndex);
+        std::size_t h3 = std::hash<int>{}(s.noteLineLayer);
+        std::size_t h4 = std::hash<int>{}(s.colorType);
+        std::size_t h5 = std::hash<int>{}(s.noteCutDirection);
+
+        return h1 ^ h2 ^ h3 ^ h4 ^ h5;
+    }
+};

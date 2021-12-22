@@ -3,6 +3,9 @@
 void Replay::Replayer::Init() {
     log("Setting up Replayer");
     playerReplayer = Replay::PlayerReplayer();
+    noteEventReplayer = Replay::NoteEventReplayer();
+    noteEventReplayer.Init();
+    
     ReadReplayFile(Replay::ReplayUtils::GetReplayFilePath());
 }
 
@@ -27,10 +30,10 @@ void Replay::Replayer::ReadReplayFile(std::string path) {
                     playerReplayer.ReadEvents(input, eventsLength);
                     break;
                 case NoteEventTypes::cutEventID:
-                    
+                    noteEventReplayer.ReadCutEvents(input, eventsLength);
                     break;
                 case NoteEventTypes::missEventID:
-
+                    noteEventReplayer.ReadMissEvents(input, eventsLength);
                     break;
             }
         }

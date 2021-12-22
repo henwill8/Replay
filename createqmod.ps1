@@ -1,5 +1,5 @@
 Param(
-    [String]$qmodname="",
+    [String]$qmodname="replay_1_0_0",
     [Parameter(Mandatory=$false)]
     [Switch]$clean
 )

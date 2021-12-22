@@ -4,6 +4,7 @@
 #include "fstream"
 #include "vector"
 #include "Replaying/PlayerReplayer.hpp"
+#include "Replaying/NoteEventReplayer.hpp"
 #include "ReplayUtils.hpp"
 
 using namespace Replay;
@@ -16,6 +17,7 @@ namespace Replay {
         void Init();
 
         Replay::PlayerReplayer playerReplayer;
+        Replay::NoteEventReplayer noteEventReplayer;
 
         void ReadReplayFile(std::string path);
     };

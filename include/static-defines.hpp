@@ -16,6 +16,8 @@ typedef unsigned char byte;
 #define fileVersion 0b00000000
 #define replayFileExtension ".questplay"
 
+#define USE_CODEGEN_FIELDS
+
 static ModInfo modInfo;
 
 static Logger& replayLogger()

@@ -14,7 +14,7 @@ MAKE_HOOK_MATCH(PlayerTransforms_Update, &GlobalNamespace::PlayerTransforms::Upd
     if(ReplayManager::replayState == ReplayState::RECORDING) {
         ReplayManager::recorder.playerRecorder.AddEvent(PlayerRecorder::TransformsToPlayerTransforms(self->headTransform, self->leftHandTransform, self->rightHandTransform));
     } else if(ReplayManager::replayState == ReplayState::REPLAYING) {
-        ReplayManager::replayer.playerReplayer.SetPlayerTransforms(self->headTransform, self->leftHandTransform, self->rightHandTransform);
+        // ReplayManager::replayer.playerReplayer.SetPlayerTransforms(self->headTransform, self->leftHandTransform, self->rightHandTransform);
     }
 }
 

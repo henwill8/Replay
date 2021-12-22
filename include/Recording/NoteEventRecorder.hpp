@@ -1,13 +1,13 @@
 #pragma once
 #include "static-defines.hpp"
 
-#include "UnityEngine/Transform.hpp"
-#include "UnityEngine/Time.hpp"
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
+#include "GlobalNamespace/NoteData.hpp"
 #include "fstream"
 #include "EventTypes.hpp"
 #include "SongData.hpp"
+#include "ReplayUtils.hpp"
 #include <functional>
 
 using namespace Replay::NoteEventTypes;
@@ -18,14 +18,11 @@ namespace Replay {
     private:
         std::vector<NoteCutEvent> cutEvents;
         std::vector<NoteMissEvent> missEvents;
-
     public:
         void AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo);
         void WriteCutEvents(std::ofstream& output);
 
         void AddMissEvent(NoteController* noteController);
         void WriteMissEvents(std::ofstream& output);
-
-        static DifferentiatingNoteData GetNoteDataFromController(NoteController* noteController);
     };
 }

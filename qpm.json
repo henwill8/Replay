@@ -6,12 +6,14 @@
     "id": "Replay",
     "version": "1.0.0",
     "url": null,
-    "additionalData": {}
+    "additionalData": {
+        "overrideSoName": "libreplay.so"
+    }
   },
   "dependencies": [
     {
       "id": "beatsaber-hook",
-      "versionRange": "2.3.2",
+      "versionRange": "*",
       "additionalData": {
         "extraFiles": [
           "src/inline-hook"
@@ -19,23 +21,18 @@
       }
     },
     {
-      "id": "bs-utils",
-      "versionRange": "0.6.4",
-      "additionalData": {}
-    },
-    {
       "id": "questui",
-      "versionRange": "0.11.1",
+      "versionRange": "*",
       "additionalData": {}
     },
     {
       "id": "codegen",
-      "versionRange": "0.14.0",
+      "versionRange": "*",
       "additionalData": {}
     },
     {
       "id": "custom-types",
-      "versionRange": "0.12.7",
+      "versionRange": "*",
       "additionalData": {}
     },
     {
