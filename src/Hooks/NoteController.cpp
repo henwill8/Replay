@@ -16,14 +16,15 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
         auto& replayMissEvents = ReplayManager::replayer.noteEventReplayer.missEvents;
         auto& replayCutEvents = ReplayManager::replayer.noteEventReplayer.cutEvents;
         auto& replayActiveMissEvents = ReplayManager::replayer.noteEventReplayer.activeMissEvents;
+        auto& replayActiveCutEvents = ReplayManager::replayer.noteEventReplayer.activeCutEvents;
 
         for (auto eventIt = replayCutEvents.begin(); eventIt != replayCutEvents.end(); eventIt++) {
             auto const &noteCutEvent = *eventIt;
 
             if(noteHash == noteCutEvent.noteHash) {
-                ReplayManager::replayer.noteEventReplayer.activeCutEvents.emplace_back(self, noteCutEvent);
+                replayActiveCutEvents.emplace_back(self, noteCutEvent);
 
-                ReplayManager::replayer.noteEventReplayer.cutEvents.erase(eventIt);
+                replayCutEvents.erase(eventIt);
 
                 break;
             }
