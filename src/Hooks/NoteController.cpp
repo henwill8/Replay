@@ -12,7 +12,7 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
     NoteController_Init(self, noteData, worldRotation, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, endRotation, uniformScale);
 
     if(ReplayManager::replayState == ReplayState::REPLAYING) {
-        size_t noteHash = Replay::ReplayUtils::GetNoteHash(self);
+        auto noteHash = Replay::ReplayUtils::GetNoteHash(self);
         auto& replayMissEvents = ReplayManager::replayer.noteEventReplayer.missEvents;
         auto& replayCutEvents = ReplayManager::replayer.noteEventReplayer.cutEvents;
         auto& replayActiveMissEvents = ReplayManager::replayer.noteEventReplayer.activeMissEvents;

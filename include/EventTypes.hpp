@@ -73,23 +73,23 @@ namespace Replay {
         };
     
         struct NoteCutEvent {
-            size_t noteHash;
+            int noteHash;
             float time;
             NoteCutInfo noteCutInfo;
 
             NoteCutEvent() = default;
 
-            NoteCutEvent(size_t noteHash, float time, const NoteCutInfo &noteCutInfo) : noteHash(noteHash), time(time),
+            NoteCutEvent(int noteHash, float time, const NoteCutInfo &noteCutInfo) : noteHash(noteHash), time(time),
                                                                                      noteCutInfo(noteCutInfo) {}
 
             void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(size_t));
+                writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(int));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
                 writer.write(reinterpret_cast<const char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
 
             void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(size_t));
+                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(int));
                 reader.read(reinterpret_cast<char*>(&time), sizeof(float));
                 reader.read(reinterpret_cast<char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
@@ -98,21 +98,21 @@ namespace Replay {
         const inline static byte cutEventID = 0b00000001;
 
         struct NoteMissEvent {
-            size_t noteHash;
+            int noteHash;
             float time;
 
             // allows emplace to work
-            NoteMissEvent(size_t noteHash, float time) : noteHash(noteHash), time(time) {}
+            NoteMissEvent(int noteHash, float time) : noteHash(noteHash), time(time) {}
 
             NoteMissEvent() = default;
 
             void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(size_t));
+                writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(int));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
             }
 
             void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(size_t));
+                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(int));
                 reader.read(reinterpret_cast<char*>(&time), sizeof(float));
             }
         };

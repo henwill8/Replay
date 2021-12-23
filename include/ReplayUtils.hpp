@@ -67,13 +67,13 @@ namespace Replay {
             return {value1.x + (value2.x - value1.x) * amount, value1.y + (value2.y - value1.y) * amount, value1.z + (value2.z - value1.z) * amount};
         }
 
-        static size_t GetNoteHash(GlobalNamespace::NoteController* noteController) {
+        static int GetNoteHash(GlobalNamespace::NoteController* noteController) {
             GlobalNamespace::NoteData* data = noteController->noteData; // getter not needed?
             NoteEventTypes::DifferentiatingNoteData noteData{data->time, data->lineIndex, (int)data->noteLineLayer, (int)data->colorType, (int)data->cutDirection};
 
             std::hash<NoteEventTypes::DifferentiatingNoteData> noteDataHash;
 
-            return noteDataHash(noteData);
+            return (int) noteDataHash(noteData);
         }
     };
 }
