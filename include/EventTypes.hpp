@@ -79,7 +79,7 @@ namespace Replay {
 
             constexpr NoteCutEvent() = default;
 
-            constexpr NoteCutEvent(int noteHash, float time, const NoteCutInfo &noteCutInfo) : noteHash(noteHash), time(time),
+            constexpr NoteCutEvent(int noteHash, float time, NoteCutInfo& noteCutInfo) : noteHash(noteHash), time(time),
                                                                                      noteCutInfo(noteCutInfo) {}
 
             void Write(std::ofstream& writer) const {

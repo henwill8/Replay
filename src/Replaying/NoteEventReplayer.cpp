@@ -35,21 +35,18 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, GlobalNamespace:
     ::il2cpp_utils::RunMethodRethrow<void, false>(self, ___internal__method, byref(noteCutInfo));
 }
 
-[[noreturn]] custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
+custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(true) {
         float songTime = Replay::SongData::GetSongTime();
-
-
 
         for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
             auto const& eventData = *eventIt;
             if(songTime > eventData.event.time) {
-                log("%p", il2cpp_utils::ExtractValue(byref(eventData.event.noteCutInfo)));
-                log("%p", &byref(eventData.event.noteCutInfo).heldRef);
+                // log("%p", il2cpp_utils::ExtractValue(byref(eventData.event.noteCutInfo)));
+                // log("%p", &byref(eventData.event.noteCutInfo).heldRef);
 
                 SendNoteWasCutEvent(eventData.note, eventData.event.noteCutInfo);
                 // activeCutEvents[i].note->SendNoteWasCutEvent(byref(activeCutEvents[i].event.noteCutInfo));
-
 
                 // will return the next iterator, making this safe
                 eventIt = activeCutEvents.erase(eventIt);
@@ -57,7 +54,6 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, GlobalNamespace:
                 eventIt++;
             }
         }
-
 
         for (auto eventIt = activeMissEvents.begin(); eventIt != activeMissEvents.end();) {
             auto const& eventData = *eventIt;

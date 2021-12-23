@@ -55,7 +55,7 @@ namespace Replay {
         }
 
         // TODO: Use sombrero!
-        static constexpr UnityEngine::Quaternion LerpEulerAngles(UnityEngine::Vector3 const& angleA, UnityEngine::Vector3 const& angleB, float amount) {
+        static UnityEngine::Quaternion LerpEulerAngles(UnityEngine::Vector3 angleA, UnityEngine::Vector3 angleB, float amount) {
             UnityEngine::Quaternion quaternionA = UnityEngine::Quaternion::Euler(angleA);
             UnityEngine::Quaternion quaternionB = UnityEngine::Quaternion::Euler(angleB);
 
