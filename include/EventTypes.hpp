@@ -17,9 +17,9 @@ namespace Replay {
             UnityEngine::Vector3 position;
             UnityEngine::Vector3 rotation;
 
-            EulerTransform() = default;
+            constexpr EulerTransform() = default;
 
-            EulerTransform(const UnityEngine::Vector3 &position, const UnityEngine::Vector3 &rotation) : position(
+            constexpr EulerTransform(const UnityEngine::Vector3 &position, const UnityEngine::Vector3 &rotation) : position(
                     position), rotation(rotation) {}
         };
 
@@ -28,9 +28,9 @@ namespace Replay {
             EulerTransform leftSaber;
             EulerTransform rightSaber;
 
-            PlayerTransforms() = default;
+            constexpr PlayerTransforms() = default;
 
-            PlayerTransforms(const EulerTransform &head, const EulerTransform &leftSaber,
+            constexpr PlayerTransforms(const EulerTransform &head, const EulerTransform &leftSaber,
                              const EulerTransform &rightSaber) : head(head), leftSaber(leftSaber),
                                                                  rightSaber(rightSaber) {}
         };
@@ -39,9 +39,9 @@ namespace Replay {
             float time;
             PlayerTransforms player;
 
-            PlayerEvent() = default;
+            constexpr PlayerEvent() = default;
 
-            PlayerEvent(float time, const PlayerTransforms &player) : time(time), player(player) {}
+            constexpr PlayerEvent(float time, const PlayerTransforms &player) : time(time), player(player) {}
 
             void Write(std::ofstream& writer) const {
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
@@ -65,9 +65,9 @@ namespace Replay {
             int colorType;
             int noteCutDirection;
 
-            DifferentiatingNoteData() = default;
+            constexpr DifferentiatingNoteData() = default;
 
-            DifferentiatingNoteData(float time, int lineIndex, int noteLineLayer, int colorType, int noteCutDirection)
+            constexpr DifferentiatingNoteData(float time, int lineIndex, int noteLineLayer, int colorType, int noteCutDirection)
                     : time(time), lineIndex(lineIndex), noteLineLayer(noteLineLayer), colorType(colorType),
                       noteCutDirection(noteCutDirection) {}
         };
@@ -77,9 +77,9 @@ namespace Replay {
             float time;
             NoteCutInfo noteCutInfo;
 
-            NoteCutEvent() = default;
+            constexpr NoteCutEvent() = default;
 
-            NoteCutEvent(int noteHash, float time, const NoteCutInfo &noteCutInfo) : noteHash(noteHash), time(time),
+            constexpr NoteCutEvent(int noteHash, float time, const NoteCutInfo &noteCutInfo) : noteHash(noteHash), time(time),
                                                                                      noteCutInfo(noteCutInfo) {}
 
             void Write(std::ofstream& writer) const {
