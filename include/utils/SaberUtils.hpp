@@ -16,7 +16,7 @@
 namespace Replay {
 
     struct SaberUtils {
-        static GlobalNamespace::SaberManager* saberManager;
+        inline static GlobalNamespace::SaberManager* saberManager;
 
         static GlobalNamespace::Saber* getSaberForType(GlobalNamespace::SaberType saberType) {
             return saberType == saberManager->leftSaber->saberType->saberType ? saberManager->leftSaber : saberManager->rightSaber;
