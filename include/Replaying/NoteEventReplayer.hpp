@@ -57,12 +57,8 @@ namespace Replay {
         std::vector<NoteMissEvent> missEvents;
         std::vector<ActiveNoteMissEvent> activeMissEvents;
 
-        // TODO: Saber util?
-        Saber* getSaberForType(SaberType saberType) {
-            return saberType == saberManager->leftSaber->saberType->saberType ? saberManager->leftSaber : saberManager->rightSaber;
-        }
 
-        ISaberSwingRatingCounter* getOrSpawnSaberSwingRatingCounter(Saber* saber, GameNoteController* noteController);
+
 
         void AddActiveEvents(GlobalNamespace::NoteController* noteController);
 

@@ -1,7 +1,6 @@
 #include "Replaying/NoteEventReplayer.hpp"
 
-#include "GlobalNamespace/SaberSwingRatingCounter_Pool.hpp"
-#include "GlobalNamespace/SaberMovementData.hpp"
+#include "utils/SaberUtils.hpp"
 
 #include "UnityEngine/Resources.hpp"
 
@@ -16,7 +15,7 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
         auto const &noteCutEvent = *eventIt;
 
         if(noteHash == noteCutEvent.noteHash) {
-            auto saber = getSaberForType(noteCutEvent.noteCutInfo.saberType);
+            auto saber = SaberUtils::getSaberForType(noteCutEvent.noteCutInfo.saberType);
             activeCutEvents.emplace_back(noteController, saber, noteCutEvent);
 
             cutEvents.erase(eventIt);
@@ -69,18 +68,8 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winvalid-noreturn"
+#pragma ide diagnostic ignored "EndlessLoop"
 custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
-    // TODO: Somehow get this earlier on, hook it?
-    // Avoid Resources::FindObjectsOfTypeAll, it causes lag
-    auto saberManagers = UnityEngine::Resources::FindObjectsOfTypeAll<SaberManager*>();
-
-    if (!saberManagers || saberManagers.Length() == 0) {
-        replayLogger().error("No saber managers found, stack bad");
-    }
-
-    saberManager = saberManagers.get(0);
-    CRASH_UNLESS(saberManager);
-
     while(true) {
         float songTime = Replay::SongData::GetSongTime();
 
@@ -92,7 +81,7 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
 
                 // Ensure we have a game note controller
                 auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
-                auto saberSwingRatingCounter = getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController);
+                auto saberSwingRatingCounter = SaberUtils::getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController);
                 eventData.event.noteCutInfo.swingRatingCounter = saberSwingRatingCounter;
 
                 SendNoteWasCutEvent(eventData.note, byref(eventData.event.noteCutInfo));
@@ -118,16 +107,8 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
 
         co_yield nullptr;
     }
-
     co_return;
 }
 #pragma clang diagnostic pop
 
-// Code from GameNoteController.HandleCut
-ISaberSwingRatingCounter *Replay::NoteEventReplayer::getOrSpawnSaberSwingRatingCounter(Saber* saber, GameNoteController* noteController) {
-    auto * saberSwingRatingCounter = noteController->saberSwingRatingCounterPool->Spawn();
-    saberSwingRatingCounter->Init(saber->movementData, noteController->noteTransform, !noteController->noteData->skipBeforeCutScoring, !noteController->noteData->skipAfterCutScoring);
-    saberSwingRatingCounter->RegisterDidFinishReceiver(reinterpret_cast<ISaberSwingRatingCounterDidFinishReceiver *>(noteController));
 
-    return reinterpret_cast<ISaberSwingRatingCounter *>(saberSwingRatingCounter);
-}
