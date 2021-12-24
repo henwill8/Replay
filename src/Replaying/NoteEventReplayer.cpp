@@ -74,8 +74,8 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     // Avoid Resources::FindObjectsOfTypeAll, it causes lag
     auto saberManagers = UnityEngine::Resources::FindObjectsOfTypeAll<SaberManager*>();
 
-    if (!saberManagers) {
-        getLogger().error("No saber managers found, stack bad");
+    if (!saberManagers || saberManagers.Length() == 0) {
+        replayLogger().error("No saber managers found, stack bad");
     }
 
     saberManager = saberManagers.get(0);
