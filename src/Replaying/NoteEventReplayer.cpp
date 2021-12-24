@@ -6,9 +6,6 @@
 #include "UnityEngine/Resources.hpp"
 
 void Replay::NoteEventReplayer::Init() {
-    saberManager = UnityEngine::Resources::FindObjectsOfTypeAll<SaberManager*>().get(0);
-    CRASH_UNLESS(saberManager);
-
     GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(Update())));
 }
 
@@ -71,6 +68,17 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 }
 
 [[noreturn]] custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
+    // TODO: Somehow get this earlier on, hook it?
+    // Avoid Resources::FindObjectsOfTypeAll, it causes lag
+    auto saberManagers = UnityEngine::Resources::FindObjectsOfTypeAll<SaberManager*>();
+
+    if (!saberManagers) {
+        getLogger().error("No saber managers found, stack bad");
+    }
+
+    saberManager = saberManagers.get(0);
+    CRASH_UNLESS(saberManager);
+
     while(true) {
         float songTime = Replay::SongData::GetSongTime();
 
