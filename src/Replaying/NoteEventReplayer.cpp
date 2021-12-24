@@ -4,6 +4,34 @@ void Replay::NoteEventReplayer::Init() {
     GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(Update())));
 }
 
+void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController* noteController) {
+    auto noteHash = Replay::ReplayUtils::GetNoteHash(noteController);
+
+    for (auto eventIt = cutEvents.begin(); eventIt != cutEvents.end(); eventIt++) {
+        auto const &noteCutEvent = *eventIt;
+
+        if(noteHash == noteCutEvent.noteHash) {
+            activeCutEvents.emplace_back(noteController, noteCutEvent);
+
+            cutEvents.erase(eventIt);
+
+            return;
+        }
+    }
+
+    for (auto eventIt = missEvents.begin(); eventIt != missEvents.end(); eventIt++) {
+        auto const &noteMissEvent = *eventIt;
+
+        if(noteHash == noteMissEvent.noteHash) {
+            activeMissEvents.emplace_back(noteController, noteMissEvent);
+
+            missEvents.erase(eventIt);
+
+            return;
+        }
+    }
+}
+
 void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLength) {
     for(int i = 0; i < eventsLength; i++) {
         NoteCutEvent event;

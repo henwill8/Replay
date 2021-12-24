@@ -8,6 +8,7 @@
 #include "fstream"
 #include "EventTypes.hpp"
 #include "SongData.hpp"
+#include "ReplayUtils.hpp"
 #include <functional>
 #include "System/Collections/IEnumerator.hpp"
 #include "custom-types/shared/coroutine.hpp"
@@ -44,6 +45,8 @@ namespace Replay {
 
         std::vector<NoteMissEvent> missEvents;
         std::vector<ActiveNoteMissEvent> activeMissEvents;
+
+        void AddActiveEvents(GlobalNamespace::NoteController* noteController);
 
         void ReadCutEvents(std::ifstream& input, int eventsLength);
 

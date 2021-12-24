@@ -12,35 +12,7 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
     NoteController_Init(self, noteData, worldRotation, moveStartPos, moveEndPos, jumpEndPos, moveDuration, jumpDuration, jumpGravity, endRotation, uniformScale);
 
     if(ReplayManager::replayState == ReplayState::REPLAYING) {
-        auto noteHash = Replay::ReplayUtils::GetNoteHash(self);
-        auto& replayMissEvents = ReplayManager::replayer.noteEventReplayer.missEvents;
-        auto& replayCutEvents = ReplayManager::replayer.noteEventReplayer.cutEvents;
-        auto& replayActiveMissEvents = ReplayManager::replayer.noteEventReplayer.activeMissEvents;
-        auto& replayActiveCutEvents = ReplayManager::replayer.noteEventReplayer.activeCutEvents;
-
-        for (auto eventIt = replayCutEvents.begin(); eventIt != replayCutEvents.end(); eventIt++) {
-            auto const &noteCutEvent = *eventIt;
-
-            if(noteHash == noteCutEvent.noteHash) {
-                replayActiveCutEvents.emplace_back(self, noteCutEvent);
-
-                replayCutEvents.erase(eventIt);
-
-                break;
-            }
-
-        }
-
-        for (auto eventIt = replayMissEvents.begin(); eventIt != replayMissEvents.end(); eventIt++) {
-            auto const &noteMissEvent = *eventIt;
-            if(noteHash == noteMissEvent.noteHash) {
-                replayActiveMissEvents.emplace_back(self, noteMissEvent);
-
-                replayMissEvents.erase(eventIt);
-
-                break;
-            }
-        }
+        ReplayManager::replayer.noteEventReplayer.AddActiveEvents(self);
     }
 }
 
