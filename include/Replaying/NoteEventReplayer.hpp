@@ -13,30 +13,41 @@
 #include "System/Collections/IEnumerator.hpp"
 #include "custom-types/shared/coroutine.hpp"
 
+#include "GlobalNamespace/GameNoteController.hpp"
+#include "GlobalNamespace/Saber.hpp"
+#include "GlobalNamespace/SaberManager.hpp"
+#include "GlobalNamespace/SaberType.hpp"
+#include "GlobalNamespace/SaberTypeObject.hpp"
+
+// Using namespace in headers is icky
 using namespace Replay::NoteEventTypes;
 
 namespace Replay {
     struct ActiveNoteCutEvent {
         NoteController* note;
+        Saber* saber;
         NoteCutEvent event;
 
-        ActiveNoteCutEvent() = default;
+        constexpr ActiveNoteCutEvent() = default;
 
-        ActiveNoteCutEvent(NoteController *note, const NoteCutEvent &event) : note(note), event(event) {}
+        constexpr ActiveNoteCutEvent(NoteController *note, Saber *saber, const NoteCutEvent &event) : note(note), saber(saber),
+                                                                                            event(event) {}
     };
 
     struct ActiveNoteMissEvent {
         NoteController* note;
         NoteMissEvent event;
 
-        ActiveNoteMissEvent() = default;
+        constexpr ActiveNoteMissEvent() = default;
 
-        ActiveNoteMissEvent(NoteController *note, const NoteMissEvent &event) : note(note), event(event) {}
+        constexpr ActiveNoteMissEvent(NoteController *note, const NoteMissEvent &event) : note(note), event(event) {}
     };
 
     class NoteEventReplayer {
     private:
-        custom_types::Helpers::Coroutine Update();
+        [[noreturn]] custom_types::Helpers::Coroutine Update();
+        GlobalNamespace::SaberManager* saberManager;
+
     public:
         void Init();
 
@@ -45,6 +56,13 @@ namespace Replay {
 
         std::vector<NoteMissEvent> missEvents;
         std::vector<ActiveNoteMissEvent> activeMissEvents;
+
+        // TODO: Saber util?
+        Saber* getSaberForType(SaberType saberType) {
+            return saberType == saberManager->leftSaber->saberType->saberType ? saberManager->leftSaber : saberManager->rightSaber;
+        }
+
+        ISaberSwingRatingCounter* getOrSpawnSaberSwingRatingCounter(Saber* saber, GameNoteController* noteController);
 
         void AddActiveEvents(GlobalNamespace::NoteController* noteController);
 

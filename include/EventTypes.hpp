@@ -82,16 +82,17 @@ namespace Replay {
             constexpr NoteCutEvent(int noteHash, float time, const NoteCutInfo& noteCutInfo) : noteHash(noteHash), time(time),
                                                                                      noteCutInfo(noteCutInfo) {}
 
+            constexpr NoteCutEvent(std::ifstream& reader) {
+                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(int));
+                reader.read(reinterpret_cast<char*>(&time), sizeof(float));
+                reader.read(reinterpret_cast<char*>(&noteCutInfo), sizeof(NoteCutInfo));
+                noteCutInfo.swingRatingCounter = nullptr;
+            }
+
             void Write(std::ofstream& writer) const {
                 writer.write(reinterpret_cast<const char*>(&noteHash), sizeof(int));
                 writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
                 writer.write(reinterpret_cast<const char*>(&noteCutInfo), sizeof(NoteCutInfo));
-            }
-
-            void Read(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&noteHash), sizeof(int));
-                reader.read(reinterpret_cast<char*>(&time), sizeof(float));
-                reader.read(reinterpret_cast<char*>(&noteCutInfo), sizeof(NoteCutInfo));
             }
         };
 
