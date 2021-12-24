@@ -67,7 +67,9 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
     ::il2cpp_utils::RunMethodRethrow<void, false>(self, ___internal__method, noteCutInfo);
 }
 
-[[noreturn]] custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winvalid-noreturn"
+custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     // TODO: Somehow get this earlier on, hook it?
     // Avoid Resources::FindObjectsOfTypeAll, it causes lag
     auto saberManagers = UnityEngine::Resources::FindObjectsOfTypeAll<SaberManager*>();
@@ -119,6 +121,7 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 
     co_return;
 }
+#pragma clang diagnostic pop
 
 // Code from GameNoteController.HandleCut
 ISaberSwingRatingCounter *Replay::NoteEventReplayer::getOrSpawnSaberSwingRatingCounter(Saber* saber, GameNoteController* noteController) {
