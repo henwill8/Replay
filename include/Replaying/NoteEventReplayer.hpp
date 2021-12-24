@@ -45,7 +45,7 @@ namespace Replay {
 
     class NoteEventReplayer {
     private:
-        [[noreturn]] custom_types::Helpers::Coroutine Update();
+        custom_types::Helpers::Coroutine Update();
         GlobalNamespace::SaberManager* saberManager;
 
     public:
