@@ -6,6 +6,8 @@
 #include "UnityEngine/Vector3.hpp"
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/NoteData.hpp"
+#include "GlobalNamespace/NoteCutInfo.hpp"
+#include "GlobalNamespace/SaberSwingRatingCounter.hpp"
 #include "EventTypes.hpp"
 
 #define StructTime(struct) struct.time
@@ -68,12 +70,31 @@ namespace Replay {
         }
 
         static constexpr int GetNoteHash(GlobalNamespace::NoteController* noteController) {
-            GlobalNamespace::NoteData* data = noteController->noteData; // getter not needed?
+            GlobalNamespace::NoteData* data = noteController->noteData;
             NoteEventTypes::DifferentiatingNoteData noteData{data->time, data->lineIndex, (int)data->noteLineLayer, (int)data->colorType, (int)data->cutDirection};
 
             std::hash<NoteEventTypes::DifferentiatingNoteData> noteDataHash;
 
             return (int) noteDataHash(noteData);
+        }
+
+        static GlobalNamespace::NoteCutInfo CreateNoteCutInfoFromSimple(Replay::NoteEventTypes::SimpleNoteCutInfo simpleNoteCutInfo, GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter) {
+            return GlobalNamespace::NoteCutInfo(
+                simpleNoteCutInfo.speedOK,
+                simpleNoteCutInfo.directionOK,
+                simpleNoteCutInfo.saberTypeOK,
+                simpleNoteCutInfo.wasCutTooSoon,
+                simpleNoteCutInfo.saberSpeed,
+                simpleNoteCutInfo.saberDir,
+                simpleNoteCutInfo.saberType,
+                simpleNoteCutInfo.timeDeviation,
+                simpleNoteCutInfo.cutDirDeviation,
+                simpleNoteCutInfo.cutPoint,
+                simpleNoteCutInfo.cutNormal,
+                simpleNoteCutInfo.cutAngle,
+                simpleNoteCutInfo.cutDistanceToCenter,
+                saberSwingRatingCounter
+            );
         }
     };
 }
