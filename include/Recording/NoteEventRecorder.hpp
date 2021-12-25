@@ -16,10 +16,12 @@ using namespace GlobalNamespace;
 namespace Replay {
     class NoteEventRecorder {
     private:
-        std::vector<NoteCutEvent> cutEvents;
+        std::vector<StoredCutEvent> cutEvents;
+        std::vector<NoteCutEvent> finishedCutEvents;
         std::vector<NoteMissEvent> missEvents;
     public:
         void AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo);
+        void FinalizeCutEvent(void* swingRatingPointer);
         void WriteCutEvents(std::ofstream& output);
 
         void AddMissEvent(NoteController* noteController);

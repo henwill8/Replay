@@ -57,9 +57,6 @@ namespace Replay {
         std::vector<NoteMissEvent> missEvents;
         std::vector<ActiveNoteMissEvent> activeMissEvents;
 
-
-
-
         void AddActiveEvents(GlobalNamespace::NoteController* noteController);
 
         void ReadCutEvents(std::ifstream& input, int eventsLength);

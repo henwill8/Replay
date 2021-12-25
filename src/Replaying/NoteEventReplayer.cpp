@@ -45,17 +45,12 @@ void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLe
 
 void Replay::NoteEventReplayer::ReadMissEvents(std::ifstream& input, int eventsLength) {
     for(int i = 0; i < eventsLength; i++) {
-        NoteMissEvent event;
-        event.Read(input);
-
-        missEvents.emplace_back(event);
+        missEvents.emplace_back(input);
     }
 }
 
-// lazy
 static const Il2CppType * NoteCutInfoT(ByRef<NoteCutInfo> info) {
     return il2cpp_utils::il2cpp_type_check::il2cpp_no_arg_type<ByRef<NoteCutInfo>>::get();
-//    return il2cpp_utils::il2cpp_type_check::il2cpp_arg_type<ByRef<NoteCutInfo>>::get(info);
 }
 
 //GlobalNamespace::NoteController::
@@ -76,18 +71,13 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
         for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
             auto& eventData = *eventIt;
             if(songTime > eventData.event.time) {
-                // log("%p", il2cpp_utils::ExtractValue(byref(eventData.event.noteCutInfo)));
-                // log("%p", &byref(eventData.event.noteCutInfo).heldRef);
-
-                // Ensure we have a game note controller
                 auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
-                auto saberSwingRatingCounter = SaberUtils::getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController);
-                eventData.event.noteCutInfo.swingRatingCounter = saberSwingRatingCounter;
+                GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
+               
+                NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, saberSwingRatingCounter);
 
-                SendNoteWasCutEvent(eventData.note, byref(eventData.event.noteCutInfo));
-                // activeCutEvents[i].note->SendNoteWasCutEvent(byref(activeCutEvents[i].event.noteCutInfo));
+                SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));
 
-                // will return the next iterator, making this safe
                 eventIt = activeCutEvents.erase(eventIt);
             } else {
                 eventIt++;

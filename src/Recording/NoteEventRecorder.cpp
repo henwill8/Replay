@@ -4,8 +4,22 @@ void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRe
     cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef);
 }
 
+void Replay::NoteEventRecorder::FinalizeCutEvent(void* swingRatingPointer) {
+    for(auto eventIt = cutEvents.begin(); eventIt != cutEvents.end(); eventIt++) {
+        auto const &storedCutEvent = *eventIt;
+        
+        if(storedCutEvent.noteCutInfo.swingRatingCounter == swingRatingPointer) {
+            finishedCutEvents.emplace_back(storedCutEvent.noteHash, storedCutEvent.time, storedCutEvent.noteCutInfo);
+
+            cutEvents.erase(eventIt);
+
+            return;
+        }
+    }
+}
+
 void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
-    int eventCount = (int)cutEvents.size();
+    int eventCount = (int)finishedCutEvents.size();
 
     if(eventCount == 0) return;
 
@@ -14,7 +28,7 @@ void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
     output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
 
     //Write data
-    for(NoteCutEvent const& event : cutEvents) {
+    for(NoteCutEvent const& event : finishedCutEvents) {
         event.Write(output);
     }
 }
