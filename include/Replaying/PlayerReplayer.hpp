@@ -7,7 +7,7 @@
 #include "GlobalNamespace/PlayerTransforms.hpp"
 #include "fstream"
 #include "EventTypes.hpp"
-#include "ReplayUtils.hpp"
+#include "Utils/ReplayUtils.hpp"
 
 using namespace Replay::PlayerEventTypes;
 

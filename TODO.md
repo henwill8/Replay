@@ -1,0 +1,21 @@
+# TODO
+- Obstacle events
+- Replay button (to the right for more space?)
+- Finalize replay format (metadata in json string, have length at beginning)
+- Overwrite with higherscore
+- failed replay saving
+- Make modifiers be saved
+- UI for deleting replays, choosing to overwrite replay, etc...
+- Time manipulation
+- UI for the above sad
+- Speed manipulation
+- more ui
+- Add config file with utils
+- Check replay edge cases and ensure correct total score
+- Add camera manipulation
+- Add Avatar stuff
+- Add hollywood
+- Make fancy hollywood ui
+- Mux audio in game for mp4
+- Make hollywood render faster?
+- Upload mp4 from quest to youtube????

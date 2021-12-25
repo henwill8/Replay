@@ -21,6 +21,13 @@ void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
     int magicBytes = replayMagicBytes;
     output.write(reinterpret_cast<const char*>(&magicBytes), sizeof(int));
 
+    byte version = fileVersion;
+    output.write(reinterpret_cast<const char*>(&version), sizeof(byte));
+
+    std::string metadataJSON = "temporary, make actual json later";
+
+    unsigned int metadataLength;
+
     playerRecorder.WriteEvents(output);
 
     noteEventRecorder.WriteCutEvents(output);

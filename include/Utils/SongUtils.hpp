@@ -12,7 +12,7 @@
 using namespace il2cpp_utils;
 
 namespace Replay {
-    class SongData {
+    class SongUtils {
     private:
         static inline std::string mapID;
     public:

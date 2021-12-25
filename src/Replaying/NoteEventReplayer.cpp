@@ -11,7 +11,7 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
         auto const &noteCutEvent = *eventIt;
 
         if(noteHash == noteCutEvent.noteHash) {
-            auto saber = SaberUtils::getSaberForType(noteCutEvent.noteCutInfo.saberType);
+            auto saber = SaberUtils::GetSaberForType(noteCutEvent.noteCutInfo.saberType);
             activeCutEvents.emplace_back(noteController, saber, noteCutEvent);
 
             cutEvents.erase(eventIt);
@@ -61,7 +61,7 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 #pragma ide diagnostic ignored "EndlessLoop"
 custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(true) {
-        float songTime = Replay::SongData::GetSongTime();
+        float songTime = Replay::SongUtils::GetSongTime();
 
         for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
             auto& eventData = *eventIt;
@@ -72,7 +72,7 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
                     noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, nullptr);
                 } else {
                     auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
-                    GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
+                    GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::GetOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
 
                     noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, saberSwingRatingCounter);
                 }

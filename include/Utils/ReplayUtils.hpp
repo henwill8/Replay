@@ -1,7 +1,7 @@
 #pragma once
 #include "static-defines.hpp"
-// #include "extern/includes/bs-utils/shared/utils.hpp"
-#include "SongData.hpp"
+
+#include "Utils/SongUtils.hpp"
 #include "UnityEngine/Quaternion.hpp"
 #include "UnityEngine/Vector3.hpp"
 #include "GlobalNamespace/NoteController.hpp"
@@ -10,13 +10,11 @@
 #include "GlobalNamespace/SaberSwingRatingCounter.hpp"
 #include "EventTypes.hpp"
 
-#define StructTime(struct) struct.time
-
 namespace Replay {
     class ReplayUtils {
     public:
         static std::string GetFileName() {
-            return Replay::SongData::GetMapID() + replayFileExtension;
+            return Replay::SongUtils::GetMapID() + replayFileExtension;
         }
 
         static std::string GetReplaysDirectory() {
@@ -29,16 +27,16 @@ namespace Replay {
 
         template <typename T>
         static constexpr int GetCurrentIndex(std::vector<T> const& events, int lastIndex) {
-            float songTime = Replay::SongData::GetSongTime();
+            float songTime = Replay::SongUtils::GetSongTime();
             int eventsLength = events.size();
 
             int iterations = 0;
-            if(songTime < StructTime(events[lastIndex])) {
-                while(StructTime(events[lastIndex + iterations - 1]) > songTime && lastIndex + iterations - 1 >= 0) {
+            if(songTime < events[lastIndex].time) {
+                while(events[lastIndex + iterations - 1].time > songTime && lastIndex + iterations - 1 >= 0) {
                     iterations--;
                 }
             } else {
-                while(StructTime(events[lastIndex + iterations + 1]) < songTime && lastIndex + iterations + 1 < eventsLength) {
+                while(events[lastIndex + iterations + 1].time < songTime && lastIndex + iterations + 1 < eventsLength) {
                     iterations++;
                 }
             }
@@ -48,10 +46,10 @@ namespace Replay {
 
         template <typename T>
         static constexpr float LerpAmountBetweenEvents(T const& eventA, T const& eventB) {
-            float timeA = StructTime(eventA);
-            float timeB = StructTime(eventB);
+            float timeA = eventA.time;
+            float timeB = eventB.time;
 
-            float songTime = Replay::SongData::GetSongTime();
+            float songTime = Replay::SongUtils::GetSongTime();
 
             return (songTime - timeA) / (timeB - timeA);
         }

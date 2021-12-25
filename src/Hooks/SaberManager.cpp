@@ -1,9 +1,7 @@
 #include "static-defines.hpp"
-#include "utils/SaberUtils.hpp"
+#include "Utils/SaberUtils.hpp"
 
 #include "GlobalNamespace/SaberManager.hpp"
-
-
 #include "UnityEngine/Resources.hpp"
 
 using namespace GlobalNamespace;
@@ -14,8 +12,8 @@ MAKE_HOOK_MATCH(SaberManager_Start, &SaberManager::Start, void, SaberManager* se
     SaberUtils::saberManager = self;
 }
 
-void SaberHook(Logger& logger) {
+void SaberManagerHook(Logger& logger) {
     INSTALL_HOOK(logger, SaberManager_Start);
 }
 
-ReplayInstallHooks(SaberHook);
+ReplayInstallHooks(SaberManagerHook);

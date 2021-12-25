@@ -1,7 +1,7 @@
 #include "Recording/PlayerRecorder.hpp"
 
 void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms const& playerTransforms) {
-    float songTime = SongData::GetSongTime();
+    float songTime = SongUtils::GetSongTime();
     if(!events.empty()) {
         if(songTime == events[events.size() - 1].time) return;
     }
@@ -17,16 +17,7 @@ void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms const& 
 }
 
 void Replay::PlayerRecorder::WriteEvents(std::ofstream& output) {
-    int eventCount = (int)events.size();
-
-    //Write events header
-    output.write(reinterpret_cast<const char*>(&Replay::PlayerEventTypes::eventID), sizeof(byte));
-    output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
-
-    //Write data
-    for(PlayerEventTypes::PlayerEvent const& event : events) {
-        event.Write(output);
-    }
+    Replay::FileUtils::WriteEvents(events, Replay::PlayerEventTypes::eventID, output);
 }
 
 PlayerEventTypes::PlayerTransforms Replay::PlayerRecorder::TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber) {

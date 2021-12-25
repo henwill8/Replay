@@ -5,7 +5,7 @@
 #include "vector"
 #include "Replaying/PlayerReplayer.hpp"
 #include "Replaying/NoteEventReplayer.hpp"
-#include "ReplayUtils.hpp"
+#include "Utils/ReplayUtils.hpp"
 
 using namespace Replay;
 

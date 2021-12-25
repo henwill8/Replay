@@ -2,8 +2,7 @@
 #include "static-defines.hpp"
 #include "Recording/ReplayRecorder.hpp"
 #include "Replaying/Replayer.hpp"
-// #include "extern/includes/bs-utils/shared/utils.hpp"
-#include "SongData.hpp"
+#include "Utils/SongUtils.hpp"
 
 namespace Replay {
     enum ReplayState {

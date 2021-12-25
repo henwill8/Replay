@@ -7,8 +7,8 @@
 #include "GlobalNamespace/SharedCoroutineStarter.hpp"
 #include "fstream"
 #include "EventTypes.hpp"
-#include "SongData.hpp"
-#include "ReplayUtils.hpp"
+#include "Utils/SongUtils.hpp"
+#include "Utils/ReplayUtils.hpp"
 #include <functional>
 #include "System/Collections/IEnumerator.hpp"
 #include "custom-types/shared/coroutine.hpp"

@@ -1,10 +1,10 @@
-#include "SongData.hpp"
+#include "Utils/SongUtils.hpp"
 
-std::string Replay::SongData::GetMapID() {
+std::string Replay::SongUtils::GetMapID() {
     return mapID;
 }
 
-void Replay::SongData::SetMapID(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView) {
+void Replay::SongUtils::SetMapID(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView) {
     log("Getting map ID");
 
     auto* Level = reinterpret_cast<GlobalNamespace::BeatmapLevelSO*>(standardLevelDetailView->level);

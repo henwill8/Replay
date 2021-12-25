@@ -1,7 +1,7 @@
 #include "static-defines.hpp"
 
 #include "GlobalNamespace/AudioTimeSyncController.hpp"
-#include "SongData.hpp"
+#include "Utils/SongUtils.hpp"
 #include "ReplayManager.hpp"
 
 using namespace GlobalNamespace;
@@ -10,7 +10,7 @@ using namespace Replay;
 MAKE_HOOK_FIND_INSTANCE(AudioTimeSyncController_ctor, classof(AudioTimeSyncController*), ".ctor", void, AudioTimeSyncController* self) {
     AudioTimeSyncController_ctor(self);
 
-    SongData::audioTimeSyncController = self;
+    SongUtils::audioTimeSyncController = self;
     
     ReplayManager::replayState = ReplayState::REPLAYING;// TEMPORARY, REMOVE WHEN BUTTONS ARE ADDED
 

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "static-defines.hpp"
 
 #include "GlobalNamespace/NoteController.hpp"
@@ -18,12 +17,12 @@ namespace Replay {
     struct SaberUtils {
         inline static GlobalNamespace::SaberManager* saberManager;
 
-        static GlobalNamespace::Saber* getSaberForType(GlobalNamespace::SaberType saberType) {
+        static GlobalNamespace::Saber* GetSaberForType(GlobalNamespace::SaberType saberType) {
             return saberType == saberManager->leftSaber->saberType->saberType ? saberManager->leftSaber : saberManager->rightSaber;
         }
 
         // Code from GameNoteController.HandleCut
-        static GlobalNamespace::ISaberSwingRatingCounter* getOrSpawnSaberSwingRatingCounter(GlobalNamespace::Saber* saber, GlobalNamespace::GameNoteController* noteController, float beforeCutRating = 0.0f, float afterCutRating = 0.0f) {
+        static GlobalNamespace::ISaberSwingRatingCounter* GetOrSpawnSaberSwingRatingCounter(GlobalNamespace::Saber* saber, GlobalNamespace::GameNoteController* noteController, float beforeCutRating = 0.0f, float afterCutRating = 0.0f) {
             auto * saberSwingRatingCounter = noteController->saberSwingRatingCounterPool->Spawn();
             saberSwingRatingCounter->Init(saber->movementData, noteController->noteTransform, !noteController->noteData->skipBeforeCutScoring, !noteController->noteData->skipAfterCutScoring);
             

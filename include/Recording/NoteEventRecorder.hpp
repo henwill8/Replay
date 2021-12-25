@@ -6,8 +6,9 @@
 #include "GlobalNamespace/NoteData.hpp"
 #include "fstream"
 #include "EventTypes.hpp"
-#include "SongData.hpp"
-#include "ReplayUtils.hpp"
+#include "Utils/SongUtils.hpp"
+#include "Utils/ReplayUtils.hpp"
+#include "Utils/FileUtils.hpp"
 #include <functional>
 
 using namespace Replay::NoteEventTypes;

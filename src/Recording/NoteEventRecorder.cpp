@@ -2,9 +2,9 @@
 
 void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo) {
     if(noteCutInfo->get_allIsOK()) {
-        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef);
+        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime(), noteCutInfo.heldRef);
     } else {
-        finishedCutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef, false);
+        finishedCutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime(), noteCutInfo.heldRef, false);
     }
 }
 
@@ -23,35 +23,13 @@ void Replay::NoteEventRecorder::FinalizeCutEvent(void* swingRatingPointer) {
 }
 
 void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
-    int eventCount = (int)finishedCutEvents.size();
-
-    if(eventCount == 0) return;
-
-    //Write events header
-    output.write(reinterpret_cast<const char*>(&Replay::NoteEventTypes::cutEventID), sizeof(byte));
-    output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
-
-    //Write data
-    for(NoteCutEvent const& event : finishedCutEvents) {
-        event.Write(output);
-    }
+    Replay::FileUtils::WriteEvents(finishedCutEvents, Replay::NoteEventTypes::cutEventID, output);
 }
 
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
-    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime());
+    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime());
 }
 
 void Replay::NoteEventRecorder::WriteMissEvents(std::ofstream& output) {
-    int eventCount = (int)missEvents.size();
-
-    if(eventCount == 0) return;
-
-    //Write events header
-    output.write(reinterpret_cast<const char*>(&Replay::NoteEventTypes::missEventID), sizeof(byte));
-    output.write(reinterpret_cast<const char*>(&eventCount), sizeof(int));
-
-    //Write data
-    for(NoteMissEvent event : missEvents) {
-        event.Write(output);
-    }
+    Replay::FileUtils::WriteEvents(missEvents, Replay::NoteEventTypes::missEventID, output);
 }

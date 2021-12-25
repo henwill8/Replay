@@ -5,7 +5,8 @@
 #include "UnityEngine/Time.hpp"
 #include "fstream"
 #include "EventTypes.hpp"
-#include "SongData.hpp"
+#include "Utils/SongUtils.hpp"
+#include "Utils/FileUtils.hpp"
 
 using namespace Replay;
 
