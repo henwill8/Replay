@@ -1,9 +1,5 @@
 #include "Replaying/NoteEventReplayer.hpp"
 
-#include "utils/SaberUtils.hpp"
-
-#include "UnityEngine/Resources.hpp"
-
 void Replay::NoteEventReplayer::Init() {
     GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(Update())));
 }
@@ -57,7 +53,6 @@ static const Il2CppType * NoteCutInfoT(ByRef<NoteCutInfo> info) {
 void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalNamespace::NoteCutInfo> noteCutInfo) {
     static auto ___internal__logger = ::Logger::get().WithContext("GlobalNamespace::NoteController::SendNoteWasCutEvent");
     static auto* ___internal__method = THROW_UNLESS((::il2cpp_utils::FindMethod(self, "SendNoteWasCutEvent", std::vector<Il2CppClass*>{}, ::std::vector<const Il2CppType*>{::NoteCutInfoT(noteCutInfo)})));
-    CRASH_UNLESS(noteCutInfo->swingRatingCounter);
     ::il2cpp_utils::RunMethodRethrow<void, false>(self, ___internal__method, noteCutInfo);
 }
 
@@ -71,10 +66,16 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
         for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
             auto& eventData = *eventIt;
             if(songTime > eventData.event.time) {
-                auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
-                GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
-               
-                NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, saberSwingRatingCounter);
+                NoteCutInfo noteCutInfo;
+
+                if(eventData.note->noteData->colorType == GlobalNamespace::ColorType::None) {
+                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, nullptr);
+                } else {
+                    auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
+                    GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::getOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
+
+                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, saberSwingRatingCounter);
+                }
 
                 SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));
 

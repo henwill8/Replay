@@ -12,12 +12,16 @@
 #include <functional>
 #include "System/Collections/IEnumerator.hpp"
 #include "custom-types/shared/coroutine.hpp"
+#include "Utils/SaberUtils.hpp"
 
+#include "UnityEngine/Resources.hpp"
 #include "GlobalNamespace/GameNoteController.hpp"
 #include "GlobalNamespace/Saber.hpp"
 #include "GlobalNamespace/SaberManager.hpp"
 #include "GlobalNamespace/SaberType.hpp"
 #include "GlobalNamespace/SaberTypeObject.hpp"
+#include "GlobalNamespace/NoteData.hpp"
+#include "GlobalNamespace/ColorType.hpp"
 
 // Using namespace in headers is icky
 using namespace Replay::NoteEventTypes;

@@ -117,6 +117,8 @@ namespace Replay {
                 beforeCutRating = swingRating->get_beforeCutRating();
                 afterCutRating = swingRating->get_afterCutRating();
             }
+
+            constexpr SwingRating(float beforeCutRating, float afterCutRating) : beforeCutRating(beforeCutRating), afterCutRating(afterCutRating) {}
         };
     
         struct StoredCutEvent {
@@ -135,13 +137,18 @@ namespace Replay {
 
             constexpr NoteCutEvent() = default;
 
-            constexpr NoteCutEvent(int noteHash, float time, const NoteCutInfo& cutInfo) : noteHash(noteHash), time(time) {
+            constexpr NoteCutEvent(int noteHash, float time, const NoteCutInfo& cutInfo, bool goodCut = true) : noteHash(noteHash), time(time) {
                 // I did not know a better way to make compiler happy, feel free to fix
                 SimpleNoteCutInfo newNoteCutInfo(cutInfo);
                 noteCutInfo = newNoteCutInfo;
 
-                SwingRating newSwingRating(cutInfo.swingRatingCounter);
-                swingRating = newSwingRating;
+                if(goodCut) {
+                    SwingRating newSwingRating(cutInfo.swingRatingCounter);
+                    swingRating = newSwingRating;
+                } else {
+                    SwingRating newSwingRating(0.0f, 0.0f);
+                    swingRating = newSwingRating;
+                }
             }
 
             constexpr NoteCutEvent(std::ifstream& reader) {

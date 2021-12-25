@@ -1,7 +1,11 @@
 #include "Recording/NoteEventRecorder.hpp"
 
 void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo) {
-    cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef);
+    if(noteCutInfo->get_allIsOK()) {
+        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef);
+    } else {
+        finishedCutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongData::GetSongTime(), noteCutInfo.heldRef, false);
+    }
 }
 
 void Replay::NoteEventRecorder::FinalizeCutEvent(void* swingRatingPointer) {
