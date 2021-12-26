@@ -1,5 +1,12 @@
 #include "Recording/ReplayRecorder.hpp"
 
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include <rapidjson/writer.h>
+#include <string.h>
+
+using namespace rapidjson;
+
 void Replay::ReplayRecorder::Init() {
     log("Setting up Replay Recorder");
     playerRecorder = Replay::PlayerRecorder();
@@ -24,9 +31,32 @@ void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
     byte version = fileVersion;
     output.write(reinterpret_cast<const char*>(&version), sizeof(byte));
 
-    std::string metadataJSON = "temporary, make actual json later";
+    // TEMPORARY, probably move to file utils
+    Document metadata;
+    metadata.SetObject();
 
-    unsigned int metadataLength;
+    rapidjson::Document::AllocatorType& allocator = metadata.GetAllocator();
+
+    Value modifiers(kArrayType);
+    modifiers.PushBack("NF", allocator); // Probably make method to take modifier string and return initials for it
+    modifiers.PushBack("SC", allocator);
+    modifiers.PushBack("GN", allocator);
+    metadata.AddMember("Modifiers", modifiers, allocator);
+
+    Value playerOptions(kObjectType);
+    playerOptions.AddMember("LH", true, allocator);
+    playerOptions.AddMember("Height", 1.7f, allocator);
+    metadata.AddMember("Player Options", playerOptions, allocator);
+
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+    metadata.Accept(writer);
+    const char* metadataString = buffer.GetString();
+
+    unsigned int metadataLength = (int) strlen(metadataString);
+    output.write(reinterpret_cast<const char*>(&metadataLength), sizeof(unsigned int));
+
+    output.write(metadataString, strlen(metadataString));
 
     playerRecorder.WriteEvents(output);
 
