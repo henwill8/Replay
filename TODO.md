@@ -1,7 +1,7 @@
 # TODO
 - Replay button (to the right for more space?)
-- Finalize replay format (metadata in json string, have length at beginning)
-- Overwrite with higherscore
+- Finalize replay format
+- Overwrite with higherscore (save total score in metadata)
 - Make it work with and save modifiers
 - failed replay saving
 - Make modifiers be saved

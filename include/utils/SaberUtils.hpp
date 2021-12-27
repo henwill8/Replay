@@ -24,14 +24,18 @@ namespace Replay {
         // Code from GameNoteController.HandleCut
         static GlobalNamespace::ISaberSwingRatingCounter* GetOrSpawnSaberSwingRatingCounter(GlobalNamespace::Saber* saber, GlobalNamespace::GameNoteController* noteController, float beforeCutRating = 0.0f, float afterCutRating = 0.0f) {
             auto * saberSwingRatingCounter = noteController->saberSwingRatingCounterPool->Spawn();
-            saberSwingRatingCounter->Init(saber->movementData, noteController->noteTransform, !noteController->noteData->skipBeforeCutScoring, !noteController->noteData->skipAfterCutScoring);
+            // saberSwingRatingCounter->Init(saber->movementData, noteController->noteTransform, !noteController->noteData->skipBeforeCutScoring, !noteController->noteData->skipAfterCutScoring);
             
             saberSwingRatingCounter->beforeCutRating = beforeCutRating;
             saberSwingRatingCounter->afterCutRating = afterCutRating;
 
-            saberSwingRatingCounter->RegisterDidFinishReceiver(reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver *>(noteController));
+            GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver* didFinishReceiver = reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver*>(noteController);
+            saberSwingRatingCounter->RegisterDidFinishReceiver(didFinishReceiver);
 
-            return reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounter *>(saberSwingRatingCounter);
+            GlobalNamespace::ISaberSwingRatingCounter* swingRatingCounter = reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounter*>(saberSwingRatingCounter);
+            didFinishReceiver->HandleSaberSwingRatingCounterDidFinish(swingRatingCounter);
+
+            return swingRatingCounter;
         }
     };
 
