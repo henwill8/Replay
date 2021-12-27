@@ -190,6 +190,29 @@ namespace Replay {
 
         const inline static byte missEventID = 0b00000010;
     }
+
+    namespace ObstacleEventTypes {
+        struct ObstacleEvent {
+            float time;
+            float energy;
+
+            constexpr ObstacleEvent() = default;
+
+            constexpr ObstacleEvent(float time, float energy) : time(time), energy(energy) {}
+
+            constexpr ObstacleEvent(std::ifstream& reader) {
+                reader.read(reinterpret_cast<char*>(&time), sizeof(float));
+                reader.read(reinterpret_cast<char*>(&energy), sizeof(float));
+            }
+
+            void Write(std::ofstream& writer) const {
+                writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
+                writer.write(reinterpret_cast<const char*>(&energy), sizeof(float));
+            }
+        };
+
+        const inline static byte eventID = 0b00000011;
+    }
 }
 
 template<>

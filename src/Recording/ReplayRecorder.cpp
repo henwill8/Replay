@@ -11,6 +11,7 @@ void Replay::ReplayRecorder::Init() {
     log("Setting up Replay Recorder");
     playerRecorder = Replay::PlayerRecorder();
     noteEventRecorder = Replay::NoteEventRecorder();
+    obstacleEventRecorder = Replay::ObstacleEventRecorder();
 }
 
 void Replay::ReplayRecorder::StopRecording() {
@@ -62,4 +63,6 @@ void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
 
     noteEventRecorder.WriteCutEvents(output);
     noteEventRecorder.WriteMissEvents(output);
+
+    obstacleEventRecorder.WriteEvents(output);
 }

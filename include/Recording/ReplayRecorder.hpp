@@ -5,6 +5,7 @@
 #include "vector"
 #include "Recording/PlayerRecorder.hpp"
 #include "Recording/NoteEventRecorder.hpp"
+#include "Recording/ObstacleEventRecorder.hpp"
 #include "Utils/ReplayUtils.hpp"
 #include <filesystem>
 
@@ -20,7 +21,7 @@ namespace Replay {
         void StopRecording();
 
         PlayerRecorder playerRecorder;
-
         NoteEventRecorder noteEventRecorder;
+        ObstacleEventRecorder obstacleEventRecorder;
     };
 }

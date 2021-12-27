@@ -10,6 +10,7 @@ void Replay::Replayer::Init() {
     playerReplayer = Replay::PlayerReplayer();
     noteEventReplayer = Replay::NoteEventReplayer();
     noteEventReplayer.Init();
+    obstacleEventReplayer = Replay::ObstacleEventReplayer();
     
     ReadReplayFile(Replay::ReplayUtils::GetReplayFilePath());
 }
@@ -60,6 +61,9 @@ void Replay::Replayer::ReadReplayFile(std::string_view path) {
                     break;
                 case NoteEventTypes::missEventID:
                     noteEventReplayer.ReadMissEvents(input, eventsLength);
+                    break;
+                case ObstacleEventTypes::eventID:
+                    obstacleEventReplayer.ReadEvents(input, eventsLength);
                     break;
             }
 

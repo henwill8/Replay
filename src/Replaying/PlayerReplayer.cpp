@@ -2,7 +2,7 @@
 
 void Replay::PlayerReplayer::ReadEvents(std::ifstream& input, int eventsLength) {
     for(int i = 0; i < eventsLength; i++) {
-        events.push_back(input);
+        events.emplace_back(input);
     }
 }
 
