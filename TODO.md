@@ -1,4 +1,6 @@
 # TODO
+- separate player events into 3 events, store all saber events and then choose important events before writing
+- head events can probably be 10 events per second or less
 - Dynamic player event recording (always record event at swing direction change, then raise frequency at higher speeds and lower at lower)
 - Overwrite with higherscore (save total score in metadata)
 - Make it work with and save modifiers
