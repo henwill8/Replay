@@ -1,6 +1,5 @@
 # TODO
-- Replay button (to the right for more space?)
-- Finalize replay format
+- Dynamic player event recording (always record event at swing direction change, then raise frequency at higher speeds and lower at lower)
 - Overwrite with higherscore (save total score in metadata)
 - Make it work with and save modifiers
 - failed replay saving

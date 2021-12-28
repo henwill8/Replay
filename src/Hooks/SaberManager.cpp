@@ -1,6 +1,6 @@
 #include "static-defines.hpp"
-#include "Utils/SaberUtils.hpp"
 
+#include "Utils/SaberUtils.hpp"
 #include "GlobalNamespace/SaberManager.hpp"
 #include "UnityEngine/Resources.hpp"
 

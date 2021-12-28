@@ -8,6 +8,7 @@
 #include "GlobalNamespace/NoteCutInfo.hpp"
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/ISaberSwingRatingCounter.hpp"
+#include <fstream>
 
 // avoid using namespace in headers, but do as you wish
 using namespace GlobalNamespace;

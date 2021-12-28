@@ -11,8 +11,6 @@ MAKE_HOOK_FIND_INSTANCE(AudioTimeSyncController_ctor, classof(AudioTimeSyncContr
     AudioTimeSyncController_ctor(self);
 
     SongUtils::audioTimeSyncController = self;
-    
-    ReplayManager::replayState = ReplayState::REPLAYING;// TEMPORARY, REMOVE WHEN BUTTONS ARE ADDED
 
     if(ReplayManager::replayState == ReplayState::RECORDING) {
         ReplayManager::recorder = ReplayRecorder();
