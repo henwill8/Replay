@@ -8,9 +8,7 @@ void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms const& 
 
     time += UnityEngine::Time::get_deltaTime();
     if(time >= 1.0f/(float)eventsPerSecond) {
-        PlayerEventTypes::PlayerEvent event{songTime, playerTransforms};
-        
-        events.push_back(event);
+        events.emplace_back(songTime, playerTransforms);
         
         time -= 1.0f/(float)eventsPerSecond;
     }
