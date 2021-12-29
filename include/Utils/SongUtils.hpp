@@ -20,6 +20,8 @@ namespace Replay {
     public:
         static inline GlobalNamespace::AudioTimeSyncController* audioTimeSyncController;
 
+        static inline bool inSong;
+
         static float GetSongTime() {
             static auto const *timeSyncControllerClass = classof(GlobalNamespace::AudioTimeSyncController *);
             auto *timeSourceObject = reinterpret_cast<Il2CppObject *>(audioTimeSyncController);

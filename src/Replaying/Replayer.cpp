@@ -36,7 +36,6 @@ void Replay::Replayer::ReadReplayFile(std::string_view path) {
 
         char* metadataString = new char[metadataLength];
         input.read(metadataString, (size_t) metadataLength);
-        log("%s", metadataString);
 
         Document metadata;
         metadata.Parse(metadataString);

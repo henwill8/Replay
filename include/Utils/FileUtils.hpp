@@ -2,6 +2,10 @@
 #include "static-defines.hpp"
 
 #include <fstream>
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include <rapidjson/writer.h>
+#include <string.h>
 
 namespace Replay {
     class FileUtils {
@@ -20,6 +24,39 @@ namespace Replay {
             for(T event : events) {
                 event.Write(output);
             }
+        }
+
+        static rapidjson::Document GetMetadataFromReplayFile(std::string_view path) {
+            log("Reading Replay file metadata at %s", path.data());
+            std::ifstream input = std::ifstream(path, std::ios::binary);
+
+            rapidjson::Document metadata;
+
+            if(input.is_open()) {
+                int magicBytes;
+                input.read(reinterpret_cast<char*>(&magicBytes), sizeof(int));
+                if(magicBytes != replayMagicBytes) {
+                    log("INCORRECT MAGIC BYTES");
+                    return metadata;
+                }
+
+                byte version;
+                input.read(reinterpret_cast<char*>(&version), sizeof(byte));
+
+                int metadataLength;
+                input.read(reinterpret_cast<char*>(&metadataLength), sizeof(int));
+
+                char* metadataString = new char[metadataLength];
+                input.read(metadataString, (size_t) metadataLength);
+
+                metadata.Parse(metadataString);
+
+                free(metadataString);
+            } else {
+                log("COULD NOT FIND REPLAY FILE");
+            }
+
+            return metadata;
         }
     };
 }

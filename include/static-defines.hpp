@@ -12,7 +12,7 @@ using byte = unsigned char;
 #define eventIdByteSize 1
 #define eventCountByteSize 4
 
-#define replayMagicBytes 0x2971B5F8
+#define replayMagicBytes 0x443d3d38
 #define fileVersion 0b00000000
 #define replayFileExtension ".questplay"
 

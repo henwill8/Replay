@@ -21,14 +21,16 @@ namespace Replay {
         void CreateClearedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator);
 
         void CreateFailedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator);
-    public:
-        void Init();
 
         void CreateMetadata(GlobalNamespace::LevelCompletionResults* results);
 
-        void CheckToWriteFile();
+        bool ShouldWriteFile(GlobalNamespace::LevelCompletionResults* results, std::string_view filepath);
 
         void WriteReplayFile(std::string path);
+    public:
+        void Init();
+
+        void StopRecording(GlobalNamespace::LevelCompletionResults* results);
 
         PlayerRecorder playerRecorder;
         NoteEventRecorder noteEventRecorder;

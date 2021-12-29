@@ -60,7 +60,7 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 #pragma clang diagnostic ignored "-Winvalid-noreturn"
 #pragma ide diagnostic ignored "EndlessLoop"
 custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
-    while(true) {
+    while(SongUtils::inSong) {
         float songTime = Replay::SongUtils::GetSongTime();
 
         for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {

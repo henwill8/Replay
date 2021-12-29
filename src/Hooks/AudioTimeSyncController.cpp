@@ -11,6 +11,7 @@ MAKE_HOOK_FIND_INSTANCE(AudioTimeSyncController_ctor, classof(AudioTimeSyncContr
     AudioTimeSyncController_ctor(self);
 
     SongUtils::audioTimeSyncController = self;
+    SongUtils::inSong = true;
 
     if(ReplayManager::replayState == ReplayState::RECORDING) {
         ReplayManager::recorder = ReplayRecorder();

@@ -12,15 +12,6 @@ void Replay::ReplayRecorder::Init() {
 void Replay::ReplayRecorder::CreateClearedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator) {
     Value clearedInfo(kObjectType);
 
-    std::vector<std::string> modifierStrings = ReplayUtils::ModifiersToStrings(results->gameplayModifiers);
-    if(!modifierStrings.empty()) {
-        Value modifiers(kArrayType);
-        for(std::string modifierName : modifierStrings) {
-            modifiers.PushBack(rapidjson::Value{}.SetString(modifierName.c_str(), modifierName.length(), allocator), allocator);
-        }
-        clearedInfo.AddMember("Modifiers", modifiers, allocator);
-    }
-
     clearedInfo.AddMember("RawScore", results->rawScore, allocator);
     clearedInfo.AddMember("ModifiedScore", results->modifiedScore, allocator);
     
@@ -29,7 +20,9 @@ void Replay::ReplayRecorder::CreateClearedSpecificMetadata(GlobalNamespace::Leve
 
 void Replay::ReplayRecorder::CreateFailedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator) {
     Value failedInfo(kObjectType);
+
     failedInfo.AddMember("FailedTime", results->endSongTime, allocator);
+
     metadata.AddMember("FailedInfo", failedInfo, allocator);
 }
 
@@ -46,6 +39,15 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
     playerOptions.AddMember("Height", settings->playerHeight, allocator);
     metadata.AddMember("PlayerOptions", playerOptions, allocator);
 
+    std::vector<std::string> modifierStrings = ReplayUtils::ModifiersToStrings(results->gameplayModifiers);
+    if(!modifierStrings.empty()) {
+        Value modifiers(kArrayType);
+        for(std::string modifierName : modifierStrings) {
+            modifiers.PushBack(rapidjson::Value{}.SetString(modifierName.c_str(), modifierName.length(), allocator), allocator);
+        }
+        metadata.AddMember("Modifiers", modifiers, allocator);
+    }
+
     Value info(kObjectType);
     info.AddMember("AverageCutScore", noteEventRecorder.GetAverageCutScore(), allocator);
     info.AddMember("GoodCuts", results->goodCutsCount, allocator);
@@ -60,10 +62,33 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
     }
 }
 
-void Replay::ReplayRecorder::CheckToWriteFile() {
-    log("Stopping recording");
+void Replay::ReplayRecorder::StopRecording(GlobalNamespace::LevelCompletionResults* results) {
+    std::string filepath = ReplayUtils::GetReplayFilePath();
+    if(ShouldWriteFile(results, filepath)) {
+        CreateMetadata(results);
+        WriteReplayFile(filepath);
+    }
+}
 
-    WriteReplayFile(ReplayUtils::GetReplayFilePath()); // TODO: Check to make sure file should be written
+bool Replay::ReplayRecorder::ShouldWriteFile(GlobalNamespace::LevelCompletionResults* results, std::string_view filepath) {
+    if(!fileexists(filepath)) return true;
+
+    Document metadata = FileUtils::GetMetadataFromReplayFile(filepath);
+    if(metadata.HasMember("ClearedInfo")) {
+        if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Failed) return false;
+
+        if(results->modifiedScore >= metadata["ClearedInfo"]["ModifiedScore"].GetInt()) return true;
+
+        return false;
+    } else if(metadata.HasMember("FailedInfo")) {
+        if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) return true;
+
+        if(results->endSongTime > metadata["FailedInfo"]["FailedTime"].GetFloat()) return true;
+
+        return false;
+    }
+
+    return true;
 }
 
 void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
