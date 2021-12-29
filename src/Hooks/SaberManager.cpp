@@ -9,6 +9,7 @@ using namespace Replay;
 
 MAKE_HOOK_MATCH(SaberManager_Start, &SaberManager::Start, void, SaberManager* self) {
     SaberManager_Start(self);
+    
     SaberUtils::saberManager = self;
 }
 
