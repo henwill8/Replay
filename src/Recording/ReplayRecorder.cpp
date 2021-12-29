@@ -1,10 +1,5 @@
 #include "Recording/ReplayRecorder.hpp"
 
-#include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
-#include <rapidjson/writer.h>
-#include <string.h>
-
 using namespace rapidjson;
 
 void Replay::ReplayRecorder::Init() {
@@ -14,7 +9,58 @@ void Replay::ReplayRecorder::Init() {
     obstacleEventRecorder = Replay::ObstacleEventRecorder();
 }
 
-void Replay::ReplayRecorder::StopRecording() {
+void Replay::ReplayRecorder::CreateClearedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator) {
+    Value clearedInfo(kObjectType);
+
+    std::vector<std::string> modifierStrings = ReplayUtils::ModifiersToStrings(results->gameplayModifiers);
+    if(!modifierStrings.empty()) {
+        Value modifiers(kArrayType);
+        for(std::string modifierName : modifierStrings) {
+            modifiers.PushBack(rapidjson::Value{}.SetString(modifierName.c_str(), modifierName.length(), allocator), allocator);
+        }
+        clearedInfo.AddMember("Modifiers", modifiers, allocator);
+    }
+
+    clearedInfo.AddMember("RawScore", results->rawScore, allocator);
+    clearedInfo.AddMember("ModifiedScore", results->modifiedScore, allocator);
+    
+    metadata.AddMember("ClearedInfo", clearedInfo, allocator);
+}
+
+void Replay::ReplayRecorder::CreateFailedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator) {
+    Value failedInfo(kObjectType);
+    failedInfo.AddMember("FailedTime", results->endSongTime, allocator);
+    metadata.AddMember("FailedInfo", failedInfo, allocator);
+}
+
+void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResults* results) {
+    metadata.SetObject();
+
+    rapidjson::Document::AllocatorType& allocator = metadata.GetAllocator();
+
+    GlobalNamespace::PlayerSpecificSettings* settings = SongUtils::playerSpecificSettings;
+
+    Value playerOptions(kObjectType);
+    playerOptions.AddMember("LeftHanded", settings->leftHanded, allocator);
+    playerOptions.AddMember("AutoHeight", settings->automaticPlayerHeight, allocator);
+    playerOptions.AddMember("Height", settings->playerHeight, allocator);
+    metadata.AddMember("PlayerOptions", playerOptions, allocator);
+
+    Value info(kObjectType);
+    info.AddMember("AverageCutScore", noteEventRecorder.GetAverageCutScore(), allocator);
+    info.AddMember("GoodCuts", results->goodCutsCount, allocator);
+    info.AddMember("MissedNotes", results->badCutsCount + results->missedCount, allocator);
+    info.AddMember("MaxCombo", results->maxCombo, allocator);
+    metadata.AddMember("Info", info, allocator);
+
+    if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) {
+        CreateClearedSpecificMetadata(results, allocator);
+    } else if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Failed) {
+        CreateFailedSpecificMetadata(results, allocator);
+    }
+}
+
+void Replay::ReplayRecorder::CheckToWriteFile() {
     log("Stopping recording");
 
     WriteReplayFile(ReplayUtils::GetReplayFilePath()); // TODO: Check to make sure file should be written
@@ -32,25 +78,9 @@ void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
     byte version = fileVersion;
     output.write(reinterpret_cast<const char*>(&version), sizeof(byte));
 
-    // TEMPORARY, probably move to file utils
-    Document metadata;
-    metadata.SetObject();
-
-    rapidjson::Document::AllocatorType& allocator = metadata.GetAllocator();
-
-    Value modifiers(kArrayType);
-    modifiers.PushBack("NF", allocator); // Probably make method to take modifier string and return initials for it
-    modifiers.PushBack("SC", allocator);
-    modifiers.PushBack("GN", allocator);
-    metadata.AddMember("Modifiers", modifiers, allocator);
-
-    Value playerOptions(kObjectType);
-    playerOptions.AddMember("LH", true, allocator);
-    playerOptions.AddMember("Height", 1.7f, allocator);
-    metadata.AddMember("Player Options", playerOptions, allocator);
-
     StringBuffer buffer;
     Writer<StringBuffer> writer(buffer);
+    writer.SetMaxDecimalPlaces(2);
     metadata.Accept(writer);
     const char* metadataString = buffer.GetString();
 

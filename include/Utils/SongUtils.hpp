@@ -9,6 +9,7 @@
 #include "GlobalNamespace/BeatmapDifficulty.hpp"
 #include "GlobalNamespace/BeatmapCharacteristicSO.hpp"
 #include "GlobalNamespace/ScoreController.hpp"
+#include "GlobalNamespace/PlayerSpecificSettings.hpp"
 
 using namespace il2cpp_utils;
 
@@ -35,5 +36,7 @@ namespace Replay {
         static void SetMapID(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView);
 
         static inline GlobalNamespace::ScoreController* scoreController;
+
+        static inline GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings;
     };
 }

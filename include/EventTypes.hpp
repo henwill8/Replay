@@ -106,6 +106,10 @@ namespace Replay {
                 cutDistanceToCenter = noteCutInfo.cutDistanceToCenter;
                 cutAngle = noteCutInfo.cutAngle;
             }
+
+            bool AllIsOkay() {
+                return speedOK && directionOK && saberTypeOK && !wasCutTooSoon;
+            }
         };
 
         struct SwingRating {

@@ -34,13 +34,13 @@
 ### In Depth Lower
 - average cut score
 - bad cuts/missed notes
-- obstacle hits (or just combo breaks total)
 - percentage without combo breaks
 - openable graph of percentage and energy throughout play
 - max combo
 
 - "Watch Replay" button
 - Camera drop down menu? 
+- Delete replay button
 
 ## Hollywood UI on Second Page
 - fps

@@ -8,7 +8,9 @@
 #include "GlobalNamespace/NoteData.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
 #include "GlobalNamespace/SaberSwingRatingCounter.hpp"
+#include "GlobalNamespace/GameplayModifiers.hpp"
 #include "EventTypes.hpp"
+#include <sstream>
 
 namespace Replay {
     class ReplayUtils {
@@ -93,6 +95,28 @@ namespace Replay {
                 simpleNoteCutInfo.cutDistanceToCenter,
                 saberSwingRatingCounter
             );
+        }
+
+        static std::vector<std::string> ModifiersToStrings(GlobalNamespace::GameplayModifiers* gameplayModifiers) {
+            std::vector<std::string> strings;
+            
+            if(gameplayModifiers->energyType == GlobalNamespace::GameplayModifiers::EnergyType::Battery) strings.push_back("BatteryEnergy");
+            if(gameplayModifiers->noFailOn0Energy) strings.push_back("NoFail");
+            if(gameplayModifiers->instaFail) strings.push_back("InstaFail");
+            if(gameplayModifiers->enabledObstacleType == GlobalNamespace::GameplayModifiers::EnabledObstacleType::NoObstacles) strings.push_back("NoObstacles");
+            if(gameplayModifiers->noBombs) strings.push_back("NoBombs");
+            if(gameplayModifiers->strictAngles) strings.push_back("StrictAngles");
+            if(gameplayModifiers->disappearingArrows) strings.push_back("DisappearingArrows");
+            if(gameplayModifiers->songSpeed == GlobalNamespace::GameplayModifiers::SongSpeed::Slower) strings.push_back("SlowSong");
+            if(gameplayModifiers->songSpeed == GlobalNamespace::GameplayModifiers::SongSpeed::Faster) strings.push_back("FastSong");
+            if(gameplayModifiers->songSpeed == GlobalNamespace::GameplayModifiers::SongSpeed::SuperFast) strings.push_back("SuperSong");
+            if(gameplayModifiers->noArrows) strings.push_back("NoArrows");
+            if(gameplayModifiers->ghostNotes) strings.push_back("GhostNotes");
+            if(gameplayModifiers->proMode) strings.push_back("ProMode");
+            if(gameplayModifiers->zenMode) strings.push_back("ZenMode");
+            if(gameplayModifiers->smallCubes) strings.push_back("SmallCubes");
+
+            return strings;
         }
     };
 }

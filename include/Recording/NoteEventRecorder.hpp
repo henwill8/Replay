@@ -27,5 +27,7 @@ namespace Replay {
 
         void AddMissEvent(NoteController* noteController);
         void WriteMissEvents(std::ofstream& output);
+
+        float GetAverageCutScore();
     };
 }
