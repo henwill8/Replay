@@ -10,7 +10,7 @@ extern "C" void setup(ModInfo& info) {
 extern "C" void load() {
     il2cpp_functions::Init();
 
-    // custom_types::Register::AutoRegister();//
+    custom_types::Register::AutoRegister();
 
     log("Installing Replay hooks...");
     Replay::Hooks::InstallHooks(replayLogger());
