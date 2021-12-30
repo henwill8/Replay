@@ -7,12 +7,15 @@
 namespace Replay {
     enum ReplayState {
         RECORDING,
-        REPLAYING
+        REPLAYING,
+        NONE
     };
 
     class ReplayManager {
     public:
         static inline Replay::ReplayState replayState;
+
+        static Replay::ReplayState temporaryState;
 
         static Replay::ReplayRecorder recorder;
 

@@ -14,7 +14,7 @@ using namespace GlobalNamespace;
 using namespace Replay;
 
 MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
-    if(ReplayManager::replayState == ReplayState::REPLAYING) {
+    if(ReplayManager::temporaryState == ReplayState::REPLAYING) {
         rapidjson::Document metadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
         
         std::vector<std::string> modifierStrings;
@@ -22,7 +22,7 @@ MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelSce
             modifierStrings.push_back(value.GetString());
         }
 
-        ReplayUtils::SetModifiersFromStrings(gameplayModifiers, modifierStrings);
+        gameplayModifiers = ReplayUtils::CreateModifiersFromStrings(modifierStrings);
     }
 
     StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, difficultyBeatmap, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);

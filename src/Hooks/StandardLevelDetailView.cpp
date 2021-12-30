@@ -25,9 +25,10 @@ static Button* playButton;
 
 std::function<void()> getReplayFunction() {
     static std::function<void()> replayFunction = (std::function<void()>) [] () {
-        playButton->Press();
+        log("Replay button pressed");
+        ReplayManager::temporaryState = ReplayState::REPLAYING;
 
-        ReplayManager::replayState = ReplayState::REPLAYING;
+        playButton->Press();
     };
     return replayFunction;
 }
@@ -40,7 +41,7 @@ Button::ButtonClickedEvent* createReplayOnClick() {
 
 std::function<void()> getPlayButtonFunction() {
     static std::function<void()> playButtonFunction = (std::function<void()>) [] () {
-        ReplayManager::replayState = ReplayState::RECORDING;
+        if(ReplayManager::temporaryState != ReplayState::REPLAYING) ReplayManager::replayState = ReplayState::RECORDING;
     };
     return playButtonFunction;
 }

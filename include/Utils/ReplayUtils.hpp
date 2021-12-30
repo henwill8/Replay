@@ -119,36 +119,48 @@ namespace Replay {
             return strings;
         }
 
-        static void SetModifiersFromStrings(GlobalNamespace::GameplayModifiers* gameplayModifiers, std::vector<std::string> strings) {
+        static GlobalNamespace::GameplayModifiers* CreateModifiersFromStrings(std::vector<std::string> strings) {
+            GlobalNamespace::GameplayModifiers::EnergyType energyType = GlobalNamespace::GameplayModifiers::EnergyType::Bar;
             if(std::count(strings.begin(), strings.end(), "BatteryEnergy")) {
-                gameplayModifiers->energyType = GlobalNamespace::GameplayModifiers::EnergyType::Battery;
-            } else {
-                gameplayModifiers->energyType = GlobalNamespace::GameplayModifiers::EnergyType::Bar;
+                energyType = GlobalNamespace::GameplayModifiers::EnergyType::Battery;
             }
-            gameplayModifiers->noFailOn0Energy = std::count(strings.begin(), strings.end(), "NoFail");
-            gameplayModifiers->instaFail = std::count(strings.begin(), strings.end(), "InstaFail");
+
+            GlobalNamespace::GameplayModifiers::EnabledObstacleType enabledObstacleType = GlobalNamespace::GameplayModifiers::EnabledObstacleType::All;
             if(std::count(strings.begin(), strings.end(), "NoObstacles")) {
-                gameplayModifiers->enabledObstacleType = GlobalNamespace::GameplayModifiers::EnabledObstacleType::NoObstacles;
-            } else {
-                gameplayModifiers->enabledObstacleType = GlobalNamespace::GameplayModifiers::EnabledObstacleType::All;
+                enabledObstacleType = GlobalNamespace::GameplayModifiers::EnabledObstacleType::NoObstacles;
             }
-            gameplayModifiers->noBombs = std::count(strings.begin(), strings.end(), "NoBombs");
-            gameplayModifiers->strictAngles = std::count(strings.begin(), strings.end(), "StrictAngles");
-            gameplayModifiers->disappearingArrows = std::count(strings.begin(), strings.end(), "DisappearingArrows");
+
+            GlobalNamespace::GameplayModifiers::SongSpeed songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Normal;
             if(std::count(strings.begin(), strings.end(), "SlowerSong")) {
-                gameplayModifiers->songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Slower;
+                songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Slower;
             } else if(std::count(strings.begin(), strings.end(), "FasterSong")) {
-                gameplayModifiers->songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Faster;
+                songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Faster;
             } else if(std::count(strings.begin(), strings.end(), "SuperFastSong")) {
-                gameplayModifiers->songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::SuperFast;
-            } else {
-                gameplayModifiers->songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::Normal;
+                songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::SuperFast;
             }
-            gameplayModifiers->noArrows = std::count(strings.begin(), strings.end(), "NoArrows");
-            gameplayModifiers->ghostNotes = std::count(strings.begin(), strings.end(), "GhostNotes");
-            gameplayModifiers->proMode = std::count(strings.begin(), strings.end(), "ProMode");
-            gameplayModifiers->zenMode = std::count(strings.begin(), strings.end(), "ZenMode");
-            gameplayModifiers->smallCubes = std::count(strings.begin(), strings.end(), "SmallCubes");
+            log("TEST %i", (int)songSpeed);
+
+            GlobalNamespace::GameplayModifiers* modifiers = GlobalNamespace::GameplayModifiers::New_ctor(
+                false,
+                false,
+                energyType,
+                std::count(strings.begin(), strings.end(), "NoFail"),
+                std::count(strings.begin(), strings.end(), "InstaFail"),
+                false,
+                enabledObstacleType,
+                std::count(strings.begin(), strings.end(), "NoBombs"),
+                false,
+                std::count(strings.begin(), strings.end(), "StrictAngles"),
+                std::count(strings.begin(), strings.end(), "DisappearingArrows"),
+                songSpeed,
+                std::count(strings.begin(), strings.end(), "NoArrows"),
+                std::count(strings.begin(), strings.end(), "GhostNotes"),
+                std::count(strings.begin(), strings.end(), "ProMode"),
+                std::count(strings.begin(), strings.end(), "ZenMode"),
+                std::count(strings.begin(), strings.end(), "SmallCubes")
+            );
+
+            return modifiers;
         }
     };
 }
