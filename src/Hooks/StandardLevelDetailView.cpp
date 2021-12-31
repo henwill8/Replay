@@ -1,9 +1,13 @@
 #include "static-defines.hpp"
 
 #include "GlobalNamespace/StandardLevelDetailView.hpp"
+#include "GlobalNamespace/StandardLevelDetailViewController.hpp"
+#include "GlobalNamespace/PlatformLeaderboardViewController.hpp"
 #include "UnityEngine/Resources.hpp"
 #include "UnityEngine/Material.hpp"
 #include "UnityEngine/Events/UnityAction.hpp"
+
+#include "beatsaber-hook/shared/utils/typedefs-array.hpp"
 
 #include "Utils/SongUtils.hpp"
 #include "Utils/ReplayUtils.hpp"
@@ -55,8 +59,10 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
 
     playButton = self->actionButton;
 
+    ArrayW<PlatformLeaderboardViewController*> leaderboardViewControllers = UnityEngine::Resources::FindObjectsOfTypeAll<PlatformLeaderboardViewController*>();
+
     auto templateButton = self->practiceButton;
-    auto parent = templateButton->get_transform()->get_parent();
+    auto parent = leaderboardViewControllers.get(0)->get_transform();
     auto replayButtonTransform = parent->Find(replayButtonName);
     GameObject* replayButtonGameObject = nullptr;
 
@@ -92,6 +98,9 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
         contentSizeFitter->set_horizontalFit(ContentSizeFitter::FitMode::Unconstrained);
 
         replayButtonGameObject->GetComponent<LayoutElement*>()->set_preferredWidth(10.0f);
+
+        replayButtonTransform->GetComponent<RectTransform*>()->set_sizeDelta(UnityEngine::Vector2(10, 10));
+        replayButtonTransform->GetComponent<RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(20, -61));
 
         replayButtonTransform->SetAsLastSibling();
 
