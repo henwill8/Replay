@@ -1,7 +1,5 @@
 # TODO
-- separate player events into 3 events, store all saber events and then choose important events before writing
-  - store each saber swing counter finish time per hand and then get closest saber events, then fill out the rest of the events by checking if time and distance are far enough
-- head events can probably be 10 events per second or less
+- store all player events and then get velocity and angle of each transform and decide if its an important event
 - UI for deleting replays, choosing to overwrite replay, etc...
 - Time manipulation
 - UI for the above sad

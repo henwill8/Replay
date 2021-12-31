@@ -138,7 +138,6 @@ namespace Replay {
             } else if(std::count(strings.begin(), strings.end(), "SuperFastSong")) {
                 songSpeed = GlobalNamespace::GameplayModifiers::SongSpeed::SuperFast;
             }
-            log("TEST %i", (int)songSpeed);
 
             GlobalNamespace::GameplayModifiers* modifiers = GlobalNamespace::GameplayModifiers::New_ctor(
                 false,

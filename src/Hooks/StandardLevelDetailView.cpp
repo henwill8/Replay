@@ -45,7 +45,7 @@ Button::ButtonClickedEvent* createReplayOnClick() {
 
 std::function<void()> getPlayButtonFunction() {
     static std::function<void()> playButtonFunction = (std::function<void()>) [] () {
-        if(ReplayManager::temporaryState != ReplayState::REPLAYING) ReplayManager::replayState = ReplayState::RECORDING;
+        if(ReplayManager::temporaryState != ReplayState::REPLAYING) ReplayManager::temporaryState = ReplayState::RECORDING;
     };
     return playButtonFunction;
 }

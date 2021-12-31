@@ -14,13 +14,17 @@ using namespace Replay::PlayerEventTypes;
 namespace Replay {
     class PlayerReplayer {
     private:
-        std::vector<PlayerEvent> events;
+        std::vector<EulerTransformEvent> headEvents;
+        std::vector<EulerTransformEvent> leftSaberEvents;
+        std::vector<EulerTransformEvent> rightSaberEvents;
 
-        int index = 0;
-
-        PlayerEvent GetCurrentEvent();
+        int headIndex = 0;
+        int leftSaberIndex = 0;
+        int rightSaberIndex = 0;
     public:
-        void ReadEvents(std::ifstream& input, int eventsLength);
+        void ReadHeadEvents(std::ifstream& input, int eventsLength);
+        void ReadLeftSaberEvents(std::ifstream& input, int eventsLength);
+        void ReadRightSaberEvents(std::ifstream& input, int eventsLength);
 
         void SetPlayerTransforms(GlobalNamespace::PlayerTransforms* playerTransforms);
     };

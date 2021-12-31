@@ -23,10 +23,10 @@ namespace Replay {
     public:
         void AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo);
         void FinalizeCutEvent(void* swingRatingPointer);
-        void WriteCutEvents(std::ofstream& output);
 
         void AddMissEvent(NoteController* noteController);
-        void WriteMissEvents(std::ofstream& output);
+        
+        void WriteEvents(std::ofstream& output);
 
         float GetAverageCutScore();
     };

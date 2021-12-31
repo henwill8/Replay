@@ -25,6 +25,31 @@ namespace Replay {
                     position), rotation(rotation) {}
         };
 
+        struct EulerTransformEvent {
+            float time;
+            EulerTransform transform;
+
+            constexpr EulerTransformEvent() = default;
+
+            constexpr EulerTransformEvent(const float time, const EulerTransform& transform) : time(time), transform(transform) {}
+            
+            void Write(std::ofstream& writer) const {
+                writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
+                writer.write(reinterpret_cast<const char*>(&transform), sizeof(EulerTransform));
+            }
+
+            constexpr EulerTransformEvent(std::ifstream& reader) {
+                reader.read(reinterpret_cast<char*>(&time), sizeof(float));
+                reader.read(reinterpret_cast<char*>(&transform), sizeof(EulerTransform));
+            }
+        };
+        
+        const inline static byte headEventID = 0b00000000;
+
+        const inline static byte leftSaberEventID = 0b00000001;
+
+        const inline static byte rightSaberEventID = 0b00000010;
+
         struct PlayerTransforms {
             EulerTransform head;
             EulerTransform leftSaber;
@@ -36,27 +61,6 @@ namespace Replay {
                              const EulerTransform &rightSaber) : head(head), leftSaber(leftSaber),
                                                                  rightSaber(rightSaber) {}
         };
-
-        struct PlayerEvent {
-            float time;
-            PlayerTransforms player;
-
-            constexpr PlayerEvent() = default;
-
-            constexpr PlayerEvent(float time, const PlayerTransforms &player) : time(time), player(player) {}
-
-            void Write(std::ofstream& writer) const {
-                writer.write(reinterpret_cast<const char*>(&time), sizeof(float));
-                writer.write(reinterpret_cast<const char*>(&player), sizeof(PlayerTransforms));
-            }
-
-            constexpr PlayerEvent(std::ifstream& reader) {
-                reader.read(reinterpret_cast<char*>(&time), sizeof(float));
-                reader.read(reinterpret_cast<char*>(&player), sizeof(PlayerTransforms));
-            }
-        };
-
-        const inline static byte eventID = 0b00000000;
     }
 
     namespace NoteEventTypes {
@@ -171,7 +175,7 @@ namespace Replay {
             }
         };
 
-        const inline static byte cutEventID = 0b00000001;
+        const inline static byte cutEventID = 0b00000011;
 
         struct NoteMissEvent {
             int noteHash;
@@ -193,7 +197,7 @@ namespace Replay {
             }
         };
 
-        const inline static byte missEventID = 0b00000010;
+        const inline static byte missEventID = 0b00000100;
     }
 
     namespace ObstacleEventTypes {
@@ -216,7 +220,7 @@ namespace Replay {
             }
         };
 
-        const inline static byte eventID = 0b00000011;
+        const inline static byte eventID = 0b00000101;
     }
 }
 

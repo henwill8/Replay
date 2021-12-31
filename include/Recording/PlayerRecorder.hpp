@@ -13,7 +13,9 @@ using namespace Replay;
 namespace Replay {
     class PlayerRecorder {
     private:
-        std::vector<PlayerEventTypes::PlayerEvent> events;
+        std::vector<PlayerEventTypes::EulerTransformEvent> headEvents;
+        std::vector<PlayerEventTypes::EulerTransformEvent> leftSaberEvents;
+        std::vector<PlayerEventTypes::EulerTransformEvent> rightSaberEvents;
 
         int eventsPerSecond = 15;
 

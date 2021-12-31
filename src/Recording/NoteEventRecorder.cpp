@@ -24,15 +24,13 @@ void Replay::NoteEventRecorder::FinalizeCutEvent(void* swingRatingPointer) {
     }
 }
 
-void Replay::NoteEventRecorder::WriteCutEvents(std::ofstream& output) {
-    Replay::FileUtils::WriteEvents(finishedCutEvents, Replay::NoteEventTypes::cutEventID, output);
-}
-
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
     missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime());
 }
 
-void Replay::NoteEventRecorder::WriteMissEvents(std::ofstream& output) {
+void Replay::NoteEventRecorder::WriteEvents(std::ofstream& output) {
+    Replay::FileUtils::WriteEvents(finishedCutEvents, Replay::NoteEventTypes::cutEventID, output);
+
     Replay::FileUtils::WriteEvents(missEvents, Replay::NoteEventTypes::missEventID, output);
 }
 

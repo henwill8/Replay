@@ -52,8 +52,14 @@ void Replay::Replayer::ReadReplayFile(std::string_view path) {
             int startByte = input.tellg();
 
             switch(eventID) {
-                case PlayerEventTypes::eventID:
-                    playerReplayer.ReadEvents(input, eventsLength);
+                case PlayerEventTypes::headEventID:
+                    playerReplayer.ReadHeadEvents(input, eventsLength);
+                    break;
+                case PlayerEventTypes::leftSaberEventID:
+                    playerReplayer.ReadLeftSaberEvents(input, eventsLength);
+                    break;
+                case PlayerEventTypes::rightSaberEventID:
+                    playerReplayer.ReadRightSaberEvents(input, eventsLength);
                     break;
                 case NoteEventTypes::cutEventID:
                     noteEventReplayer.ReadCutEvents(input, eventsLength);

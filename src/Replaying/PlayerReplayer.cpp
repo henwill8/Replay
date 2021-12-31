@@ -1,31 +1,50 @@
 #include "Replaying/PlayerReplayer.hpp"
 
-void Replay::PlayerReplayer::ReadEvents(std::ifstream& input, int eventsLength) {
+void Replay::PlayerReplayer::ReadHeadEvents(std::ifstream& input, int eventsLength) {
     for(int i = 0; i < eventsLength; i++) {
-        events.emplace_back(input);
+        headEvents.emplace_back(input);
     }
 }
 
-PlayerEvent Replay::PlayerReplayer::GetCurrentEvent() {
-    index = Replay::ReplayUtils::GetCurrentIndex(events, index);
-    return events[index];
+void Replay::PlayerReplayer::ReadLeftSaberEvents(std::ifstream& input, int eventsLength) {
+    for(int i = 0; i < eventsLength; i++) {
+        leftSaberEvents.emplace_back(input);
+    }
+}
+
+void Replay::PlayerReplayer::ReadRightSaberEvents(std::ifstream& input, int eventsLength) {
+    for(int i = 0; i < eventsLength; i++) {
+        rightSaberEvents.emplace_back(input);
+    }
 }
 
 void Replay::PlayerReplayer::SetPlayerTransforms(GlobalNamespace::PlayerTransforms* playerTransforms) {
-    PlayerEvent event = GetCurrentEvent();
-    PlayerEvent nextEvent = events[index + 1];
+    // Grossly hard coded, reminder to fix in future
+
+    headIndex = Replay::ReplayUtils::GetCurrentIndex(headEvents, headIndex);
+    EulerTransformEvent event = headEvents[headIndex];
+
+    UnityEngine::Transform* head = playerTransforms->headTransform;
+    head->set_eulerAngles(event.transform.rotation);
+    head->set_position(event.transform.position);
+
+    leftSaberIndex = Replay::ReplayUtils::GetCurrentIndex(leftSaberEvents, leftSaberIndex);
+    event = leftSaberEvents[leftSaberIndex];
+    EulerTransformEvent nextEvent = leftSaberEvents[std::min(leftSaberIndex + 1, (int)leftSaberEvents.size() - 1)];
     
     float lerpAmount = std::max(0.0f, std::min(1.0f, Replay::ReplayUtils::LerpAmountBetweenEvents(event, nextEvent)));
 
-    UnityEngine::Transform* head = playerTransforms->headTransform;
-    head->set_eulerAngles(event.player.head.rotation);
-    head->set_position(event.player.head.position);
-
     UnityEngine::Transform* leftSaber = playerTransforms->leftHandTransform;
-    leftSaber->set_rotation(Replay::ReplayUtils::LerpEulerAngles(event.player.leftSaber.rotation, nextEvent.player.leftSaber.rotation, lerpAmount));
-    leftSaber->set_position(Replay::ReplayUtils::Lerp(event.player.leftSaber.position, nextEvent.player.leftSaber.position, lerpAmount));
+    leftSaber->set_rotation(Replay::ReplayUtils::LerpEulerAngles(event.transform.rotation, nextEvent.transform.rotation, lerpAmount));
+    leftSaber->set_position(Replay::ReplayUtils::Lerp(event.transform.position, nextEvent.transform.position, lerpAmount));
     
+    rightSaberIndex = Replay::ReplayUtils::GetCurrentIndex(rightSaberEvents, rightSaberIndex);
+    event = rightSaberEvents[rightSaberIndex];
+    nextEvent = rightSaberEvents[std::min(rightSaberIndex + 1, (int)rightSaberEvents.size() - 1)];
+    
+    lerpAmount = std::max(0.0f, std::min(1.0f, Replay::ReplayUtils::LerpAmountBetweenEvents(event, nextEvent)));
+
     UnityEngine::Transform* rightSaber = playerTransforms->rightHandTransform;
-    rightSaber->set_rotation(Replay::ReplayUtils::LerpEulerAngles(event.player.rightSaber.rotation, nextEvent.player.rightSaber.rotation, lerpAmount));
-    rightSaber->set_position(Replay::ReplayUtils::Lerp(event.player.rightSaber.position, nextEvent.player.rightSaber.position, lerpAmount));
+    rightSaber->set_rotation(Replay::ReplayUtils::LerpEulerAngles(event.transform.rotation, nextEvent.transform.rotation, lerpAmount));
+    rightSaber->set_position(Replay::ReplayUtils::Lerp(event.transform.position, nextEvent.transform.position, lerpAmount));
 }

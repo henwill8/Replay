@@ -1,21 +1,26 @@
 #include "Recording/PlayerRecorder.hpp"
 
 void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms const& playerTransforms) {
-    float songTime = SongUtils::GetSongTime();
-    if(!events.empty()) {
-        if(songTime == events[events.size() - 1].time) return;
-    }
+    // In future, save all events and then at the end decide which events are useful for each
 
+    float songTime = SongUtils::GetSongTime();
+    
     time += UnityEngine::Time::get_deltaTime();
     if(time >= 1.0f/(float)eventsPerSecond) {
-        events.emplace_back(songTime, playerTransforms);
+        headEvents.emplace_back(songTime, playerTransforms.head);
+        leftSaberEvents.emplace_back(songTime, playerTransforms.leftSaber);
+        rightSaberEvents.emplace_back(songTime, playerTransforms.rightSaber);
         
         time -= 1.0f/(float)eventsPerSecond;
     }
 }
 
 void Replay::PlayerRecorder::WriteEvents(std::ofstream& output) {
-    Replay::FileUtils::WriteEvents(events, Replay::PlayerEventTypes::eventID, output);
+    Replay::FileUtils::WriteEvents(headEvents, Replay::PlayerEventTypes::headEventID, output);
+
+    Replay::FileUtils::WriteEvents(leftSaberEvents, Replay::PlayerEventTypes::leftSaberEventID, output);
+
+    Replay::FileUtils::WriteEvents(rightSaberEvents, Replay::PlayerEventTypes::rightSaberEventID, output);
 }
 
 PlayerEventTypes::PlayerTransforms Replay::PlayerRecorder::TransformsToPlayerTransforms(UnityEngine::Transform* head, UnityEngine::Transform* leftSaber, UnityEngine::Transform* rightSaber) {

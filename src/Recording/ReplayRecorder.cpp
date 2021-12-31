@@ -65,8 +65,11 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
 void Replay::ReplayRecorder::StopRecording(GlobalNamespace::LevelCompletionResults* results) {
     std::string filepath = ReplayUtils::GetReplayFilePath();
     if(ShouldWriteFile(results, filepath)) {
+        log("Making replay file");
         CreateMetadata(results);
         WriteReplayFile(filepath);
+    } else {
+        log("Not making replay file, current file has higher priority");
     }
 }
 
@@ -115,9 +118,6 @@ void Replay::ReplayRecorder::WriteReplayFile(std::string path) {
     output.write(metadataString, strlen(metadataString));
 
     playerRecorder.WriteEvents(output);
-
-    noteEventRecorder.WriteCutEvents(output);
-    noteEventRecorder.WriteMissEvents(output);
-
+    noteEventRecorder.WriteEvents(output);
     obstacleEventRecorder.WriteEvents(output);
 }
