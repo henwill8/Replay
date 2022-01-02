@@ -16,8 +16,15 @@ MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, 
     }
 }
 
+MAKE_HOOK_MATCH(ResultsViewController_RestartButtonPressed, &ResultsViewController::RestartButtonPressed, void, ResultsViewController* self) {
+    ResultsViewController_RestartButtonPressed(self);
+
+    ReplayManager::temporaryState = ReplayManager::replayState; // To keep replay state when restarting
+}
+
 void ResultsViewControllerHook(Logger& logger) {
     INSTALL_HOOK(logger, ResultsViewController_Init);
+    INSTALL_HOOK(logger, ResultsViewController_RestartButtonPressed);
 }
 
 ReplayInstallHooks(ResultsViewControllerHook);

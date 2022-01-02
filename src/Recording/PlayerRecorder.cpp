@@ -23,7 +23,7 @@ void Replay::PlayerRecorder::AddSaberMovement(GlobalNamespace::BladeMovementData
     float angleNeeded = 90;//These values can be optimized more
     float minDistance = 0.1f;
     float maxDistance = 1;
-    float maxTime = 0.1f;
+    float maxTime = 1.0f / 15.0f;
 
     float songTime = SongUtils::GetSongTime();
 
@@ -75,38 +75,7 @@ void Replay::PlayerRecorder::GetImportantEvents() {
     leftSaberEvents.emplace_back(playerEvents[0].time, playerEvents[0].playerTransforms.leftSaber);
     rightSaberEvents.emplace_back(playerEvents[0].time, playerEvents[0].playerTransforms.rightSaber);
 
-    // UnityEngine::Vector3 averageDirection = UnityEngine::Vector3::get_zero();
-    // UnityEngine::Vector3 lastAngle = UnityEngine::Vector3::get_zero();
-    // // int lastIndex = 0;
-    // for(int i = 1; i < playerEvents.size() - 1; i++) {
-    //     UnityEngine::Vector3 currentChange = playerEvents[i + 1].rightSaberTopPos - playerEvents[i].rightSaberTopPos;
-    //     UnityEngine::Vector3 changeAngle = currentChange.get_normalized() * 360;
-    //     averageDirection = MathUtils::Lerp(averageDirection, changeAngle, 0.5f);
 
-    //     float distance = UnityEngine::Quaternion::Angle(UnityEngine::Quaternion::Euler(changeAngle), UnityEngine::Quaternion::Euler(averageDirection));
-    //     if(distance > 90) {
-    //         rightSaberEvents.emplace_back(playerEvents[i].time, playerEvents[i].playerTransforms.rightSaber);
-    //     }
-
-    //     lastAngle = changeAngle;
-    // }
-
-    // UnityEngine::Vector3 lastChange = UnityEngine::Vector3::get_zero();
-    // lastAngle = UnityEngine::Vector3::get_zero();
-    // for(int i = 1; i < playerEvents.size() - 1; i++) {
-    //     UnityEngine::Vector3 currentChange = Replay::MathUtils::EulerAnglesDifference(playerEvents[i].playerTransforms.leftSaber.rotation, playerEvents[i + 1].playerTransforms.leftSaber.rotation);
-    //     UnityEngine::Vector3 changeAngle = UnityEngine::Vector3::Normalize(currentChange);
-    //     log("%f %f %f %f", changeAngle.x, changeAngle.y, changeAngle.z, changeAngle.get_magnitude());
-
-    //     float distance = UnityEngine::Quaternion::Angle(UnityEngine::Quaternion::Euler(changeAngle), UnityEngine::Quaternion::Euler(lastAngle));
-    //     log("%f %f", distance, UnityEngine::Vector3::Angle(changeAngle, lastAngle));
-    //     if(distance > 90) {
-    //         leftSaberEvents.emplace_back(playerEvents[i].time, playerEvents[i].playerTransforms.leftSaber);
-    //     }
-
-    //     lastChange = currentChange;
-    //     lastAngle = changeAngle;
-    // }
 
     int lastIndex = playerEvents.size() - 1;
     headEvents.emplace_back(playerEvents[lastIndex].time, playerEvents[lastIndex].playerTransforms.head);

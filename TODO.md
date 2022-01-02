@@ -1,5 +1,4 @@
 # TODO
-- restarting replay does not stay in replay mode
 - store player event pos and rot separately if its better
 - UI for deleting replays, choosing to overwrite replay, etc...
 - Time manipulation
