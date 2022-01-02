@@ -10,10 +10,8 @@ void Replay::PlayerRecorder::AddEvent(PlayerEventTypes::PlayerTransforms const& 
 }
 
 void Replay::PlayerRecorder::AddSaberEvent(GlobalNamespace::SaberType saberType) {
-    //Not in the mood rn to figure out how to not hard code this, forgive me
     int lastAddedEventIndex = playerEvents.size() - 1;
     if(saberType == SaberType::SaberA) {
-        // log("%f", playerEvents[lastAddedEventIndex].time);
         leftSaberEvents.emplace_back(playerEvents[lastAddedEventIndex].time, playerEvents[lastAddedEventIndex].playerTransforms.leftSaber);
     } else {
         rightSaberEvents.emplace_back(playerEvents[lastAddedEventIndex].time, playerEvents[lastAddedEventIndex].playerTransforms.rightSaber);
@@ -21,8 +19,8 @@ void Replay::PlayerRecorder::AddSaberEvent(GlobalNamespace::SaberType saberType)
 }
 
 void Replay::PlayerRecorder::AddSaberMovement(GlobalNamespace::BladeMovementDataElement bladeMovement, GlobalNamespace::SaberType saberType) {
-    //Not in the mood rn to figure out how to not hard code this, forgive me
-    float angleNeeded = 60;
+    //Not in the mood rn to not hard code this, forgive me
+    float angleNeeded = 90;//These values can be optimized more
     float minDistance = 0.1f;
     float maxDistance = 1;
     float maxTime = 0.1f;
@@ -42,7 +40,7 @@ void Replay::PlayerRecorder::AddSaberMovement(GlobalNamespace::BladeMovementData
         float distance = UnityEngine::Vector3::Distance(bladeMovement.topPos, leftSaberLastSavedMovement.topPos);
         float angle = UnityEngine::Vector3::Angle(bladeMovement.segmentNormal, leftSaberLastSavedMovement.segmentNormal);
 
-        bool addEvent = ((angle > angleNeeded || distance > maxDistance) && distance > minDistance) || timeSinceLastEvent > maxTime;
+        bool addEvent = (angle > angleNeeded && distance > minDistance) || distance > maxDistance || timeSinceLastEvent > maxTime;
 
         if(addEvent) {
             leftSaberLastSavedMovement = bladeMovement;
