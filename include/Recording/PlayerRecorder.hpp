@@ -18,10 +18,8 @@ namespace Replay {
     class PlayerRecorder {
     private:
         GlobalNamespace::BladeMovementDataElement leftSaberLastSavedMovement;
-        bool addedLeftSaberData = false;
 
         GlobalNamespace::BladeMovementDataElement rightSaberLastSavedMovement;
-        bool addedRightSaberData = false;
 
         std::vector<PlayerEventTypes::PlayerEvent> playerEvents;
 

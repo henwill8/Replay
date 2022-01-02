@@ -13,6 +13,7 @@ void Replay::PlayerRecorder::AddSaberEvent(GlobalNamespace::SaberType saberType)
     //Not in the mood rn to figure out how to not hard code this, forgive me
     int lastAddedEventIndex = playerEvents.size() - 1;
     if(saberType == SaberType::SaberA) {
+        // log("%f", playerEvents[lastAddedEventIndex].time);
         leftSaberEvents.emplace_back(playerEvents[lastAddedEventIndex].time, playerEvents[lastAddedEventIndex].playerTransforms.leftSaber);
     } else {
         rightSaberEvents.emplace_back(playerEvents[lastAddedEventIndex].time, playerEvents[lastAddedEventIndex].playerTransforms.rightSaber);
@@ -21,44 +22,49 @@ void Replay::PlayerRecorder::AddSaberEvent(GlobalNamespace::SaberType saberType)
 
 void Replay::PlayerRecorder::AddSaberMovement(GlobalNamespace::BladeMovementDataElement bladeMovement, GlobalNamespace::SaberType saberType) {
     //Not in the mood rn to figure out how to not hard code this, forgive me
-    float angleNeeded = 30;
-    float distanceNeeded = 0.5f;
+    float angleNeeded = 60;
+    float minDistance = 0.1f;
+    float maxDistance = 1;
+    float maxTime = 0.1f;
+
+    float songTime = SongUtils::GetSongTime();
+
     if(saberType == SaberType::SaberA) {
-        if(!addedLeftSaberData && bladeMovement.segmentNormal != UnityEngine::Vector3::get_zero()) {
+        if(leftSaberLastSavedMovement.segmentNormal == UnityEngine::Vector3::get_zero()) {
             leftSaberLastSavedMovement = bladeMovement;
-            addedLeftSaberData = true;
             return;
         }
 
-        float angle = UnityEngine::Vector3::Angle(bladeMovement.segmentNormal, leftSaberLastSavedMovement.segmentNormal);
-        if(angle >= angleNeeded) {
-            leftSaberLastSavedMovement = bladeMovement;
-            AddSaberEvent(saberType);
-            return;
-        }
+        float lastEventTime = 0;
+        if(!leftSaberEvents.empty()) lastEventTime = leftSaberEvents[leftSaberEvents.size() - 1].time;
 
+        float timeSinceLastEvent = songTime - lastEventTime;
         float distance = UnityEngine::Vector3::Distance(bladeMovement.topPos, leftSaberLastSavedMovement.topPos);
-        if(distance > distanceNeeded) {
+        float angle = UnityEngine::Vector3::Angle(bladeMovement.segmentNormal, leftSaberLastSavedMovement.segmentNormal);
+
+        bool addEvent = ((angle > angleNeeded || distance > maxDistance) && distance > minDistance) || timeSinceLastEvent > maxTime;
+
+        if(addEvent) {
             leftSaberLastSavedMovement = bladeMovement;
             AddSaberEvent(saberType);
             return;
         }
     } else {
-        if(!addedRightSaberData && bladeMovement.segmentNormal != UnityEngine::Vector3::get_zero()) {
+        if(rightSaberLastSavedMovement.segmentNormal == UnityEngine::Vector3::get_zero()) {
             rightSaberLastSavedMovement = bladeMovement;
-            addedRightSaberData = true;
             return;
         }
 
-        float angle = UnityEngine::Vector3::Angle(bladeMovement.segmentNormal, rightSaberLastSavedMovement.segmentNormal);
-        if(angle >= angleNeeded) {
-            rightSaberLastSavedMovement = bladeMovement;
-            AddSaberEvent(saberType);
-            return;
-        }
+        float lastEventTime = 0;
+        if(!rightSaberEvents.empty()) lastEventTime = rightSaberEvents[rightSaberEvents.size() - 1].time;
 
+        float timeSinceLastEvent = songTime - lastEventTime;
         float distance = UnityEngine::Vector3::Distance(bladeMovement.topPos, rightSaberLastSavedMovement.topPos);
-        if(distance > distanceNeeded) {
+        float angle = UnityEngine::Vector3::Angle(bladeMovement.segmentNormal, rightSaberLastSavedMovement.segmentNormal);
+
+        bool addEvent = (angle > angleNeeded && distance > minDistance) || distance > maxDistance || timeSinceLastEvent > maxTime;
+
+        if(addEvent) {
             rightSaberLastSavedMovement = bladeMovement;
             AddSaberEvent(saberType);
             return;
