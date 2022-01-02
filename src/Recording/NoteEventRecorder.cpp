@@ -49,5 +49,6 @@ float Replay::NoteEventRecorder::GetAverageCutScore() {
         total += cutScore;
         goodCuts++;
     }
+    if(goodCuts == 0) return 0;
     return total / (float) goodCuts;
 }

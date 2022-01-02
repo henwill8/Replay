@@ -1,5 +1,6 @@
 # TODO
-- store all player events and then get velocity and angle of each transform and decide if its an important event
+- restarting replay does not stay in replay mode
+- store player event pos and rot separately if its better
 - UI for deleting replays, choosing to overwrite replay, etc...
 - Time manipulation
 - UI for the above sad

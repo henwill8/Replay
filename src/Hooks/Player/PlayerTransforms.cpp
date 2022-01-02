@@ -2,6 +2,7 @@
 
 #include "GlobalNamespace/PlayerTransforms.hpp"
 #include "Recording/PlayerRecorder.hpp"
+#include "EventTypes.hpp"
 #include "ReplayManager.hpp"
 #include "fstream"
 
@@ -10,7 +11,7 @@ using namespace Replay;
 
 MAKE_HOOK_MATCH(PlayerTransforms_Update, &GlobalNamespace::PlayerTransforms::Update, void, GlobalNamespace::PlayerTransforms* self) {
     if(ReplayManager::replayState == ReplayState::RECORDING) {
-        ReplayManager::recorder.playerRecorder.AddEvent(PlayerRecorder::TransformsToPlayerTransforms(self->headTransform, self->leftHandTransform, self->rightHandTransform));
+        ReplayManager::recorder.playerRecorder.AddEvent(PlayerEventTypes::PlayerTransforms(self->headTransform, self->leftHandTransform, self->rightHandTransform));
     } else if(ReplayManager::replayState == ReplayState::REPLAYING) {
         ReplayManager::replayer.playerReplayer.SetPlayerTransforms(self);
     }

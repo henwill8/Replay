@@ -8,6 +8,7 @@
 #include "GlobalNamespace/NoteCutInfo.hpp"
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/ISaberSwingRatingCounter.hpp"
+#include "UnityEngine/Transform.hpp"
 #include <fstream>
 
 // avoid using namespace in headers, but do as you wish
@@ -60,6 +61,24 @@ namespace Replay {
             constexpr PlayerTransforms(const EulerTransform &head, const EulerTransform &leftSaber,
                              const EulerTransform &rightSaber) : head(head), leftSaber(leftSaber),
                                                                  rightSaber(rightSaber) {}
+
+            constexpr PlayerTransforms(UnityEngine::Transform* headTransform, UnityEngine::Transform* leftTransform, UnityEngine::Transform* rightTransform) {
+                head = {headTransform->get_position(), headTransform->get_eulerAngles()};
+                leftSaber = {leftTransform->get_position(), leftTransform->get_eulerAngles()};
+                rightSaber = {rightTransform->get_position(), rightTransform->get_eulerAngles()};
+            }
+        };
+
+        struct PlayerEvent {
+            float time;
+            PlayerTransforms playerTransforms;
+            UnityEngine::Vector3 leftSaberTopPos;
+            UnityEngine::Vector3 rightSaberTopPos;
+
+            constexpr PlayerEvent() = default;
+
+            constexpr PlayerEvent(const float time, const PlayerTransforms& playerTransforms, const UnityEngine::Vector3& leftSaberTopPos, const UnityEngine::Vector3& rightSaberTopPos) : 
+                                    time(time), playerTransforms(playerTransforms), leftSaberTopPos(leftSaberTopPos), rightSaberTopPos(rightSaberTopPos) {}
         };
     }
 

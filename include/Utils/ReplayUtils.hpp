@@ -2,8 +2,6 @@
 #include "static-defines.hpp"
 
 #include "Utils/SongUtils.hpp"
-#include "UnityEngine/Quaternion.hpp"
-#include "UnityEngine/Vector3.hpp"
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/NoteData.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
@@ -56,19 +54,6 @@ namespace Replay {
             return (songTime - timeA) / (timeB - timeA);
         }
 
-        // TODO: Use sombrero!
-        static UnityEngine::Quaternion LerpEulerAngles(UnityEngine::Vector3 angleA, UnityEngine::Vector3 angleB, float amount) {
-            UnityEngine::Quaternion quaternionA = UnityEngine::Quaternion::Euler(angleA);
-            UnityEngine::Quaternion quaternionB = UnityEngine::Quaternion::Euler(angleB);
-
-            return UnityEngine::Quaternion::Lerp(quaternionA, quaternionB, amount);
-        }
-
-        // TODO: Sombrero!
-        static constexpr UnityEngine::Vector3 Lerp(UnityEngine::Vector3 const& value1, UnityEngine::Vector3 const& value2, float amount) {
-            return {value1.x + (value2.x - value1.x) * amount, value1.y + (value2.y - value1.y) * amount, value1.z + (value2.z - value1.z) * amount};
-        }
-
         static constexpr int GetNoteHash(GlobalNamespace::NoteController* noteController) {
             GlobalNamespace::NoteData* data = noteController->noteData;
             NoteEventTypes::DifferentiatingNoteData noteData{data->time, data->lineIndex, (int)data->noteLineLayer, (int)data->colorType, (int)data->cutDirection};
@@ -103,7 +88,7 @@ namespace Replay {
             if(gameplayModifiers->energyType == GlobalNamespace::GameplayModifiers::EnergyType::Battery) strings.push_back("BatteryEnergy");
             if(gameplayModifiers->noFailOn0Energy) strings.push_back("NoFail");
             if(gameplayModifiers->instaFail) strings.push_back("InstaFail");
-            if(gameplayModifiers->enabledObstacleType == GlobalNamespace::GameplayModifiers::EnabledObstacleType::NoObstacles) strings.push_back("NoObstacles");
+            if(gameplayModifiers->enabledObstacleType == GlobalNamespace::GameplayModifiers::EnabledObstacleType::NoObstacles) strings.push_back("NoWalls");
             if(gameplayModifiers->noBombs) strings.push_back("NoBombs");
             if(gameplayModifiers->strictAngles) strings.push_back("StrictAngles");
             if(gameplayModifiers->disappearingArrows) strings.push_back("DisappearingArrows");
@@ -126,7 +111,7 @@ namespace Replay {
             }
 
             GlobalNamespace::GameplayModifiers::EnabledObstacleType enabledObstacleType = GlobalNamespace::GameplayModifiers::EnabledObstacleType::All;
-            if(std::count(strings.begin(), strings.end(), "NoObstacles")) {
+            if(std::count(strings.begin(), strings.end(), "NoWalls")) {
                 enabledObstacleType = GlobalNamespace::GameplayModifiers::EnabledObstacleType::NoObstacles;
             }
 
