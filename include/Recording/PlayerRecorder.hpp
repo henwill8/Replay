@@ -27,7 +27,7 @@ namespace Replay {
         std::vector<PlayerEventTypes::EulerTransformEvent> leftSaberEvents;
         std::vector<PlayerEventTypes::EulerTransformEvent> rightSaberEvents;
 
-        void GetImportantEvents();// Temporary, remove once head and saber events are added correctly
+        void GetImportantEvents();// change name later
 
         void AddSaberEvent(GlobalNamespace::SaberType saberType);
     public:

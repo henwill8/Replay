@@ -75,7 +75,15 @@ void Replay::PlayerRecorder::GetImportantEvents() {
     leftSaberEvents.emplace_back(playerEvents[0].time, playerEvents[0].playerTransforms.leftSaber);
     rightSaberEvents.emplace_back(playerEvents[0].time, playerEvents[0].playerTransforms.rightSaber);
 
+    float timePerEvent = 1.0f / 10.0f;// Can probably be lower, check after adding smooth camera (also maybe dynamic head events?)
+    float lastSavedEventTime = 0;
 
+    for(auto& event : playerEvents) {
+        if(event.time - lastSavedEventTime > timePerEvent) {
+            headEvents.emplace_back(event.time, event.playerTransforms.head);
+            lastSavedEventTime = event.time;
+        }
+    }
 
     int lastIndex = playerEvents.size() - 1;
     headEvents.emplace_back(playerEvents[lastIndex].time, playerEvents[lastIndex].playerTransforms.head);
@@ -91,5 +99,5 @@ void Replay::PlayerRecorder::WriteEvents(std::ofstream& output) {
     Replay::FileUtils::WriteEvents(leftSaberEvents, Replay::PlayerEventTypes::leftSaberEventID, output);
     
     Replay::FileUtils::WriteEvents(rightSaberEvents, Replay::PlayerEventTypes::rightSaberEventID, output);
-    log("Events per second: %f", (float)((rightSaberEvents.size() + leftSaberEvents.size()) / 2) / playerEvents[playerEvents.size() - 1].time);
+    log("Average saber events per second per hand: %f", (float)((rightSaberEvents.size() + leftSaberEvents.size()) / 2) / playerEvents[playerEvents.size() - 1].time);
 }
