@@ -18,7 +18,7 @@ namespace Replay {
     private:
         std::vector<ObstacleEventTypes::ObstacleEvent> events;
 
-        int lastInteractionCount = 0;
+        bool lastInteracting = false;
     public:
         void AddEvent(GlobalNamespace::GameEnergyCounter* gameEnergyCounter);
 
