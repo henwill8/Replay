@@ -58,6 +58,7 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
 
     bool replayFileExists = fileexists(ReplayUtils::GetReplayFilePath());
 
+    log("Will assign replay file %s to map %s", replayFileExists ? "true" : "false", SongUtils::GetMapID().c_str());
     if(replayFileExists) FileUtils::lastSelectedMetadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
     else FileUtils::lastSelectedMetadata = std::nullopt;
 
