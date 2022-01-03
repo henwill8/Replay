@@ -25,20 +25,18 @@ namespace Replay::FileUtils {
         }
     }
 
-    static inline std::optional<rapidjson::Document> lastSelectedMetadata;
+    static std::optional<rapidjson::Document>& lastSelectedMetadata();
 
-    static rapidjson::Document GetMetadataFromReplayFile(std::string_view path) {
+    static std::optional<rapidjson::Document> GetMetadataFromReplayFile(std::string_view path) {
         log("Reading Replay file metadata at %s", path.data());
-        std::ifstream input = std::ifstream(path, std::ios::binary);
-
-        rapidjson::Document metadata;
+        std::ifstream input(path, std::ios::binary);
 
         if(input.is_open()) {
             int magicBytes;
             input.read(reinterpret_cast<char*>(&magicBytes), sizeof(int));
             if(magicBytes != replayMagicBytes) {
                 log("INCORRECT MAGIC BYTES");
-                return metadata;
+                return std::nullopt;
             }
 
             byte version;
@@ -55,6 +53,7 @@ namespace Replay::FileUtils {
 
             log("%s", metadataString.c_str());
 
+            rapidjson::Document metadata;
             rapidjson::ParseResult ok = metadata.Parse(metadataString.c_str());
             if (!ok) {
                 log("JSON parse error");
@@ -63,6 +62,6 @@ namespace Replay::FileUtils {
             log("COULD NOT FIND REPLAY FILE");
         }
 
-        return metadata;
+        return std::nullopt;
     }
 }
