@@ -13,20 +13,19 @@
 
 using namespace GlobalNamespace;
 using namespace Replay;
-using namespace Replay::FileUtils;
 
 MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
     if(ReplayManager::temporaryState == ReplayState::REPLAYING) {
         std::vector<std::string> modifierStrings;
-        for(const auto& value : lastSelectedMetadata["Modifiers"].GetArray()) {
+        for(const auto& value : FileUtils::lastSelectedMetadata["Modifiers"].GetArray()) {
             modifierStrings.push_back(value.GetString());
         }
 
         gameplayModifiers = ReplayUtils::CreateModifiersFromStrings(modifierStrings);
 
-        playerSpecificSettings->leftHanded = lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool();
-        playerSpecificSettings->automaticPlayerHeight = lastSelectedMetadata["PlayerSettings"]["AutoHeight"].GetBool();
-        playerSpecificSettings->playerHeight = lastSelectedMetadata["PlayerSettings"]["Height"].GetFloat();
+        playerSpecificSettings->leftHanded = FileUtils::lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool();
+        playerSpecificSettings->automaticPlayerHeight = FileUtils::lastSelectedMetadata["PlayerSettings"]["AutoHeight"].GetBool();
+        playerSpecificSettings->playerHeight = FileUtils::lastSelectedMetadata["PlayerSettings"]["Height"].GetFloat();
     }
 
     StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, difficultyBeatmap, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
