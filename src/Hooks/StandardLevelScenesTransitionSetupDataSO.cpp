@@ -23,9 +23,27 @@ MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelSce
 
         gameplayModifiers = ReplayUtils::CreateModifiersFromStrings(modifierStrings);
 
-        playerSpecificSettings->leftHanded = FileUtils::lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool();
-        playerSpecificSettings->automaticPlayerHeight = FileUtils::lastSelectedMetadata["PlayerSettings"]["AutoHeight"].GetBool();
-        playerSpecificSettings->playerHeight = FileUtils::lastSelectedMetadata["PlayerSettings"]["Height"].GetFloat();
+        PlayerSpecificSettings* settings = PlayerSpecificSettings::New_ctor(
+            FileUtils::lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool(),
+            FileUtils::lastSelectedMetadata["PlayerSettings"]["Height"].GetFloat(),
+            FileUtils::lastSelectedMetadata["PlayerSettings"]["AutoHeight"].GetBool(),
+            playerSpecificSettings->sfxVolume,
+            playerSpecificSettings->reduceDebris,
+            playerSpecificSettings->noTextsAndHuds,
+            playerSpecificSettings->noFailEffects,
+            playerSpecificSettings->advancedHud,
+            playerSpecificSettings->autoRestart,
+            playerSpecificSettings->saberTrailIntensity,
+            playerSpecificSettings->noteJumpDurationTypeSettings,
+            playerSpecificSettings->noteJumpFixedDuration,
+            playerSpecificSettings->noteJumpStartBeatOffset,
+            playerSpecificSettings->hideNoteSpawnEffect,
+            playerSpecificSettings->adaptiveSfx,
+            playerSpecificSettings->environmentEffectsFilterDefaultPreset,
+            playerSpecificSettings->environmentEffectsFilterExpertPlusPreset
+        );
+
+        playerSpecificSettings = settings;
     }
 
     StandardLevelScenesTransitionSetupDataSO_Init(self, gameMode, difficultyBeatmap, previewBeatmapLevel, overrideEnvironmentSettings, overrideColorScheme, gameplayModifiers, playerSpecificSettings, practiceSettings, backButtonText, useTestNoteCutSoundEffects);
