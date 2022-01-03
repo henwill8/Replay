@@ -8,6 +8,7 @@
 - Add config file with utils
 - Check replay edge cases and ensure correct total score
 - Add camera manipulation
+- check jump y offset
 - Add Avatar stuff
 - Add hollywood
 - Make fancy hollywood ui

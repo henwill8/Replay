@@ -11,6 +11,7 @@
 
 #include "Utils/SongUtils.hpp"
 #include "Utils/ReplayUtils.hpp"
+#include "Utils/FileUtils.hpp"
 #include "questui/shared/ArrayUtil.hpp"
 #include "questui/shared/BeatSaberUI.hpp"
 #include "Sprites.hpp"
@@ -55,13 +56,18 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
 
     SongUtils::SetMapID(self);
 
+    bool replayFileExists = fileexists(ReplayUtils::GetReplayFilePath());
+
+    if(replayFileExists) FileUtils::lastSelectedMetadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
+    log("%i", FileUtils::lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool());// this gives the correct value
+
+    // Move ui to separate file eventually probably
     static auto replayButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButton");
 
     playButton = self->actionButton;
+    auto templateButton = self->practiceButton;
 
     ArrayW<PlatformLeaderboardViewController*> leaderboardViewControllers = UnityEngine::Resources::FindObjectsOfTypeAll<PlatformLeaderboardViewController*>();
-
-    auto templateButton = self->practiceButton;
     auto parent = leaderboardViewControllers.get(0)->get_transform();
     auto replayButtonTransform = parent->Find(replayButtonName);
     GameObject* replayButtonGameObject = nullptr;
@@ -109,7 +115,7 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
         playButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
     }
 
-    replayButtonGameObject->SetActive(fileexists(ReplayUtils::GetReplayFilePath()));
+    replayButtonGameObject->SetActive(replayFileExists);
 }
 
 void StandardLevelDetailViewHook(Logger& logger) {

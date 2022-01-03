@@ -33,11 +33,11 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
 
     GlobalNamespace::PlayerSpecificSettings* settings = SongUtils::playerSpecificSettings;
 
-    Value playerOptions(kObjectType);
-    playerOptions.AddMember("LeftHanded", settings->leftHanded, allocator);
-    playerOptions.AddMember("AutoHeight", settings->automaticPlayerHeight, allocator);
-    playerOptions.AddMember("Height", settings->playerHeight, allocator);
-    metadata.AddMember("PlayerOptions", playerOptions, allocator);
+    Value playerSettings(kObjectType);
+    playerSettings.AddMember("LeftHanded", settings->leftHanded, allocator);
+    playerSettings.AddMember("AutoHeight", settings->automaticPlayerHeight, allocator);
+    playerSettings.AddMember("Height", settings->playerHeight, allocator);
+    metadata.AddMember("PlayerSettings", playerSettings, allocator);
 
     std::vector<std::string> modifierStrings = ReplayUtils::ModifiersToStrings(results->gameplayModifiers);
     if(!modifierStrings.empty()) {
