@@ -59,7 +59,11 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
     bool replayFileExists = fileexists(ReplayUtils::GetReplayFilePath());
 
     if(replayFileExists) FileUtils::lastSelectedMetadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
-    log("%i", FileUtils::lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool());// this gives the correct value
+    else FileUtils::lastSelectedMetadata = std::nullopt;
+
+    auto const& metadata = FileUtils::lastSelectedMetadata.value();
+
+    log("%i", metadata["PlayerSettings"]["LeftHanded"].GetBool());// this gives the correct value
 
     // Move ui to separate file eventually probably
     static auto replayButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButton");
