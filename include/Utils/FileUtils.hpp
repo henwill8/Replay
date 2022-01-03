@@ -25,7 +25,7 @@ namespace Replay::FileUtils {
         }
     }
 
-    static std::optional<rapidjson::Document>& lastSelectedMetadata();
+    static inline rapidjson::Document lastSelectedMetadata;
 
     static std::optional<rapidjson::Document> GetMetadataFromReplayFile(std::string_view path) {
         log("Reading Replay file metadata at %s", path.data());
