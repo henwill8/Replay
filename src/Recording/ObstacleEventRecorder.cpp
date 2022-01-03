@@ -1,15 +1,15 @@
 #include "Recording/ObstacleEventRecorder.hpp"
 
 void Replay::ObstacleEventRecorder::AddEvent(GlobalNamespace::GameEnergyCounter* gameEnergyCounter) {
-    int playerObstacleInteractionCount = gameEnergyCounter->playerHeadAndObstacleInteraction->intersectingObstacles->get_Count();
-    if(playerObstacleInteractionCount == lastInteractionCount) return;
+    bool playerObstacleInteracacting = (bool) gameEnergyCounter->playerHeadAndObstacleInteraction->intersectingObstacles->get_Count();
+    if(playerObstacleInteracting == lastInteracting) return;
 
     float songTime = SongUtils::GetSongTime();
     float energy = gameEnergyCounter->get_energy();
 
     events.emplace_back(songTime, energy);
 
-    lastInteractionCount = playerObstacleInteractionCount;
+    lastInteracting = playerObstacleInteracting;
 }
 
 void Replay::ObstacleEventRecorder::WriteEvents(std::ofstream& output) {
