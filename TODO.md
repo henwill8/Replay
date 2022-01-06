@@ -1,5 +1,5 @@
 # TODO
-- store player event pos and rot separately if its better
+- double check obstacles work since I moved to a bool
 - UI for deleting replays, choosing to overwrite replay, etc...
 - Time manipulation
 - UI for the above sad

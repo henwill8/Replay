@@ -15,8 +15,7 @@ MAKE_HOOK_MATCH(SaberMovementData_AddNewData, &SaberMovementData::AddNewData, vo
     SaberMovementData_AddNewData(self, topPos, bottomPos, time);
 
     if(ReplayManager::replayState == ReplayState::RECORDING) {
-        SaberType saberType = SaberType::SaberA;
-        if(self == SaberUtils::saberManager->rightSaber->get_movementData()) saberType = SaberType::SaberB;
+        SaberType saberType = self == SaberUtils::saberManager->leftSaber->get_movementData() ? SaberType::SaberA : SaberType::SaberB;
          
         ReplayManager::recorder.playerRecorder.AddSaberMovement(self->get_lastAddedData(), saberType);
     }

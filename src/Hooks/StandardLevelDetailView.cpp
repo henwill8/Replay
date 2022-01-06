@@ -105,8 +105,6 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
         auto contentTransform = replayButtonTransform->Find(contentName);
         Object::Destroy(contentTransform->Find(textName)->get_gameObject());
         Object::Destroy(contentTransform->GetComponent<LayoutElement*>());
-        static auto underlineName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Underline");
-        Object::Destroy(replayButtonTransform->Find(underlineName)->get_gameObject());
 
         static auto iconName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Icon");
         auto iconGameObject = GameObject::New_ctor(iconName);
@@ -117,7 +115,7 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
         imageView->set_sprite(BeatSaberUI::Base64ToSprite(Replay::Sprites::ReplayIcon));
         imageView->set_preserveAspect(true);
 
-        float scale = 1.7f;
+        float scale = 1.3f;
         iconTransform->set_localScale(UnityEngine::Vector3(scale, scale, scale));
 
         ((RectTransform*) replayButtonTransform)->set_sizeDelta({10, 10});
@@ -126,7 +124,7 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
 
         playButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
 
-        failedTimeText = QuestUI::BeatSaberUI::CreateText(canvasTransform, "Test", true, {0, -7});
+        failedTimeText = QuestUI::BeatSaberUI::CreateText(canvasTransform, "Test", true, {-0.5f, -7});
         failedTimeText->set_alignment(TMPro::TextAlignmentOptions::Center);
         failedTimeText->set_fontSize(5);
         failedTimeText->set_lineSpacing(-45);
