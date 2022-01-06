@@ -64,27 +64,41 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
     if(replayFileExists) FileUtils::lastSelectedMetadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
 
     // Move ui to separate file eventually
+    static auto canvasName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButtonCanvas");
     static auto replayButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButton");
     static auto failedTextName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("FailedText");
 
     playButton = self->actionButton;
     auto templateButton = self->practiceButton;
 
-    ArrayW<PlatformLeaderboardViewController*> leaderboardViewControllers = UnityEngine::Resources::FindObjectsOfTypeAll<PlatformLeaderboardViewController*>();
-    auto parent = leaderboardViewControllers.get(0)->get_transform();
-    auto replayButtonTransform = parent->Find(replayButtonName);
-    auto failedTextTransform = parent->Find(failedTextName);
+    // ArrayW<PlatformLeaderboardViewController*> leaderboardViewControllers = UnityEngine::Resources::FindObjectsOfTypeAll<PlatformLeaderboardViewController*>();
+    // auto parent = leaderboardViewControllers.get(0)->get_transform();
+    // auto parent = self->get_transform();
+    auto parent = playButton->get_transform()->get_parent();
+    auto canvasTransform = (RectTransform*) parent->Find(canvasName);
+    
+    Transform* replayButtonTransform = nullptr;
+    Transform* failedTextTransform = nullptr;
 
-    GameObject* replayButtonGameObject = nullptr;
     TMPro::TextMeshProUGUI* failedTimeText = nullptr;
 
-    if(replayButtonTransform) {
-        replayButtonGameObject = replayButtonTransform->get_gameObject();
+    if(canvasTransform) {
+        replayButtonTransform = canvasTransform->Find(replayButtonName);
+        failedTextTransform = canvasTransform->Find(failedTextName);
         failedTimeText = failedTextTransform->get_gameObject()->GetComponent<TMPro::TextMeshProUGUI*>();
     } else {
-        replayButtonGameObject = Object::Instantiate(templateButton->get_gameObject(), parent);
-        replayButtonTransform = replayButtonGameObject->get_transform();
-        replayButtonGameObject->set_name(replayButtonName);
+        canvasTransform = (RectTransform*) BeatSaberUI::CreateCanvas()->get_transform();
+        canvasTransform->set_name(canvasName);
+        canvasTransform->SetParent(parent, false);
+        canvasTransform->set_localScale({1, 1, 1});
+        canvasTransform->set_sizeDelta({10, 10});
+        canvasTransform->set_anchoredPosition({0, -5});
+        auto canvasLayout = canvasTransform->get_gameObject()->AddComponent<LayoutElement*>();
+        canvasLayout->set_preferredWidth(10);
+        canvasTransform->SetAsLastSibling();
+
+        replayButtonTransform = Object::Instantiate(templateButton->get_gameObject(), canvasTransform)->get_transform();
+        replayButtonTransform->set_name(replayButtonName);
 
         static auto contentName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Content");
         static auto textName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Text");
@@ -106,29 +120,24 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
         float scale = 1.7f;
         iconTransform->set_localScale(UnityEngine::Vector3(scale, scale, scale));
 
-        ContentSizeFitter* contentSizeFitter = replayButtonGameObject->AddComponent<ContentSizeFitter*>();
-        contentSizeFitter->set_verticalFit(ContentSizeFitter::FitMode::Unconstrained);
-        contentSizeFitter->set_horizontalFit(ContentSizeFitter::FitMode::Unconstrained);
-
-        replayButtonGameObject->GetComponent<LayoutElement*>()->set_preferredWidth(10.0f);
-
-        replayButtonTransform->GetComponent<RectTransform*>()->set_sizeDelta(UnityEngine::Vector2(10, 10));
-        replayButtonTransform->GetComponent<RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(20, -61));
-
-        replayButtonTransform->SetAsLastSibling();
-
-        replayButtonGameObject->GetComponent<Button*>()->set_onClick(createReplayOnClick());
+        ((RectTransform*) replayButtonTransform)->set_sizeDelta({10, 10});
+        ((RectTransform*) replayButtonTransform)->set_anchoredPosition({5, -5});
+        replayButtonTransform->GetComponent<Button*>()->set_onClick(createReplayOnClick());
 
         playButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
 
-        failedTimeText = QuestUI::BeatSaberUI::CreateText(parent, "Test", true, UnityEngine::Vector2(-40.5f, -28));
+        failedTimeText = QuestUI::BeatSaberUI::CreateText(canvasTransform, "Test", true, {0, -7});
         failedTimeText->set_alignment(TMPro::TextAlignmentOptions::Center);
         failedTimeText->set_fontSize(5);
         failedTimeText->set_lineSpacing(-45);
         failedTimeText->get_gameObject()->set_name(failedTextName);
+
+        replayButtonTransform->SetAsLastSibling();
     }
 
-    replayButtonGameObject->SetActive(replayFileExists);
+    canvasTransform->get_gameObject()->SetActive(replayFileExists);
+    float xpos = replayFileExists ? 4.2 : -1.8;
+    ((RectTransform*) parent)->set_anchoredPosition({xpos, -55});
 
     if(FileUtils::lastSelectedMetadata.HasMember("FailedInfo") && replayFileExists) {
         float failedSongTime = FileUtils::lastSelectedMetadata["FailedInfo"]["FailedTime"].GetFloat();
