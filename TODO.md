@@ -1,5 +1,6 @@
 # TODO
-- double check obstacles work since I moved to a bool
+- Fix race conditions for note replays
+- Ensure each note has its event found
 - UI for deleting replays, choosing to overwrite replay, etc...
 - Time manipulation
 - UI for the above sad

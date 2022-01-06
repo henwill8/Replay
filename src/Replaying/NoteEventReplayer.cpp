@@ -31,6 +31,8 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
             return;
         }
     }
+
+    log("COULD NOT FIND NOTE EVENT, THIS SHOULD NOT HAPPEN");
 }
 
 void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLength) {
@@ -63,6 +65,23 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(SongUtils::inSong) {
         float songTime = Replay::SongUtils::GetSongTime();
 
+        int eventsRan = 0;
+        std::string times = "";
+        
+        for (auto eventIt = activeMissEvents.begin(); eventIt != activeMissEvents.end();) {
+            auto const& eventData = *eventIt;
+            if(songTime > eventData.event.time) {
+                eventData.note->SendNoteWasMissedEvent();
+
+                eventsRan++;
+                times = times + std::to_string(eventData.event.time) + " ";
+
+                eventIt = activeMissEvents.erase(eventIt);
+            } else {
+                eventIt++;
+            }
+        }
+
         for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
             auto& eventData = *eventIt;
             if(songTime > eventData.event.time) {
@@ -79,22 +98,16 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
 
                 SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));
 
+                eventsRan++;
+                times = times + std::to_string(eventData.event.time) + " " + std::to_string(eventData.event.noteCutInfo.AllIsOkay()) + " ";
+
                 eventIt = activeCutEvents.erase(eventIt);
             } else {
                 eventIt++;
             }
         }
 
-        for (auto eventIt = activeMissEvents.begin(); eventIt != activeMissEvents.end();) {
-            auto const& eventData = *eventIt;
-            if(songTime > eventData.event.time) {
-                eventData.note->SendNoteWasMissedEvent();
-
-                eventIt = activeMissEvents.erase(eventIt);
-            } else {
-                eventIt++;
-            }
-        }
+        if(eventsRan > 1) log("%i events ran at times %s", eventsRan, times.c_str());
 
         co_yield nullptr;
     }
