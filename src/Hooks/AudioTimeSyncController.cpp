@@ -18,6 +18,8 @@ MAKE_HOOK_FIND_INSTANCE(AudioTimeSyncController_ctor, classof(AudioTimeSyncContr
     ReplayManager::temporaryState = ReplayState::NONE;
 
     if(ReplayManager::replayState == ReplayState::RECORDING) {
+        SongUtils::didFail = false;
+
         ReplayManager::recorder = ReplayRecorder();
         ReplayManager::recorder.Init();
     } else if(ReplayManager::replayState == ReplayState::REPLAYING) {

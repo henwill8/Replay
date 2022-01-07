@@ -21,7 +21,7 @@ void Replay::ReplayRecorder::CreateClearedSpecificMetadata(GlobalNamespace::Leve
 void Replay::ReplayRecorder::CreateFailedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator) {
     Value failedInfo(kObjectType);
 
-    failedInfo.AddMember("FailedTime", results->endSongTime, allocator);
+    failedInfo.AddMember("FailedTime", SongUtils::failTime, allocator);
 
     metadata.AddMember("FailedInfo", failedInfo, allocator);
 }
@@ -55,9 +55,9 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
     info.AddMember("MaxCombo", results->maxCombo, allocator);
     metadata.AddMember("Info", info, allocator);
 
-    if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) {
+    if(!SongUtils::didFail) {
         CreateClearedSpecificMetadata(results, allocator);
-    } else if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Failed) {
+    } else {
         CreateFailedSpecificMetadata(results, allocator);
     }
 }
@@ -78,15 +78,15 @@ bool Replay::ReplayRecorder::ShouldWriteFile(GlobalNamespace::LevelCompletionRes
 
     Document metadata = FileUtils::GetMetadataFromReplayFile(filepath);
     if(metadata.HasMember("ClearedInfo")) {
-        if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Failed) return false;
+        if(SongUtils::didFail) return false;
 
         if(results->modifiedScore >= metadata["ClearedInfo"]["ModifiedScore"].GetInt()) return true;
 
         return false;
     } else if(metadata.HasMember("FailedInfo")) {
-        if(results->levelEndStateType == LevelCompletionResults::LevelEndStateType::Cleared) return true;
+        if(!SongUtils::didFail) return true;
 
-        if(results->endSongTime > metadata["FailedInfo"]["FailedTime"].GetFloat()) return true;
+        if(SongUtils::failTime > metadata["FailedInfo"]["FailedTime"].GetFloat()) return true;
 
         return false;
     }

@@ -40,5 +40,8 @@ namespace Replay {
         static inline GlobalNamespace::ScoreController* scoreController;
 
         static inline GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings;
+
+        static inline bool didFail;
+        static inline float failTime;
     };
 }
