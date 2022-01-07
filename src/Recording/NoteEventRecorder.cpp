@@ -2,11 +2,32 @@
 
 #include <math.h>
 
+float Replay::NoteEventRecorder::GetEventSaveTime(float songTime) {
+    //This seems like a really bad solution for note cut race conditions, fix later?
+    if(songTime == frameTime) {
+        eventsInFrame++;
+
+        float newTime = nextafterf(songTime, songTime + 1);
+
+        // For if there are 3 or more events in a single frame (extremely unlikely)
+        for(int i = 0; i < eventsInFrame - 2; i++) {
+            newTime = nextafterf(songTime, songTime + 1);
+        }
+
+        return newTime;
+    }
+
+    frameTime = songTime;
+    eventsInFrame = 1;
+
+    return songTime;
+}
+
 void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo) {
     if(noteCutInfo->get_allIsOK()) {
-        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime(), noteCutInfo.heldRef);
+        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), GetEventSaveTime(Replay::SongUtils::GetSongTime()), noteCutInfo.heldRef);
     } else {
-        finishedCutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime(), noteCutInfo.heldRef, false);
+        finishedCutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), GetEventSaveTime(Replay::SongUtils::GetSongTime()), noteCutInfo.heldRef, false);
     }
 }
 
@@ -25,7 +46,7 @@ void Replay::NoteEventRecorder::FinalizeCutEvent(void* swingRatingPointer) {
 }
 
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
-    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), Replay::SongUtils::GetSongTime());
+    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), GetEventSaveTime(Replay::SongUtils::GetSongTime()));
 }
 
 void Replay::NoteEventRecorder::WriteEvents(std::ofstream& output) {

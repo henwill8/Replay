@@ -47,6 +47,24 @@ namespace Replay {
         constexpr ActiveNoteMissEvent(NoteController *note, const NoteMissEvent &event) : note(note), event(event) {}
     };
 
+    struct EventToRun {
+        float time;
+        bool isCutEvent;
+        int eventIndex;
+        
+        constexpr EventToRun() = default;
+
+        constexpr EventToRun(float time, bool isCutEvent, int eventIndex) : time(time), isCutEvent(isCutEvent), eventIndex(eventIndex) {}
+
+        bool operator < (const EventToRun& str) const {
+            return (time < str.time);
+        }
+
+        bool operator > (const EventToRun& str) const {
+            return (eventIndex > str.eventIndex);
+        }
+    };
+
     class NoteEventReplayer {
     private:
         custom_types::Helpers::Coroutine Update();

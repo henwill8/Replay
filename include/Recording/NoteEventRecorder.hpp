@@ -20,6 +20,11 @@ namespace Replay {
         std::vector<StoredCutEvent> cutEvents;
         std::vector<NoteCutEvent> finishedCutEvents;
         std::vector<NoteMissEvent> missEvents;
+
+        float frameTime = 0;
+        int eventsInFrame = 0;
+
+        float GetEventSaveTime(float songTime);
     public:
         void AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo);
         void FinalizeCutEvent(void* swingRatingPointer);

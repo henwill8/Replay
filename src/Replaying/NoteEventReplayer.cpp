@@ -31,8 +31,6 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
             return;
         }
     }
-
-    log("COULD NOT FIND NOTE EVENT, THIS SHOULD NOT HAPPEN");
 }
 
 void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLength) {
@@ -64,27 +62,31 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(SongUtils::inSong) {
         float songTime = Replay::SongUtils::GetSongTime();
-
-        int eventsRan = 0;
-        std::string times = "";
         
-        for (auto eventIt = activeMissEvents.begin(); eventIt != activeMissEvents.end();) {
-            auto const& eventData = *eventIt;
-            if(songTime > eventData.event.time) {
-                eventData.note->SendNoteWasMissedEvent();
+        // Feel free to make this not terrible, just trying to run the events in order of time
+        std::vector<EventToRun> eventsToRun;
 
-                eventsRan++;
-                times = times + std::to_string(eventData.event.time) + " ";
-
-                eventIt = activeMissEvents.erase(eventIt);
-            } else {
-                eventIt++;
+        for(int i = 0; i < activeCutEvents.size(); i++) {
+            float eventTime = activeCutEvents[i].event.time;
+            if(songTime > eventTime) {
+                eventsToRun.emplace_back(eventTime, true, i);
             }
         }
 
-        for (auto eventIt = activeCutEvents.begin(); eventIt != activeCutEvents.end();) {
-            auto& eventData = *eventIt;
-            if(songTime > eventData.event.time) {
+        for(int i = 0; i < activeMissEvents.size(); i++) {
+            float eventTime = activeMissEvents[i].event.time;
+            if(songTime > eventTime) {
+                eventsToRun.emplace_back(eventTime, false, i);
+            }
+        }
+
+        // I am truly sorry to whoever reads this code next, I am just doing the first thing that comes to mind
+        std::sort(eventsToRun.begin(), eventsToRun.end());
+
+        for(auto& eventToRun : eventsToRun) {
+            if(eventToRun.isCutEvent) {
+                auto& eventData = activeCutEvents[eventToRun.eventIndex];
+
                 NoteCutInfo noteCutInfo;
 
                 if(eventData.note->noteData->colorType == GlobalNamespace::ColorType::None) {
@@ -97,17 +99,21 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
                 }
 
                 SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));
-
-                eventsRan++;
-                times = times + std::to_string(eventData.event.time) + " " + std::to_string(eventData.event.noteCutInfo.AllIsOkay()) + " ";
-
-                eventIt = activeCutEvents.erase(eventIt);
             } else {
-                eventIt++;
+                activeMissEvents[eventToRun.eventIndex].note->SendNoteWasMissedEvent();
             }
         }
 
-        if(eventsRan > 1) log("%i events ran at times %s", eventsRan, times.c_str());
+        // Two sorts every frame... I am gonna scrape out my eyes
+        std::sort(eventsToRun.begin(), eventsToRun.end(), std::greater<EventToRun>());
+
+        for(auto& eventToRun : eventsToRun) {
+            if(eventToRun.isCutEvent) {
+                activeCutEvents.erase(activeCutEvents.begin() + eventToRun.eventIndex);
+            } else {
+                activeMissEvents.erase(activeMissEvents.begin() + eventToRun.eventIndex);
+            }
+        }
 
         co_yield nullptr;
     }
