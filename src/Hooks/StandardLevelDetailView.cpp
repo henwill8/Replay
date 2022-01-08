@@ -71,9 +71,6 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
     playButton = self->actionButton;
     auto templateButton = self->practiceButton;
 
-    // ArrayW<PlatformLeaderboardViewController*> leaderboardViewControllers = UnityEngine::Resources::FindObjectsOfTypeAll<PlatformLeaderboardViewController*>();
-    // auto parent = leaderboardViewControllers.get(0)->get_transform();
-    // auto parent = self->get_transform();
     auto parent = playButton->get_transform()->get_parent();
     auto canvasTransform = (RectTransform*) parent->Find(canvasName);
     

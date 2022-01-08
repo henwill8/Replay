@@ -11,7 +11,7 @@ float Replay::NoteEventRecorder::GetEventSaveTime(float songTime) {
 
         // For if there are 3 or more events in a single frame (extremely unlikely)
         for(int i = 0; i < eventsInFrame - 2; i++) {
-            newTime = nextafterf(songTime, songTime + 1);
+            newTime = nextafterf(newTime, songTime + 1);
         }
 
         return newTime;

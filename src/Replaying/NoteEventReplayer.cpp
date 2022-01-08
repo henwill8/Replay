@@ -31,6 +31,7 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
             return;
         }
     }
+    log("Could not find note!");
 }
 
 void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLength) {
