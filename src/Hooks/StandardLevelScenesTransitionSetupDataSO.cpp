@@ -15,7 +15,7 @@ using namespace GlobalNamespace;
 using namespace Replay;
 
 MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
-    if(ReplayManager::temporaryState == ReplayState::REPLAYING) {
+    if(ReplayManager::replayState == ReplayState::REPLAYING) {
         std::vector<std::string> modifierStrings;
         for(const auto& value : FileUtils::lastSelectedMetadata["Modifiers"].GetArray()) {
             modifierStrings.push_back(value.GetString());

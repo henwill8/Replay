@@ -13,15 +13,8 @@ MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressMenuButton, &Pause
     SongUtils::inSong = false;
 }
 
-MAKE_HOOK_MATCH(PauseController_HandlePauseMenuManagerDidPressRestartButton, &PauseController::HandlePauseMenuManagerDidPressRestartButton, void, PauseController* self) {
-    PauseController_HandlePauseMenuManagerDidPressRestartButton(self);
-
-    ReplayManager::temporaryState = ReplayManager::replayState; // To keep replay state when restarting through pause menu (doesn't press replay button)
-}
-
 void PauseControllerHook(Logger& logger) {
     INSTALL_HOOK(logger, PauseController_HandlePauseMenuManagerDidPressMenuButton);
-    INSTALL_HOOK(logger, PauseController_HandlePauseMenuManagerDidPressRestartButton);
 }
 
 ReplayInstallHooks(PauseControllerHook);

@@ -15,8 +15,6 @@ namespace Replay {
     public:
         static inline Replay::ReplayState replayState;
 
-        static Replay::ReplayState temporaryState;
-
         static Replay::ReplayRecorder recorder;
 
         static Replay::Replayer replayer;
