@@ -148,7 +148,8 @@ namespace Replay {
         }
 
         static std::string FloatToString(float value, int precision = 2) {
-            value = std::round(value * 100.0f) / 100.0f;
+            float power = (float) pow(100, precision);
+            value = std::round(value * power) / power;
 
             std::stringstream stream;
             stream << std::fixed << std::setprecision(precision) << value;
