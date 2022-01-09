@@ -44,7 +44,7 @@ namespace Replay {
         static inline bool didFail;
         static inline float failTime;
 
-        static inline GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap;
+        static inline GlobalNamespace::IBeatmapLevel* beatmapLevel;
         static inline GlobalNamespace::BeatmapDifficulty beatmapDifficulty;
         static inline GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic;
 

@@ -7,6 +7,8 @@
 #include "UI/UIManager.hpp"
 #include "ReplayManager.hpp"
 #include "Utils/ReplayUtils.hpp"
+#include "Utils/TypeUtils.hpp"
+#include "Utils/UnityUtils.hpp"
 
 using namespace Replay;
 using namespace Replay::UI;
@@ -16,24 +18,17 @@ DEFINE_TYPE(Replay::UI, ReplayViewController);
 
 void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 	if(firstActivation) {
-        // levelBar = GlobalNamespace::LevelBar::New_ctor();
-        // log("level bar is null: %i", levelBar == nullptr);
-        // levelBar->get_transform();
-        // log("test");
-        // // levelBar->get_transform()->SetParent(get_transform(), false);
-        // levelBar->get_gameObject()->GetComponent<UnityEngine::RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(0, 0));
+        ArrayW<GlobalNamespace::LevelBar*> levelBars = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LevelBar*>();
+        levelBar = UnityEngine::GameObject::Instantiate(levelBars.get(3)->get_gameObject());
 
-        // Don't worry, this horrible code is just a POC
-        int maxScore = GlobalNamespace::ScoreModel::MaxRawScoreForNumberOfNotes(SongUtils::noteCount);
-        int modifiedScore = FileUtils::lastSelectedMetadata["ClearedInfo"]["ModifiedScore"].GetInt();
-        float percentage = ((float) modifiedScore / (float) maxScore) * 100;
-
-        float averageCutScore = FileUtils::lastSelectedMetadata["Info"]["AverageCutScore"].GetFloat();
-        float percentageWithFC = (averageCutScore / 115.0f) * 100;
+        levelBar->set_name(newcsstr("ReplayLevelBarSimple"));
+        UnityUtils::SetAllActive(levelBar->get_transform(), true);
+        levelBar->get_transform()->SetParent(get_transform(), false);
+        levelBar->GetComponent<UnityEngine::RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(0, 0));
 
         QuestUI::BeatSaberUI::CreateText(
             get_transform(),
-            "Score: " + std::to_string(modifiedScore) + " (" + ReplayUtils::FloatToString(percentage) + "%)\nAverage Cut Score: "+ReplayUtils::FloatToString(averageCutScore)+" ("+ReplayUtils::FloatToString(percentageWithFC)+"%)",
+            "Score: 42069420 (93.54%)",
             true,
             UnityEngine::Vector2(0, 0)
         );
@@ -42,7 +37,7 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
             get_transform(),
             "Replay",
             "OkButton",
-            UnityEngine::Vector2(0, -20),
+            UnityEngine::Vector2(0, -30),
             [this]() { 
                 log("Replay button pressed");
                 ReplayManager::replayState = ReplayState::REPLAYING;
@@ -51,7 +46,15 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
         );
     }
     if(addedToHierarchy) {
-        log("Added to hierarchy poggers");
-        // levelBar->Setup(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(SongUtils::difficultyBeatmap), SongUtils::beatmapCharacteristic, SongUtils::beatmapDifficulty);
+        GlobalNamespace::LevelBar* levelBarComponent = levelBar->GetComponent<GlobalNamespace::LevelBar*>();
+        levelBarComponent->showDifficultyAndCharacteristic = true;
+        levelBarComponent->Setup(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(SongUtils::beatmapLevel), SongUtils::beatmapCharacteristic, SongUtils::beatmapDifficulty);
+    
+        int maxScore = GlobalNamespace::ScoreModel::MaxRawScoreForNumberOfNotes(SongUtils::noteCount);
+        int modifiedScore = FileUtils::lastSelectedMetadata["ClearedInfo"]["ModifiedScore"].GetInt();
+        float percentage = ((float) modifiedScore / (float) maxScore) * 100;
+
+        float averageCutScore = FileUtils::lastSelectedMetadata["Info"]["AverageCutScore"].GetFloat();
+        float percentageWithFC = (averageCutScore / 115.0f) * 100;
     }
 }

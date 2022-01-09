@@ -16,7 +16,7 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
 
     SongUtils::SetMapID(self);
     
-    SongUtils::difficultyBeatmap = self->selectedDifficultyBeatmap;
+    SongUtils::beatmapLevel = self->selectedDifficultyBeatmap->get_level();
     SongUtils::beatmapDifficulty = self->selectedDifficultyBeatmap->get_difficulty();
     SongUtils::beatmapCharacteristic = self->selectedDifficultyBeatmap->get_parentDifficultyBeatmapSet()->get_beatmapCharacteristic();
 

@@ -2,6 +2,7 @@
 #include "static-defines.hpp"
 
 #include "GlobalNamespace/LevelBar.hpp"
+#include "UnityEngine/GameObject.hpp"
 
 #include "custom-types/shared/macros.hpp"
 #include "HMUI/ViewController.hpp"
@@ -13,5 +14,5 @@ DECLARE_CLASS_CODEGEN(Replay::UI, ReplayViewController, HMUI::ViewController,
     public:
         void Init();
         
-        GlobalNamespace::LevelBar* levelBar;
+        UnityEngine::GameObject* levelBar;
 )
