@@ -1,6 +1,7 @@
 #include "static-defines.hpp"
 
 #include "GlobalNamespace/StandardLevelDetailView.hpp"
+#include "GlobalNamespace/BeatmapData.hpp"
 
 #include "Utils/SongUtils.hpp"
 #include "Utils/ReplayUtils.hpp"
@@ -14,6 +15,12 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
     StandardLevelDetailView_RefreshContent(self);
 
     SongUtils::SetMapID(self);
+    
+    SongUtils::difficultyBeatmap = self->selectedDifficultyBeatmap;
+    SongUtils::beatmapDifficulty = self->selectedDifficultyBeatmap->get_difficulty();
+    SongUtils::beatmapCharacteristic = self->selectedDifficultyBeatmap->get_parentDifficultyBeatmapSet()->get_beatmapCharacteristic();
+
+    SongUtils::noteCount = self->selectedDifficultyBeatmap->get_beatmapData()->get_cuttableNotesCount();
 
     bool replayFileExists = fileexists(ReplayUtils::GetReplayFilePath());
     if(replayFileExists) FileUtils::lastSelectedMetadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
@@ -21,17 +28,8 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
     Replay::UI::UIManager::CreateReplayButton(self, replayFileExists);
 }
 
-MAKE_HOOK_MATCH(StandardLevelDetailView_SetContent, &StandardLevelDetailView::SetContent, void, StandardLevelDetailView* self, GlobalNamespace::IBeatmapLevel* level, GlobalNamespace::BeatmapDifficulty defaultDifficulty, GlobalNamespace::BeatmapCharacteristicSO* defaultBeatmapCharacteristic, GlobalNamespace::PlayerData* playerData) {
-    StandardLevelDetailView_SetContent(self, level, defaultDifficulty, defaultBeatmapCharacteristic, playerData);
-
-    SongUtils::difficultyBeatmap = reinterpret_cast<GlobalNamespace::IDifficultyBeatmap*>(level);
-    SongUtils::beatmapDifficulty = defaultDifficulty;
-    SongUtils::beatmapCharacteristic = defaultBeatmapCharacteristic;
-}
-
 void StandardLevelDetailViewHook(Logger& logger) {
     INSTALL_HOOK(logger, StandardLevelDetailView_RefreshContent);
-    INSTALL_HOOK(logger, StandardLevelDetailView_SetContent);
 }
 
 ReplayInstallHooks(StandardLevelDetailViewHook);
