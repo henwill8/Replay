@@ -19,18 +19,14 @@
 # UI Page Ideas
 ### Overview Info At Top
 - date set
-- score
+- score and percentage / failed time
 - modifiers
-- percentage and rank
-- failed time (if failed)
-- modifiers used
 
 ### In Depth Lower
-- average cut score
+- average cut score and percentage of 115
 - bad cuts/missed notes
-- percentage without combo breaks
-- openable graph of percentage and energy throughout play
 - max combo
+- openable graph of percentage and energy throughout play
 
 - "Watch Replay" button
 - Camera drop down menu? 

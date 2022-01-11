@@ -118,6 +118,8 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
         replayButtonTransform->SetAsLastSibling();
     }
 
+    replayCanvas = canvasTransform->get_gameObject();
+
     canvasTransform->get_gameObject()->SetActive(replayFileExists);
     float xpos = replayFileExists ? 4.2 : -1.8;
     ((RectTransform*) parent)->set_anchoredPosition({xpos, -55});

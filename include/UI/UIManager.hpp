@@ -14,6 +14,8 @@ namespace Replay::UI {
 
         static inline Replay::UI::ReplayViewController* replayViewController;
 
+        static inline UnityEngine::GameObject* replayCanvas;
+
         static void CreateReplayButton(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView, bool replayFileExists);
     };
 }

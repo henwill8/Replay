@@ -3,6 +3,7 @@
 
 #include "GlobalNamespace/LevelBar.hpp"
 #include "UnityEngine/GameObject.hpp"
+#include "TMPro/TextMeshProUGUI.hpp"
 
 #include "custom-types/shared/macros.hpp"
 #include "HMUI/ViewController.hpp"
@@ -15,4 +16,12 @@ DECLARE_CLASS_CODEGEN(Replay::UI, ReplayViewController, HMUI::ViewController,
         void Init();
         
         UnityEngine::GameObject* levelBar;
+
+        TMPro::TextMeshProUGUI* dateText;
+        TMPro::TextMeshProUGUI* scoreOrFailedText;
+        TMPro::TextMeshProUGUI* modifiersText;
+        
+        TMPro::TextMeshProUGUI* averageCutScoreText;
+        TMPro::TextMeshProUGUI* missedNotesText;
+        TMPro::TextMeshProUGUI* maxComboText;
 )
