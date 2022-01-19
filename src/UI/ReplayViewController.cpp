@@ -18,9 +18,7 @@
 #include "Utils/TypeUtils.hpp"
 #include "Utils/UnityUtils.hpp"
 #include "Utils/FindComponentsUtils.hpp"
-
-#include <chrono>
-#include <filesystem>
+#include "Utils/TimeUtils.hpp"
 
 using namespace Replay;
 using namespace Replay::UI;
@@ -178,15 +176,16 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
             }
         )->GetComponent<UnityEngine::RectTransform*>()->set_sizeDelta(size);
     }
+
     if(addedToHierarchy) {
         GlobalNamespace::LevelBar* levelBarComponent = levelBar->GetComponent<GlobalNamespace::LevelBar*>();
         levelBarComponent->showDifficultyAndCharacteristic = true;
         levelBarComponent->Setup(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(SongUtils::beatmapLevel), SongUtils::beatmapCharacteristic, SongUtils::beatmapDifficulty);
 
-        std::time_t time = static_cast<time_t>(FileUtils::lastSelectedMetadata["Info"]["TimeSet"].GetInt64());
-        std::string timeString = std::string(std::asctime(std::localtime(&time)));
+        auto replayTime = static_cast<time_t>(FileUtils::lastSelectedMetadata["Info"]["TimeSet"].GetInt64());
+        auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-        dateText->set_text(newcsstr("Date Set\n" + timeString));
+        dateText->set_text(newcsstr("Date Set\n" + TimeUtils::GetStringForTimeSince(replayTime, now)));
 
         if(FileUtils::lastSelectedMetadata.HasMember("ClearedInfo")) {
             int maxScore = GlobalNamespace::ScoreModel::MaxRawScoreForNumberOfNotes(SongUtils::noteCount);
