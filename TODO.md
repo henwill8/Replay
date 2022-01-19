@@ -1,5 +1,6 @@
 # TODO
 - UI for deleting replays, choosing to overwrite replay, etc...
+- Set obstacle player interaction count manually to make more accurate
 - Time manipulation
 - UI for the above sad
 - Speed manipulation

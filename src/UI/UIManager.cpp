@@ -58,8 +58,8 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
     auto playButton = standardLevelDetailView->actionButton;
     auto templateButton = standardLevelDetailView->practiceButton;
 
-    auto parent = templateButton->get_transform()->GetParent();
-    auto canvasTransform = (RectTransform*) parent->Find(canvasName);
+    buttonParent = templateButton->get_transform()->GetParent();
+    auto canvasTransform = (RectTransform*) buttonParent->Find(canvasName);
     
     Transform* replayButtonTransform = nullptr;
     Transform* failedTextTransform = nullptr;
@@ -73,7 +73,7 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
     } else {
         canvasTransform = (RectTransform*) BeatSaberUI::CreateCanvas()->get_transform();
         canvasTransform->set_name(canvasName);
-        canvasTransform->SetParent(parent, false);
+        canvasTransform->SetParent(buttonParent, false);
         canvasTransform->set_localScale({1, 1, 1});
         canvasTransform->set_sizeDelta({10, 10});
         canvasTransform->set_anchoredPosition({0, -5});
@@ -118,11 +118,7 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
         replayButtonTransform->SetAsLastSibling();
     }
 
-    replayCanvas = canvasTransform->get_gameObject();
-
-    canvasTransform->get_gameObject()->SetActive(replayFileExists);
-    float xpos = replayFileExists ? 4.2 : -1.8;
-    ((RectTransform*) parent)->set_anchoredPosition({xpos, -55});
+    SetReplayButtonCanvasActive(replayFileExists);    
 
     if(FileUtils::lastSelectedMetadata.HasMember("FailedInfo") && replayFileExists) {
         float failedSongTime = FileUtils::lastSelectedMetadata["FailedInfo"]["FailedTime"].GetFloat();

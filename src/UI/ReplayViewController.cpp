@@ -19,6 +19,9 @@
 #include "Utils/UnityUtils.hpp"
 #include "Utils/FindComponentsUtils.hpp"
 
+#include <chrono>
+#include <filesystem>
+
 using namespace Replay;
 using namespace Replay::UI;
 using namespace QuestUI;
@@ -44,6 +47,8 @@ GlobalNamespace::SimpleDialogPromptViewController* getDeleteDialogPromptViewCont
 void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 	if(firstActivation) {
         // POC mainly, move to cleaner and separate methods later
+
+       get_gameObject()->GetComponent<VRGraphicRaycaster*>()->physicsRaycaster = BeatSaberUI::GetPhysicsRaycasterWithCache();
 
         ArrayW<GlobalNamespace::LevelBar*> levelBars = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LevelBar*>();
         levelBar = UnityEngine::GameObject::Instantiate(levelBars.get(3)->get_gameObject());
@@ -147,21 +152,18 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
 
                 getDeleteDialogPromptViewController()->Init(titleName, il2cpp_utils::newcsstr(text), deleteName, cancelName, il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), 
                     (std::function<void(int)>) [] (int selectedButton) {
-                        getDeleteDialogPromptViewController()->__DismissViewController(nullptr, ViewController::AnimationDirection::Horizontal, false);
-                        FindComponentsUtils::GetScreenSystem()->titleViewController->get_gameObject()->SetActive(true);
-                        if (selectedButton == 0) {
+                        UIManager::singlePlayerFlowCoordinator->DismissViewController(getDeleteDialogPromptViewController(), ViewController::AnimationDirection::Horizontal, nullptr, selectedButton == 0);
+                        
+                        if(selectedButton == 0) {
                             std::remove(ReplayUtils::GetReplayFilePath().c_str());
 
                             UIManager::singlePlayerFlowCoordinator->BackButtonWasPressed(UIManager::replayViewController);
 
-                            UIManager::replayCanvas->SetActive(false);
-
-                            ((UnityEngine::RectTransform*) UIManager::replayCanvas->get_transform()->get_parent())->set_anchoredPosition({-1.8f, -55});
+                            UIManager::SetReplayButtonCanvasActive(false);
                         }
                     }
                 ));
-                FindComponentsUtils::GetScreenSystem()->titleViewController->get_gameObject()->SetActive(false);
-                FindComponentsUtils::GetLevelSelectionNavigationController()->__PresentViewController(getDeleteDialogPromptViewController(), nullptr, ViewController::AnimationDirection::Horizontal, false);
+                UIManager::singlePlayerFlowCoordinator->PresentViewController(getDeleteDialogPromptViewController(), nullptr, ViewController::AnimationDirection::Horizontal, false);
             }
         )->get_gameObject()->GetComponent<UnityEngine::RectTransform*>()->set_sizeDelta(size);
 
@@ -180,6 +182,11 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
         GlobalNamespace::LevelBar* levelBarComponent = levelBar->GetComponent<GlobalNamespace::LevelBar*>();
         levelBarComponent->showDifficultyAndCharacteristic = true;
         levelBarComponent->Setup(reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(SongUtils::beatmapLevel), SongUtils::beatmapCharacteristic, SongUtils::beatmapDifficulty);
+
+        std::time_t time = static_cast<time_t>(FileUtils::lastSelectedMetadata["Info"]["TimeSet"].GetInt64());
+        std::string timeString = std::string(std::asctime(std::localtime(&time)));
+
+        dateText->set_text(newcsstr("Date Set\n" + timeString));
 
         if(FileUtils::lastSelectedMetadata.HasMember("ClearedInfo")) {
             int maxScore = GlobalNamespace::ScoreModel::MaxRawScoreForNumberOfNotes(SongUtils::noteCount);

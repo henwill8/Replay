@@ -1,5 +1,8 @@
 #include "Recording/ReplayRecorder.hpp"
 
+#include <chrono>
+#include <ctime>
+
 using namespace rapidjson;
 
 void Replay::ReplayRecorder::Init() {
@@ -48,7 +51,10 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
         metadata.AddMember("Modifiers", modifiers, allocator);
     }
 
+    int64_t timeSet = static_cast<int64_t>(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+
     Value info(kObjectType);
+    info.AddMember("TimeSet", timeSet, allocator);
     info.AddMember("AverageCutScore", noteEventRecorder.GetAverageCutScore(), allocator);
     info.AddMember("GoodCuts", results->goodCutsCount, allocator);
     info.AddMember("MissedNotes", results->badCutsCount + results->missedCount, allocator);
