@@ -107,6 +107,7 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
         ((RectTransform*) replayButtonTransform)->set_anchoredPosition({5, -5});
 
         replayButtonTransform->GetComponent<Button*>()->set_onClick(createReplayOnClick());
+        replayButtonTransform->GetComponent<Button*>()->set_interactable(true);
 
         playButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
 

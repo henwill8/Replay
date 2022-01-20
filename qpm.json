@@ -34,11 +34,6 @@
       "id": "custom-types",
       "versionRange": "*",
       "additionalData": {}
-    },
-    {
-      "id": "modloader",
-      "versionRange": "*",
-      "additionalData": {}
     }
   ],
   "additionalData": {}

@@ -46,6 +46,7 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
     if(!modifierStrings.empty()) {
         Value modifiers(kArrayType);
         for(std::string modifierName : modifierStrings) {
+            if(modifierName == "NoFail" && !SongUtils::didFail) continue;
             modifiers.PushBack(rapidjson::Value{}.SetString(modifierName.c_str(), modifierName.length(), allocator), allocator);
         }
         metadata.AddMember("Modifiers", modifiers, allocator);

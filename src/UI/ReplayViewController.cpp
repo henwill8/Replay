@@ -173,7 +173,7 @@ void Replay::UI::ReplayViewController::SetText() {
         int modifiedScore = FileUtils::lastSelectedMetadata["ClearedInfo"]["ModifiedScore"].GetInt();
         float percentage = ((float) modifiedScore / (float) maxScore) * 100;
 
-        scoreOrFailedText->set_text(newcsstr(UIUtils::GetLayeredText("Score", "<color=" + GREEN + ">" + std::to_string(modifiedScore) + "</color> <size=80%>(<color=" + TEAL + ">" + TypeUtils::FloatToString(percentage) + "%</color>)</size>")));
+        scoreOrFailedText->set_text(newcsstr(UIUtils::GetLayeredText("Score", std::to_string(modifiedScore) + " <size=80%>(<color=" + TEAL + ">" + TypeUtils::FloatToString(percentage) + "%</color>)</size>")));
     } else {
         float failedSongTime = FileUtils::lastSelectedMetadata["FailedInfo"]["FailedTime"].GetFloat();
         float songLength = reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(SongUtils::beatmapLevel)->get_songDuration();
