@@ -9,6 +9,7 @@
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/ISaberSwingRatingCounter.hpp"
 #include "UnityEngine/Transform.hpp"
+#include "UnityEngine/Quaternion.hpp"
 #include <fstream>
 
 // avoid using namespace in headers, but do as you wish
@@ -66,6 +67,12 @@ namespace Replay {
                 head = {headTransform->get_position(), headTransform->get_eulerAngles()};
                 leftSaber = {leftTransform->get_position(), leftTransform->get_eulerAngles()};
                 rightSaber = {rightTransform->get_position(), rightTransform->get_eulerAngles()};
+            }
+
+            constexpr PlayerTransforms(UnityEngine::Vector3 headPos, UnityEngine::Quaternion headRot, UnityEngine::Vector3 leftPos, UnityEngine::Quaternion leftRot, UnityEngine::Vector3 rightPos, UnityEngine::Quaternion rightRot) {
+                head = {headPos, headRot.get_eulerAngles()};
+                leftSaber = {leftPos, leftRot.get_eulerAngles()};
+                rightSaber = {rightPos, rightRot.get_eulerAngles()};
             }
         };
 

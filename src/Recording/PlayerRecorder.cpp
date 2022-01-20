@@ -20,10 +20,10 @@ void Replay::PlayerRecorder::AddSaberEvent(GlobalNamespace::SaberType saberType)
 
 void Replay::PlayerRecorder::AddSaberMovement(GlobalNamespace::BladeMovementDataElement bladeMovement, GlobalNamespace::SaberType saberType) {
     //Not in the mood rn to not hard code this, forgive me
-    float angleNeeded = 90;//These values can be optimized more
-    float minDistance = 0.1f;
+    float angleNeeded = 30;//These values can be optimized more
+    float minDistance = 0.05f;
     float maxDistance = 1;
-    float maxTime = 1.0f / 15.0f;
+    float maxTime = 1.0f / 10.0f;
 
     float songTime = SongUtils::GetSongTime();
 

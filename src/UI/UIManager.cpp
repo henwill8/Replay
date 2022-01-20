@@ -17,6 +17,7 @@
 #include "questui/shared/ArrayUtil.hpp"
 
 #include "Utils/FileUtils.hpp"
+#include "Utils/TimeUtils.hpp"
 #include "Sprites.hpp"
 
 using namespace Replay::UI;
@@ -122,19 +123,9 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
 
     if(FileUtils::lastSelectedMetadata.HasMember("FailedInfo") && replayFileExists) {
         float failedSongTime = FileUtils::lastSelectedMetadata["FailedInfo"]["FailedTime"].GetFloat();
-        int minutes = (int)(failedSongTime / 60.0f);
-        int seconds = (int)(failedSongTime - (float(minutes) * 60.0f));
-
-        std::string minutesString = std::to_string(minutes);
-        std::string secondsString = std::to_string(seconds);
-        if(seconds < 10) {
-            secondsString = "0"+std::to_string(seconds);
-        }
-        
-        std::string failedTimeString = minutesString+":"+secondsString;
 
         failedTimeText->get_gameObject()->SetActive(true);
-        failedTimeText->set_text(newcsstr(failedTimeString));
+        failedTimeText->set_text(newcsstr(TimeUtils::SecondsToString(failedSongTime)));
     } else {
         failedTimeText->get_gameObject()->SetActive(false);
     }

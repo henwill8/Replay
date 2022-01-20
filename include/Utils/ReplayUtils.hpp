@@ -146,5 +146,41 @@ namespace Replay {
 
             return modifiers;
         }
+
+        static std::string GetInitialsFromModifierName(std::string modifierName) {
+            if(modifierName == "BatteryEnergy") {
+                return "BE";
+            } else if(modifierName == "InstaFail") {
+                return "IF";
+            } else if(modifierName == "NoFail") {
+                return "<color=" + RED + ">NF</color>";
+            } else if(modifierName == "NoWalls") {
+                return "<color=" + RED + ">NW</color>";
+            } else if(modifierName == "NoBombs") {
+                return "<color=" + RED + ">NB</color>";
+            } else if(modifierName == "StrictAngles") {
+                return "SA";
+            } else if(modifierName == "DisappearingArrows") {
+                return "<color=" + GREEN + ">DA</color>";
+            } else if(modifierName == "SlowerSong") {
+                return "<color=" + RED + ">SS</color>";
+            } else if(modifierName == "FasterSong") {
+                return "<color=" + GREEN + ">FS</color>";
+            } else if(modifierName == "SuperFastSong") {
+                return "<color=" + GREEN + ">SFS</color>";
+            } else if(modifierName == "NoArrows") {
+                return "<color=" + RED + ">NA</color>";
+            } else if(modifierName == "GhostNotes") {
+                return "<color=" + GREEN + ">GN</color>";
+            } else if(modifierName == "ProMode") {
+                return "PM";
+            } else if(modifierName == "ZenMode") {
+                return "<color=" + RED + ">ZM</color>";
+            } else if(modifierName == "SmallCubes") {
+                return "SC";
+            }
+            
+            return "No matching modifier";
+        }
     };
 }

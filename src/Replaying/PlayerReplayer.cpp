@@ -35,7 +35,6 @@ void Replay::PlayerReplayer::SetPlayerTransforms(GlobalNamespace::PlayerTransfor
     EulerTransformEvent nextEvent = leftSaberEvents[std::min(leftSaberIndex + 1, (int)leftSaberEvents.size() - 1)];
     
     float lerpAmount = std::max(0.0f, std::min(1.0f, Replay::ReplayUtils::LerpAmountBetweenEvents(event, nextEvent)));
-    // lerpAmount = 0;
 
     UnityEngine::Transform* leftSaber = playerTransforms->leftHandTransform;
     leftSaber->set_rotation(Replay::MathUtils::LerpEulerAngles(event.transform.rotation, nextEvent.transform.rotation, lerpAmount));

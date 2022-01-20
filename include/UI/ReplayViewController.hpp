@@ -3,6 +3,8 @@
 
 #include "GlobalNamespace/LevelBar.hpp"
 #include "UnityEngine/GameObject.hpp"
+#include "UnityEngine/Transform.hpp"
+#include "UnityEngine/RectTransform.hpp"
 #include "TMPro/TextMeshProUGUI.hpp"
 
 #include "custom-types/shared/macros.hpp"
@@ -18,6 +20,13 @@ DECLARE_CLASS_CODEGEN(Replay::UI, ReplayViewController, HMUI::ViewController,
     
     public:
         void Init();
+
+        void CreateLevelBar(UnityEngine::Transform* parent);
+        void CreateText(UnityEngine::RectTransform* parent);
+        void CreateButtons(UnityEngine::RectTransform* parent);
+
+        void SetupLevelBar();
+        void SetText();
         
         UnityEngine::GameObject* levelBar;
 

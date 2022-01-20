@@ -16,6 +16,11 @@ using byte = unsigned char;
 #define fileVersion 0b00000000
 #define replayFileExtension ".questplay"
 
+// My excuse for it being defined here is for universal colors across the mod, definitely belongs in this file yep
+#define RED std::string("#cc1818")
+#define GREEN std::string("#2adb44")
+#define TEAL std::string("#1dbcd1")
+
 #define USE_CODEGEN_FIELDS
 
 static ModInfo modInfo;

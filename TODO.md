@@ -1,11 +1,11 @@
 # TODO
-- UI for deleting replays, choosing to overwrite replay, etc...
+- After watching a replay and then playing a map modifiers are still what they were in the replay
+- Replay menu in level succeed and failed screens, can choose to overwrite current replay or watch the last play (saved in temp file)
 - Set obstacle player interaction count manually to make more accurate
 - Time manipulation
 - UI for the above sad
 - Speed manipulation
 - more ui
-- Temp save most recent play for replaying failed replays
 - Add config file with utils
 - Check replay edge cases and ensure correct total score
 - Add camera manipulation
@@ -18,22 +18,15 @@
 - Upload mp4 from quest to youtube????
 
 # UI Page Ideas
-### Overview Info At Top
-- date set
-- score and percentage / failed time
-- modifiers
-
-### In Depth Lower
-- average cut score and percentage of 115
-- bad cuts/missed notes
-- max combo
+## Center View Controller
 - openable graph of percentage and energy throughout play
 
-- "Watch Replay" button
-- Camera drop down menu? 
-- Delete replay button
+- Camera drop down menu?
 
-## Hollywood UI on Second Page
+## Right View Controller (Camera Manipulation)
+- drop down menu, each camera type has different ui
+
+## Left View Controller (Hollywood)
 - fps
 - resolution
 - fov
