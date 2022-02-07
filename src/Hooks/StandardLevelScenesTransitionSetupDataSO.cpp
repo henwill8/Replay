@@ -2,8 +2,9 @@
 
 #include "GlobalNamespace/StandardLevelScenesTransitionSetupDataSO.hpp"
 #include "Utils/SongUtils.hpp"
-#include "Utils/ReplayUtils.hpp"
+#include "Utils/ModifiersUtils.hpp"
 #include "Utils/FileUtils.hpp"
+#include "UI/UIManager.hpp"
 #include "ReplayManager.hpp"
 
 #include "rapidjson/document.h"
@@ -14,19 +15,21 @@
 using namespace GlobalNamespace;
 using namespace Replay;
 
-MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, Il2CppString* gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, Il2CppString* backButtonText, bool useTestNoteCutSoundEffects) {
+MAKE_HOOK_MATCH(StandardLevelScenesTransitionSetupDataSO_Init, &StandardLevelScenesTransitionSetupDataSO::Init, void, StandardLevelScenesTransitionSetupDataSO* self, ::StringW gameMode, GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, GlobalNamespace::IPreviewBeatmapLevel* previewBeatmapLevel, GlobalNamespace::OverrideEnvironmentSettings* overrideEnvironmentSettings, GlobalNamespace::ColorScheme* overrideColorScheme, GlobalNamespace::GameplayModifiers* gameplayModifiers, GlobalNamespace::PlayerSpecificSettings* playerSpecificSettings, GlobalNamespace::PracticeSettings* practiceSettings, ::StringW backButtonText, bool useTestNoteCutSoundEffects) {
     if(ReplayManager::replayState == ReplayState::REPLAYING) {
+        rapidjson::Document metadata = FileUtils::GetMetadataFromReplayFile(Replay::UI::UIManager::replayViewController->path);
+
         std::vector<std::string> modifierStrings;
-        for(const auto& value : FileUtils::lastSelectedMetadata["Modifiers"].GetArray()) {
+        for(const auto& value : metadata["Modifiers"].GetArray()) {
             modifierStrings.push_back(value.GetString());
         }
 
-        gameplayModifiers = ReplayUtils::CreateModifiersFromStrings(modifierStrings);
+        gameplayModifiers = ModifiersUtils::CreateModifiersFromStrings(modifierStrings);
 
         PlayerSpecificSettings* settings = PlayerSpecificSettings::New_ctor(
-            FileUtils::lastSelectedMetadata["PlayerSettings"]["LeftHanded"].GetBool(),
-            FileUtils::lastSelectedMetadata["PlayerSettings"]["Height"].GetFloat(),
-            FileUtils::lastSelectedMetadata["PlayerSettings"]["AutoHeight"].GetBool(),
+            metadata["PlayerSettings"]["LeftHanded"].GetBool(),
+            metadata["PlayerSettings"]["Height"].GetFloat(),
+            metadata["PlayerSettings"]["AutoHeight"].GetBool(),
             playerSpecificSettings->sfxVolume,
             playerSpecificSettings->reduceDebris,
             playerSpecificSettings->noTextsAndHuds,

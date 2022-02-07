@@ -1,5 +1,4 @@
 # TODO
-- Make replay view controller completely self contained after init with file path, remove global vars
 - After watching a replay and then playing a map modifiers are still what they were in the replay
 - Replay menu in level succeed and failed screens, can choose to overwrite current replay or watch the last play (saved in temp file)
 - Get note controller from https://discord.com/channels/441805394323439646/864240224400572467/939952451560288336

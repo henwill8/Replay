@@ -1,5 +1,7 @@
 #include "Recording/ReplayRecorder.hpp"
 
+#include "Utils/ModifiersUtils.hpp"
+
 #include <chrono>
 #include <ctime>
 
@@ -42,7 +44,7 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
     playerSettings.AddMember("Height", settings->playerHeight, allocator);
     metadata.AddMember("PlayerSettings", playerSettings, allocator);
 
-    std::vector<std::string> modifierStrings = ReplayUtils::ModifiersToStrings(results->gameplayModifiers);
+    std::vector<std::string> modifierStrings = ModifiersUtils::ModifiersToStrings(results->gameplayModifiers);
     if(!modifierStrings.empty()) {
         Value modifiers(kArrayType);
         for(std::string modifierName : modifierStrings) {
@@ -70,17 +72,19 @@ void Replay::ReplayRecorder::CreateMetadata(GlobalNamespace::LevelCompletionResu
 }
 
 void Replay::ReplayRecorder::StopRecording(GlobalNamespace::LevelCompletionResults* results) {
-    std::string filepath = ReplayUtils::GetReplayFilePath();
-    if(ShouldWriteFile(results, filepath)) {
-        log("Making replay file");
-        CreateMetadata(results);
-        WriteReplayFile(filepath);
+    CreateMetadata(results);
+    WriteReplayFile(ReplayUtils::GetTempReplayFilePath());
+
+    std::string filepath = ReplayUtils::GetReplayFilePath(SongUtils::GetMapID());
+    if(ShouldMoveFile(results, filepath)) {
+        log("Moving replay file to permanent location");
+        std::filesystem::rename(ReplayUtils::GetTempReplayFilePath(), ReplayUtils::GetReplayFilePath(SongUtils::GetMapID()));
     } else {
-        log("Not making replay file, current file has higher priority");
+        log("Not permanently saving replay file, current file has higher priority");
     }
 }
 
-bool Replay::ReplayRecorder::ShouldWriteFile(GlobalNamespace::LevelCompletionResults* results, std::string_view filepath) {
+bool Replay::ReplayRecorder::ShouldMoveFile(GlobalNamespace::LevelCompletionResults* results, std::string_view filepath) {
     if(!fileexists(filepath)) return true;
 
     Document metadata = FileUtils::GetMetadataFromReplayFile(filepath);

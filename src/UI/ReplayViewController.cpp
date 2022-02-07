@@ -15,6 +15,7 @@
 #include "UI/UIManager.hpp"
 #include "ReplayManager.hpp"
 #include "Utils/ReplayUtils.hpp"
+#include "Utils/ModifiersUtils.hpp"
 #include "Utils/TypeUtils.hpp"
 #include "Utils/UnityUtils.hpp"
 #include "Utils/FindComponentsUtils.hpp"
@@ -28,6 +29,10 @@ using namespace QuestUI::BeatSaberUI;
 using namespace VRUIControls;
 
 DEFINE_TYPE(Replay::UI, ReplayViewController);
+
+void Replay::UI::ReplayViewController::Init(std::string_view filePath) {
+    path = filePath;
+}
 
 void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
 	if(firstActivation) {
@@ -49,12 +54,11 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
 }
 
 void Replay::UI::ReplayViewController::CreateLevelBar(UnityEngine::Transform* parent) {
-    ArrayW<GlobalNamespace::LevelBar*> levelBars = UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LevelBar*>();
-    levelBar = UnityEngine::GameObject::Instantiate(levelBars.get(3)->get_gameObject());
+    levelBar = ArrayUtil::First(UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::LevelBar*>(), [] (GlobalNamespace::LevelBar* x) { return to_utf8(csstrtostr(x->get_transform()->GetParent()->get_name())) == "PracticeViewController"; })->get_gameObject();
 
     levelBar->set_name(newcsstr("ReplayLevelBarSimple"));
     levelBar->get_transform()->SetParent(parent, false);
-    levelBar->GetComponent<UnityEngine::RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(0, -5));
+    levelBar->GetComponent<UnityEngine::RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(0, -3.0f));
 }
 
 #define CreateCenteredText(text, parent, fontSize, lineSpacing) text = QuestUI::BeatSaberUI::CreateText(parent, ""); \
@@ -67,10 +71,10 @@ void Replay::UI::ReplayViewController::CreateText(UnityEngine::RectTransform* pa
     horizontalLayout->set_spacing(0);
     horizontalLayout->set_childControlWidth(false);
     horizontalLayout->set_childForceExpandWidth(false);
-    horizontalLayout->GetComponent<UnityEngine::RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(34.0f, 0));
+    horizontalLayout->GetComponent<UnityEngine::RectTransform*>()->set_anchoredPosition(UnityEngine::Vector2(34.0f, 1));
 
     float childrenWidth = 43.5f;
-    float childrenSpacing = 2.0f;
+    float childrenSpacing = 2.5f;
 
     UnityEngine::UI::VerticalLayoutGroup* layout1 = CreateVerticalLayoutGroup(horizontalLayout->get_rectTransform());
     layout1->set_spacing(childrenSpacing);
@@ -132,7 +136,7 @@ void Replay::UI::ReplayViewController::CreateButtons(UnityEngine::RectTransform*
                     UIManager::singlePlayerFlowCoordinator->DismissViewController(getDeleteDialogPromptViewController(), ViewController::AnimationDirection::Horizontal, nullptr, selectedButton == 0);
                     
                     if(selectedButton == 0) {
-                        std::remove(ReplayUtils::GetReplayFilePath().c_str());
+                        std::remove(UIManager::replayViewController->path.c_str());
 
                         UIManager::singlePlayerFlowCoordinator->BackButtonWasPressed(UIManager::replayViewController);
 
@@ -151,6 +155,8 @@ void Replay::UI::ReplayViewController::CreateButtons(UnityEngine::RectTransform*
         [this]() { 
             log("Replay button pressed");
             ReplayManager::replayState = ReplayState::REPLAYING;
+            ReplayManager::replayer = Replayer();
+            ReplayManager::replayer.Init(path);
             UIManager::singlePlayerFlowCoordinator->StartLevelOrShow360Prompt(nullptr, false);
         }
     )->GetComponent<UnityEngine::RectTransform*>()->set_sizeDelta(size);
@@ -163,19 +169,21 @@ void Replay::UI::ReplayViewController::SetupLevelBar() {
 }
 
 void Replay::UI::ReplayViewController::SetText() {
-    auto replayTime = static_cast<time_t>(FileUtils::lastSelectedMetadata["Info"]["TimeSet"].GetInt64());
+    rapidjson::Document metadata = FileUtils::GetMetadataFromReplayFile(path);
+
+    auto replayTime = static_cast<time_t>(metadata["Info"]["TimeSet"].GetInt64());
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
     dateText->set_text(newcsstr(UIUtils::GetLayeredText("Date Set", TimeUtils::GetStringForTimeSince(replayTime, now))));
 
-    if(FileUtils::lastSelectedMetadata.HasMember("ClearedInfo")) {
+    if(metadata.HasMember("ClearedInfo")) {
         int maxScore = GlobalNamespace::ScoreModel::MaxRawScoreForNumberOfNotes(SongUtils::noteCount);
-        int modifiedScore = FileUtils::lastSelectedMetadata["ClearedInfo"]["ModifiedScore"].GetInt();
+        int modifiedScore = metadata["ClearedInfo"]["ModifiedScore"].GetInt();
         float percentage = ((float) modifiedScore / (float) maxScore) * 100;
 
         scoreOrFailedText->set_text(newcsstr(UIUtils::GetLayeredText("Score", std::to_string(modifiedScore) + " <size=80%>(<color=" + TEAL + ">" + TypeUtils::FloatToString(percentage) + "%</color>)</size>")));
     } else {
-        float failedSongTime = FileUtils::lastSelectedMetadata["FailedInfo"]["FailedTime"].GetFloat();
+        float failedSongTime = metadata["FailedInfo"]["FailedTime"].GetFloat();
         float songLength = reinterpret_cast<GlobalNamespace::IPreviewBeatmapLevel*>(SongUtils::beatmapLevel)->get_songDuration();
 
         scoreOrFailedText->set_text(newcsstr(UIUtils::GetLayeredText("Failed", "<color=" + RED + ">" + TimeUtils::SecondsToString(failedSongTime) + "</color> / " + TimeUtils::SecondsToString(songLength))));
@@ -183,8 +191,8 @@ void Replay::UI::ReplayViewController::SetText() {
 
     std::string modifiersString = "";
 
-    for(const auto& value : FileUtils::lastSelectedMetadata["Modifiers"].GetArray()) {
-        modifiersString = modifiersString + ReplayUtils::GetInitialsFromModifierName(value.GetString()) + " ";
+    for(const auto& value : metadata["Modifiers"].GetArray()) {
+        modifiersString = modifiersString + ModifiersUtils::GetInitialsFromModifierName(value.GetString()) + " ";
     }
 
     if(modifiersString.empty()) {
@@ -195,12 +203,12 @@ void Replay::UI::ReplayViewController::SetText() {
 
     modifiersText->set_text(newcsstr(UIUtils::GetLayeredText("Modifiers", modifiersString)));
 
-    float averageCutScore = FileUtils::lastSelectedMetadata["Info"]["AverageCutScore"].GetFloat();
+    float averageCutScore = metadata["Info"]["AverageCutScore"].GetFloat();
     float cutPercentage = (averageCutScore / 115.0f) * 100;
     
     averageCutScoreText->set_text(newcsstr(UIUtils::GetLayeredText("Average Cut Score", TypeUtils::FloatToString(averageCutScore) + " <size=80%>(<color=" + TEAL + ">" + TypeUtils::FloatToString(cutPercentage) + "%</color>)</size>")));
     
-    missedNotesText->set_text(newcsstr(UIUtils::GetLayeredText("Missed Notes", "<color=" + RED + ">" + std::to_string(FileUtils::lastSelectedMetadata["Info"]["MissedNotes"].GetInt()) + "</color>")));
+    missedNotesText->set_text(newcsstr(UIUtils::GetLayeredText("Missed Notes", "<color=" + RED + ">" + std::to_string(metadata["Info"]["MissedNotes"].GetInt()) + "</color>")));
 
-    maxComboText->set_text(newcsstr(UIUtils::GetLayeredText("Max Combo", std::to_string(FileUtils::lastSelectedMetadata["Info"]["MaxCombo"].GetInt()))));
+    maxComboText->set_text(newcsstr(UIUtils::GetLayeredText("Max Combo", std::to_string(metadata["Info"]["MaxCombo"].GetInt()))));
 }

@@ -22,10 +22,9 @@ MAKE_HOOK_MATCH(StandardLevelDetailView_RefreshContent, &StandardLevelDetailView
 
     SongUtils::noteCount = self->selectedDifficultyBeatmap->get_beatmapData()->get_cuttableNotesCount();
 
-    bool replayFileExists = fileexists(ReplayUtils::GetReplayFilePath());
-    if(replayFileExists) FileUtils::lastSelectedMetadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath());
+    bool replayFileExists = fileexists(ReplayUtils::GetReplayFilePath(SongUtils::GetMapID()));
 
-    Replay::UI::UIManager::CreateReplayButton(self, replayFileExists);
+    Replay::UI::UIManager::CreateReplayCanvas(self, replayFileExists);
 }
 
 void StandardLevelDetailViewHook(Logger& logger) {

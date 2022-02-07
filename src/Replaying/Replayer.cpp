@@ -5,14 +5,14 @@
 
 using namespace rapidjson;
 
-void Replay::Replayer::Init() {
+void Replay::Replayer::Init(std::string_view path) {
     log("Setting up Replayer");
     playerReplayer = Replay::PlayerReplayer();
     noteEventReplayer = Replay::NoteEventReplayer();
     noteEventReplayer.Init();
     obstacleEventReplayer = Replay::ObstacleEventReplayer();
     
-    ReadReplayFile(Replay::ReplayUtils::GetReplayFilePath());
+    ReadReplayFile(path);
 }
 
 void Replay::Replayer::ReadReplayFile(std::string_view path) {

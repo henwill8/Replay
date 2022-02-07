@@ -20,6 +20,11 @@
 #include "Utils/TimeUtils.hpp"
 #include "Sprites.hpp"
 
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include <rapidjson/writer.h>
+#include <string.h>
+
 using namespace Replay::UI;
 using namespace GlobalNamespace;
 using namespace UnityEngine;
@@ -29,17 +34,20 @@ using namespace il2cpp_utils;
 using namespace QuestUI;
 using namespace HMUI;
 
-std::function<void()> getReplayFunction() {
-    static std::function<void()> replayFunction = (std::function<void()>) [] () {
+std::function<void()> getReplayFunction(std::string path) {
+    log("ALJDL:KJFS:LJF:LJ %s", path.c_str());
+    static std::function<void()> replayFunction = (std::function<void()>) [path] () {
+        log("ADLSDFL %s", path.c_str());// somehow not equal to ealier log
         if(UIManager::replayViewController == nullptr) UIManager::replayViewController = BeatSaberUI::CreateViewController<ReplayViewController*>();
+        UIManager::replayViewController->Init(path);
         UIManager::singlePlayerFlowCoordinator->PresentViewController(UIManager::replayViewController, nullptr, ViewController::AnimationDirection::Horizontal, false);
     };
     return replayFunction;
 }
 
-Button::ButtonClickedEvent* createReplayOnClick() {
+Button::ButtonClickedEvent* createReplayOnClick(std::string path) {
     auto onClick = Button::ButtonClickedEvent::New_ctor();
-    onClick->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getReplayFunction()));
+    onClick->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getReplayFunction(path)));
     return onClick;
 }
 
@@ -47,11 +55,51 @@ std::function<void()> getPlayButtonFunction() {
     static std::function<void()> playButtonFunction = (std::function<void()>) [] () {
         log("Play button pressed");
         ReplayManager::replayState = ReplayState::RECORDING;
+        
+        SongUtils::didFail = false;
+
+        ReplayManager::recorder = ReplayRecorder();
+        ReplayManager::recorder.Init();
     };
     return playButtonFunction;
 }
 
-void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailView, bool replayFileExists) {
+UnityEngine::Transform* UIManager::CreateReplayButton(UnityEngine::Transform* parent, UnityEngine::UI::Button* templateButton, UnityEngine::UI::Button* actionButton, std::string path) {
+    static auto replayButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButton");
+
+    UnityEngine::Transform* buttonTransform = Object::Instantiate(templateButton->get_gameObject(), parent)->get_transform();
+    buttonTransform->set_name(replayButtonName);
+
+    static auto contentName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Content");
+    static auto textName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Text");
+    auto contentTransform = buttonTransform->Find(contentName);
+    Object::Destroy(contentTransform->Find(textName)->get_gameObject());
+    Object::Destroy(contentTransform->GetComponent<LayoutElement*>());
+
+    static auto iconName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Icon");
+    auto iconGameObject = GameObject::New_ctor(iconName);
+    auto imageView = iconGameObject->AddComponent<ImageView*>();
+    auto iconTransform = imageView->get_rectTransform();
+    iconTransform->SetParent(contentTransform, false);
+    imageView->set_material(ArrayUtil::First(Resources::FindObjectsOfTypeAll<Material*>(), [] (Material* x) { return to_utf8(csstrtostr(x->get_name())) == "UINoGlow"; }));
+    imageView->set_sprite(BeatSaberUI::Base64ToSprite(Replay::Sprites::ReplayIcon));
+    imageView->set_preserveAspect(true);
+
+    float scale = 1.3f;
+    iconTransform->set_localScale(UnityEngine::Vector3(scale, scale, scale));
+
+    ((RectTransform*) buttonTransform)->set_sizeDelta({10, 10});
+    ((RectTransform*) buttonTransform)->set_anchoredPosition({5, -5});
+
+    buttonTransform->GetComponent<Button*>()->set_onClick(createReplayOnClick(path));
+    buttonTransform->GetComponent<Button*>()->set_interactable(true);
+
+    actionButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
+
+    return buttonTransform;
+}
+
+void UIManager::CreateReplayCanvas(StandardLevelDetailView* standardLevelDetailView, bool replayFileExists) {
     static auto canvasName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButtonCanvas");
     static auto replayButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButton");
     static auto failedTextName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("FailedText");
@@ -82,34 +130,7 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
         canvasLayout->set_preferredWidth(10);
         canvasTransform->SetAsLastSibling();
 
-        replayButtonTransform = Object::Instantiate(templateButton->get_gameObject(), canvasTransform)->get_transform();
-        replayButtonTransform->set_name(replayButtonName);
-
-        static auto contentName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Content");
-        static auto textName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Text");
-        auto contentTransform = replayButtonTransform->Find(contentName);
-        Object::Destroy(contentTransform->Find(textName)->get_gameObject());
-        Object::Destroy(contentTransform->GetComponent<LayoutElement*>());
-
-        static auto iconName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Icon");
-        auto iconGameObject = GameObject::New_ctor(iconName);
-        auto imageView = iconGameObject->AddComponent<ImageView*>();
-        auto iconTransform = imageView->get_rectTransform();
-        iconTransform->SetParent(contentTransform, false);
-        imageView->set_material(ArrayUtil::First(Resources::FindObjectsOfTypeAll<Material*>(), [] (Material* x) { return to_utf8(csstrtostr(x->get_name())) == "UINoGlow"; }));
-        imageView->set_sprite(BeatSaberUI::Base64ToSprite(Replay::Sprites::ReplayIcon));
-        imageView->set_preserveAspect(true);
-
-        float scale = 1.3f;
-        iconTransform->set_localScale(UnityEngine::Vector3(scale, scale, scale));
-
-        ((RectTransform*) replayButtonTransform)->set_sizeDelta({10, 10});
-        ((RectTransform*) replayButtonTransform)->set_anchoredPosition({5, -5});
-
-        replayButtonTransform->GetComponent<Button*>()->set_onClick(createReplayOnClick());
-        replayButtonTransform->GetComponent<Button*>()->set_interactable(true);
-
-        playButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
+        replayButtonTransform = CreateReplayButton(canvasTransform, templateButton, playButton, ReplayUtils::GetReplayFilePath(SongUtils::GetMapID()));
 
         failedTimeText = QuestUI::BeatSaberUI::CreateText(canvasTransform, "", true, {-0.5f, -7});
         failedTimeText->set_alignment(TMPro::TextAlignmentOptions::Center);
@@ -122,8 +143,10 @@ void UIManager::CreateReplayButton(StandardLevelDetailView* standardLevelDetailV
 
     SetReplayButtonCanvasActive(replayFileExists);    
 
-    if(FileUtils::lastSelectedMetadata.HasMember("FailedInfo") && replayFileExists) {
-        float failedSongTime = FileUtils::lastSelectedMetadata["FailedInfo"]["FailedTime"].GetFloat();
+    rapidjson::Document metadata = FileUtils::GetMetadataFromReplayFile(ReplayUtils::GetReplayFilePath(SongUtils::GetMapID()));
+
+    if(metadata.HasMember("FailedInfo") && replayFileExists) {
+        float failedSongTime = metadata["FailedInfo"]["FailedTime"].GetFloat();
 
         failedTimeText->get_gameObject()->SetActive(true);
         failedTimeText->set_text(newcsstr(TimeUtils::SecondsToString(failedSongTime)));

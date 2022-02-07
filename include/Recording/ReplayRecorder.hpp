@@ -24,7 +24,7 @@ namespace Replay {
 
         void CreateMetadata(GlobalNamespace::LevelCompletionResults* results);
 
-        bool ShouldWriteFile(GlobalNamespace::LevelCompletionResults* results, std::string_view filepath);
+        bool ShouldMoveFile(GlobalNamespace::LevelCompletionResults* results, std::string_view filepath);
 
         void WriteReplayFile(std::string path);
     public:

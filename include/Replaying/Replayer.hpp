@@ -15,7 +15,7 @@ namespace Replay {
     private:
 
     public:
-        void Init();
+        void Init(std::string_view path);
 
         Replay::PlayerReplayer playerReplayer;
         Replay::NoteEventReplayer noteEventReplayer;

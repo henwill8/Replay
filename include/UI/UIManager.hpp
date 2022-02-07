@@ -17,7 +17,9 @@ namespace Replay::UI {
 
         static inline UnityEngine::Transform* buttonParent;
 
-        static void CreateReplayButton(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView, bool replayFileExists);
+        static UnityEngine::Transform* CreateReplayButton(UnityEngine::Transform* parent, UnityEngine::UI::Button* templateButton, UnityEngine::UI::Button* actionButton, std::string path);
+
+        static void CreateReplayCanvas(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView, bool replayFileExists);
 
         static void SetReplayButtonCanvasActive(bool active) {
             buttonParent->Find(newcsstr("ReplayButtonCanvas"))->get_gameObject()->SetActive(active);

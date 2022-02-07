@@ -13,16 +13,6 @@ MAKE_HOOK_FIND_INSTANCE(AudioTimeSyncController_ctor, classof(AudioTimeSyncContr
 
     SongUtils::audioTimeSyncController = self;
     SongUtils::inSong = true;
-
-    if(ReplayManager::replayState == ReplayState::RECORDING) {
-        SongUtils::didFail = false;
-
-        ReplayManager::recorder = ReplayRecorder();
-        ReplayManager::recorder.Init();
-    } else if(ReplayManager::replayState == ReplayState::REPLAYING) {
-        ReplayManager::replayer = Replayer();
-        ReplayManager::replayer.Init();
-    }
 }
 
 MAKE_HOOK_MATCH(SongUpdate, &AudioTimeSyncController::Update, void, AudioTimeSyncController* self) {

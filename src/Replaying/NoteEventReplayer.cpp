@@ -1,7 +1,7 @@
 #include "Replaying/NoteEventReplayer.hpp"
 
 void Replay::NoteEventReplayer::Init() {
-    GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(reinterpret_cast<System::Collections::IEnumerator*>(custom_types::Helpers::CoroutineHelper::New(Update())));
+    GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Update()));
 }
 
 void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController* noteController) {
@@ -99,7 +99,7 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
                     noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, saberSwingRatingCounter);
                 }
 
-                SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));
+                SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));// This has decided to no longer work pog
             } else {
                 activeMissEvents[eventToRun.eventIndex].note->SendNoteWasMissedEvent();
             }
