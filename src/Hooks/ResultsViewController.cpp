@@ -20,7 +20,14 @@ MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, 
 MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidActivate, void, ResultsViewController* self, bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
     ResultsViewController_DidActivate(self, firstActivation, addedToHierarchy, screenSystemEnabling);
 
-    Replay::UI::UIManager::CreateReplayButton(self->restartButton->get_transform()->GetParent(), self->restartButton, self->restartButton, ReplayUtils::GetTempReplayFilePath());
+    UnityEngine::Transform* parent = self->restartButton->get_transform()->GetParent();
+    UnityEngine::Transform* buttonTransform = parent->Find(newcsstr("ReplayButton"));//Replay button name is defined in two other places, make better
+    
+    if(buttonTransform) {
+        Replay::UI::UIManager::SetReplayButtonOnClick(buttonTransform, ReplayUtils::GetTempReplayFilePath(), true);
+    } else {
+        ((UnityEngine::RectTransform*) Replay::UI::UIManager::CreateReplayButton(parent, self->restartButton, self->restartButton, ReplayUtils::GetTempReplayFilePath(), true))->set_anchoredPosition({48, 0});
+    }
 }
 
 void ResultsViewControllerHook(Logger& logger) {

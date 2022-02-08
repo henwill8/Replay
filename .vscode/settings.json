@@ -118,7 +118,10 @@
         "*.tcc": "cpp",
         "memory_resource": "cpp",
         "ranges": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "resumable": "cpp",
+        "xthread": "cpp",
+        "xmemory0": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "cmake.configureOnOpen": true

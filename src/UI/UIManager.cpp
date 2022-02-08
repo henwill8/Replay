@@ -34,20 +34,18 @@ using namespace il2cpp_utils;
 using namespace QuestUI;
 using namespace HMUI;
 
-std::function<void()> getReplayFunction(std::string path) {
-    log("ALJDL:KJFS:LJF:LJ %s", path.c_str());
-    static std::function<void()> replayFunction = (std::function<void()>) [path] () {
-        log("ADLSDFL %s", path.c_str());// somehow not equal to ealier log
+std::function<void()> getReplayFunction(std::string path, bool overwrite) {
+    std::function<void()> replayFunction = (std::function<void()>) [path, overwrite] () {
         if(UIManager::replayViewController == nullptr) UIManager::replayViewController = BeatSaberUI::CreateViewController<ReplayViewController*>();
-        UIManager::replayViewController->Init(path);
+        UIManager::replayViewController->Init(path, overwrite);
         UIManager::singlePlayerFlowCoordinator->PresentViewController(UIManager::replayViewController, nullptr, ViewController::AnimationDirection::Horizontal, false);
     };
     return replayFunction;
 }
 
-Button::ButtonClickedEvent* createReplayOnClick(std::string path) {
+Button::ButtonClickedEvent* createReplayOnClick(std::string path, bool overwrite) {
     auto onClick = Button::ButtonClickedEvent::New_ctor();
-    onClick->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getReplayFunction(path)));
+    onClick->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getReplayFunction(path, overwrite)));
     return onClick;
 }
 
@@ -64,7 +62,11 @@ std::function<void()> getPlayButtonFunction() {
     return playButtonFunction;
 }
 
-UnityEngine::Transform* UIManager::CreateReplayButton(UnityEngine::Transform* parent, UnityEngine::UI::Button* templateButton, UnityEngine::UI::Button* actionButton, std::string path) {
+void UIManager::SetReplayButtonOnClick(UnityEngine::Transform* buttonTransform, std::string path, bool overwrite) {
+    buttonTransform->GetComponent<Button*>()->set_onClick(createReplayOnClick(path, overwrite));
+}
+
+UnityEngine::Transform* UIManager::CreateReplayButton(UnityEngine::Transform* parent, UnityEngine::UI::Button* templateButton, UnityEngine::UI::Button* actionButton, std::string path, bool overwrite) {
     static auto replayButtonName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("ReplayButton");
 
     UnityEngine::Transform* buttonTransform = Object::Instantiate(templateButton->get_gameObject(), parent)->get_transform();
@@ -91,7 +93,7 @@ UnityEngine::Transform* UIManager::CreateReplayButton(UnityEngine::Transform* pa
     ((RectTransform*) buttonTransform)->set_sizeDelta({10, 10});
     ((RectTransform*) buttonTransform)->set_anchoredPosition({5, -5});
 
-    buttonTransform->GetComponent<Button*>()->set_onClick(createReplayOnClick(path));
+    SetReplayButtonOnClick(buttonTransform, path, overwrite);
     buttonTransform->GetComponent<Button*>()->set_interactable(true);
 
     actionButton->get_onClick()->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), getPlayButtonFunction()));
@@ -117,6 +119,7 @@ void UIManager::CreateReplayCanvas(StandardLevelDetailView* standardLevelDetailV
 
     if(canvasTransform) {
         replayButtonTransform = canvasTransform->Find(replayButtonName);
+        SetReplayButtonOnClick(replayButtonTransform, ReplayUtils::GetReplayFilePath(SongUtils::GetMapID()));
         failedTextTransform = canvasTransform->Find(failedTextName);
         failedTimeText = failedTextTransform->get_gameObject()->GetComponent<TMPro::TextMeshProUGUI*>();
     } else {

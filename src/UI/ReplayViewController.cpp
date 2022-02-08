@@ -9,6 +9,7 @@
 #include "HMUI/ViewController_AnimationDirection.hpp"
 #include "VRUIControls/VRGraphicRaycaster.hpp"
 #include "System/Action_1.hpp"
+#include "UnityEngine/Events/UnityAction.hpp"
 
 #include "questui/shared/BeatSaberUI.hpp"
 
@@ -27,11 +28,13 @@ using namespace Replay::UI;
 using namespace QuestUI;
 using namespace QuestUI::BeatSaberUI;
 using namespace VRUIControls;
+using namespace UnityEngine::Events;
 
 DEFINE_TYPE(Replay::UI, ReplayViewController);
 
-void Replay::UI::ReplayViewController::Init(std::string_view filePath) {
+void Replay::UI::ReplayViewController::Init(std::string_view filePath, bool overwriteFile) {
     path = filePath;
+    overwrite = overwriteFile;
 }
 
 void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling) {
@@ -50,6 +53,8 @@ void Replay::UI::ReplayViewController::DidActivate(bool firstActivation, bool ad
         SetupLevelBar();
 
         SetText();
+
+        SetButton(overwrite);
     }
 }
 
@@ -121,32 +126,11 @@ void Replay::UI::ReplayViewController::CreateButtons(UnityEngine::RectTransform*
 
     UnityEngine::Vector2 size(40, 10);
 
-    CreateUIButton(
+    deleteButton = CreateUIButton(
         buttonLayout->get_transform(),
-        "Delete",
-        [this]() {
-            log("Pressed delete button");
-            static auto titleName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Delete Replay");
-            static auto deleteName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Delete");
-            static auto cancelName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Cancel");
-            auto text = u"Are you sure?";
-
-            getDeleteDialogPromptViewController()->Init(titleName, il2cpp_utils::newcsstr(text), deleteName, cancelName, il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), 
-                (std::function<void(int)>) [] (int selectedButton) {
-                    UIManager::singlePlayerFlowCoordinator->DismissViewController(getDeleteDialogPromptViewController(), ViewController::AnimationDirection::Horizontal, nullptr, selectedButton == 0);
-                    
-                    if(selectedButton == 0) {
-                        std::remove(UIManager::replayViewController->path.c_str());
-
-                        UIManager::singlePlayerFlowCoordinator->BackButtonWasPressed(UIManager::replayViewController);
-
-                        UIManager::SetReplayButtonCanvasActive(false);
-                    }
-                }
-            ));
-            UIManager::singlePlayerFlowCoordinator->PresentViewController(getDeleteDialogPromptViewController(), nullptr, ViewController::AnimationDirection::Horizontal, false);
-        }
-    )->get_gameObject()->GetComponent<UnityEngine::RectTransform*>()->set_sizeDelta(size);
+        ""
+    );
+    deleteButton->get_gameObject()->GetComponent<UnityEngine::RectTransform*>()->set_sizeDelta(size);
 
     CreateUIButton(
         buttonLayout->get_transform(),
@@ -211,4 +195,44 @@ void Replay::UI::ReplayViewController::SetText() {
     missedNotesText->set_text(newcsstr(UIUtils::GetLayeredText("Missed Notes", "<color=" + RED + ">" + std::to_string(metadata["Info"]["MissedNotes"].GetInt()) + "</color>")));
 
     maxComboText->set_text(newcsstr(UIUtils::GetLayeredText("Max Combo", std::to_string(metadata["Info"]["MaxCombo"].GetInt()))));
+}
+
+void Replay::UI::ReplayViewController::SetButton(bool overwriteFile) {
+    std::string actionName = overwriteFile ? "Overwrite" : "Delete";
+
+    static auto contentName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Content");
+    static auto textName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Text");
+    auto contentTransform = deleteButton->get_transform()->Find(contentName);
+    contentTransform->Find(textName)->GetComponent<TMPro::TextMeshProUGUI*>()->set_text(newcsstr(actionName));
+
+    std::function<void()> deleteFunction = (std::function<void()>) [actionName, overwriteFile] () {
+        auto titleName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>(actionName + " Replay");
+        auto deleteName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>(actionName);
+        auto cancelName = il2cpp_utils::newcsstr<il2cpp_utils::CreationType::Manual>("Cancel");
+        auto text = u"Are you sure?";
+
+        getDeleteDialogPromptViewController()->Init(titleName, il2cpp_utils::newcsstr(text), deleteName, cancelName, il2cpp_utils::MakeDelegate<System::Action_1<int>*>(classof(System::Action_1<int>*), 
+            (std::function<void(int)>) [overwriteFile] (int selectedButton) {
+                UIManager::singlePlayerFlowCoordinator->DismissViewController(getDeleteDialogPromptViewController(), ViewController::AnimationDirection::Horizontal, nullptr, selectedButton == 0);
+                
+                if(selectedButton == 0) {
+                    if(overwriteFile) {
+                        std::filesystem::rename(UIManager::replayViewController->path.c_str(), ReplayUtils::GetReplayFilePath(SongUtils::GetMapID()));
+                    } else {
+                        std::remove(UIManager::replayViewController->path.c_str());
+                    }
+
+                    UIManager::singlePlayerFlowCoordinator->BackButtonWasPressed(UIManager::replayViewController);
+
+                    UIManager::SetReplayButtonCanvasActive(overwriteFile);
+                }
+            }
+        ));
+        UIManager::singlePlayerFlowCoordinator->PresentViewController(getDeleteDialogPromptViewController(), nullptr, ViewController::AnimationDirection::Horizontal, false);
+    };
+
+    auto onClick = UnityEngine::UI::Button::ButtonClickedEvent::New_ctor();
+    onClick->AddListener(il2cpp_utils::MakeDelegate<UnityAction*>(classof(UnityAction*), deleteFunction));
+
+    deleteButton->set_onClick(onClick);
 }
