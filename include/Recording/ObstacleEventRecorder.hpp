@@ -4,7 +4,7 @@
 #include "GlobalNamespace/GameEnergyCounter.hpp"
 #include "GlobalNamespace/PlayerHeadAndObstacleInteraction.hpp"
 #include "GlobalNamespace/ObstacleController.hpp"
-#include "System/Collections/Generic/List_1.hpp"
+#include "System/Collections/Generic/HashSet_1.hpp"
 #include "UnityEngine/Time.hpp"
 #include "fstream"
 #include "EventTypes.hpp"

@@ -1,7 +1,7 @@
 #pragma once
 #include "static-defines.hpp"
 
-#include "GlobalNamespace/NoteController.hpp"
+#include "GlobalNamespace/CutScoreBuffer.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
 #include "GlobalNamespace/NoteData.hpp"
 #include "fstream"
@@ -17,8 +17,7 @@ using namespace GlobalNamespace;
 namespace Replay {
     class NoteEventRecorder {
     private:
-        std::vector<StoredCutEvent> cutEvents;
-        std::vector<NoteCutEvent> finishedCutEvents;
+        std::vector<NoteCutEvent> cutEvents;
         std::vector<NoteMissEvent> missEvents;
 
         float frameTime = 0;
@@ -26,8 +25,7 @@ namespace Replay {
 
         float GetEventSaveTime(float songTime);
     public:
-        void AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo);
-        void FinalizeCutEvent(void* swingRatingPointer);
+        void AddCutEvent(CutScoreBuffer* cutScoreBuffer);
 
         void AddMissEvent(NoteController* noteController);
         

@@ -161,7 +161,7 @@ void Replay::UI::ReplayViewController::SetText() {
     dateText->set_text(newcsstr(UIUtils::GetLayeredText("Date Set", TimeUtils::GetStringForTimeSince(replayTime, now))));
 
     if(metadata.HasMember("ClearedInfo")) {
-        int maxScore = GlobalNamespace::ScoreModel::MaxRawScoreForNumberOfNotes(SongUtils::noteCount);
+        int maxScore = GlobalNamespace::ScoreModel::ComputeMaxMultipliedScoreForBeatmap(SongUtils::beatmapData);
         int modifiedScore = metadata["ClearedInfo"]["ModifiedScore"].GetInt();
         float percentage = ((float) modifiedScore / (float) maxScore) * 100;
 

@@ -62,17 +62,17 @@ namespace Replay {
             return (songTime - timeA) / (timeB - timeA);
         }
 
-        static constexpr int GetNoteHash(GlobalNamespace::NoteController* noteController) {
-            GlobalNamespace::NoteData* data = noteController->noteData;
-            NoteEventTypes::DifferentiatingNoteData noteData{data->time, data->lineIndex, (int)data->noteLineLayer, (int)data->colorType, (int)data->cutDirection};
+        static int GetNoteHash(GlobalNamespace::NoteData* noteData) {
+            NoteEventTypes::DifferentiatingNoteData differentiatingNoteData{noteData->time, noteData->lineIndex, (int)noteData->noteLineLayer, (int)noteData->colorType, (int)noteData->cutDirection};
 
             std::hash<NoteEventTypes::DifferentiatingNoteData> noteDataHash;
 
-            return (int) noteDataHash(noteData);
+            return (int) noteDataHash(differentiatingNoteData);
         }
 
-        static GlobalNamespace::NoteCutInfo CreateNoteCutInfoFromSimple(Replay::NoteEventTypes::SimpleNoteCutInfo simpleNoteCutInfo, GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter) {
+        static GlobalNamespace::NoteCutInfo CreateNoteCutInfoFromSimple(Replay::NoteEventTypes::SimpleNoteCutInfo simpleNoteCutInfo) {
             return GlobalNamespace::NoteCutInfo(
+                nullptr, // Might need to get NoteData from a NoteController
                 simpleNoteCutInfo.speedOK,
                 simpleNoteCutInfo.directionOK,
                 simpleNoteCutInfo.saberTypeOK,
@@ -86,7 +86,11 @@ namespace Replay {
                 simpleNoteCutInfo.cutNormal,
                 simpleNoteCutInfo.cutAngle,
                 simpleNoteCutInfo.cutDistanceToCenter,
-                saberSwingRatingCounter
+                UnityEngine::Quaternion::Euler(simpleNoteCutInfo.worldRotation),
+                UnityEngine::Quaternion::Inverse(UnityEngine::Quaternion::Euler(simpleNoteCutInfo.worldRotation)),
+                UnityEngine::Quaternion::Euler(simpleNoteCutInfo.noteRotation),
+                simpleNoteCutInfo.notePosition,
+                nullptr // Might actually need a saber movement data for some reason
             );
         }
     };

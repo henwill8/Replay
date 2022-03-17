@@ -1,7 +1,7 @@
 #include "Recording/ObstacleEventRecorder.hpp"
 
 void Replay::ObstacleEventRecorder::AddEvent(GlobalNamespace::GameEnergyCounter* gameEnergyCounter) {
-    bool playerObstacleInteracting = (bool) gameEnergyCounter->playerHeadAndObstacleInteraction->intersectingObstacles->get_Count();
+    bool playerObstacleInteracting = (bool) gameEnergyCounter->playerHeadAndObstacleInteraction->intersectingObstacles->count;
     if(playerObstacleInteracting == lastInteracting) return;
 
     float songTime = SongUtils::GetSongTime();

@@ -1,14 +1,15 @@
 #include "static-defines.hpp"
 
 #include "GlobalNamespace/ResultsViewController.hpp"
+#include "GlobalNamespace/IReadonlyBeatmapData.hpp"
 #include "ReplayManager.hpp"
 #include "UI/UIManager.hpp"
 
 using namespace GlobalNamespace;
 using namespace Replay;
 
-MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* levelCompletionResults, IDifficultyBeatmap* difficultyBeatmap, bool practice, bool newHighScore) {
-    ResultsViewController_Init(self, levelCompletionResults, difficultyBeatmap, practice, newHighScore);
+MAKE_HOOK_MATCH(ResultsViewController_Init, &ResultsViewController::Init, void, ResultsViewController* self, LevelCompletionResults* levelCompletionResults, IReadonlyBeatmapData* transformedBeatmapData, IDifficultyBeatmap* difficultyBeatmap, bool practice, bool newHighScore) {
+    ResultsViewController_Init(self, levelCompletionResults, transformedBeatmapData, difficultyBeatmap, practice, newHighScore);
 
     SongUtils::inSong = false;
 

@@ -7,7 +7,8 @@
 #include "GlobalNamespace/NoteCutDirection.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
 #include "GlobalNamespace/NoteController.hpp"
-#include "GlobalNamespace/ISaberSwingRatingCounter.hpp"
+#include "GlobalNamespace/SaberSwingRatingCounter.hpp"
+#include "GlobalNamespace/CutScoreBuffer.hpp"
 #include "UnityEngine/Transform.hpp"
 #include "UnityEngine/Quaternion.hpp"
 #include <fstream>
@@ -118,10 +119,13 @@ namespace Replay {
             UnityEngine::Vector3 cutNormal;
             float cutDistanceToCenter;
             float cutAngle;
+            UnityEngine::Vector3 worldRotation;
+            UnityEngine::Vector3 noteRotation;
+            UnityEngine::Vector3 notePosition;
 
             constexpr SimpleNoteCutInfo() = default;
 
-            constexpr SimpleNoteCutInfo(const NoteCutInfo& noteCutInfo) {
+            SimpleNoteCutInfo(NoteCutInfo& noteCutInfo) {
                 speedOK = noteCutInfo.speedOK;
                 directionOK = noteCutInfo.directionOK;
                 saberTypeOK = noteCutInfo.saberTypeOK;
@@ -135,6 +139,9 @@ namespace Replay {
                 cutNormal = noteCutInfo.cutNormal;
                 cutDistanceToCenter = noteCutInfo.cutDistanceToCenter;
                 cutAngle = noteCutInfo.cutAngle;
+                worldRotation = noteCutInfo.worldRotation.get_eulerAngles();
+                noteRotation = noteCutInfo.noteRotation.get_eulerAngles();
+                notePosition = noteCutInfo.notePosition;
             }
 
             bool AllIsOkay() {
@@ -148,20 +155,12 @@ namespace Replay {
 
             constexpr SwingRating() = default;
 
-            constexpr SwingRating(ISaberSwingRatingCounter* swingRating) {
+            constexpr SwingRating(SaberSwingRatingCounter* swingRating) {
                 beforeCutRating = swingRating->get_beforeCutRating();
                 afterCutRating = swingRating->get_afterCutRating();
             }
 
             constexpr SwingRating(float beforeCutRating, float afterCutRating) : beforeCutRating(beforeCutRating), afterCutRating(afterCutRating) {}
-        };
-    
-        struct StoredCutEvent {
-            int noteHash;
-            float time;
-            NoteCutInfo noteCutInfo;
-
-            constexpr StoredCutEvent(int noteHash, float time, const NoteCutInfo& noteCutInfo) : noteHash(noteHash), time(time), noteCutInfo(noteCutInfo) {}
         };
 
         struct NoteCutEvent {
@@ -172,13 +171,13 @@ namespace Replay {
 
             constexpr NoteCutEvent() = default;
 
-            constexpr NoteCutEvent(int noteHash, float time, const NoteCutInfo& cutInfo, bool goodCut = true) : noteHash(noteHash), time(time) {
+            NoteCutEvent(int noteHash, float time, CutScoreBuffer* cutScoreBuffer, bool goodCut = true) : noteHash(noteHash), time(time) {
                 // I did not know a better way to make compiler happy, feel free to fix
-                SimpleNoteCutInfo newNoteCutInfo(cutInfo);
+                SimpleNoteCutInfo newNoteCutInfo(cutScoreBuffer->noteCutInfo);
                 noteCutInfo = newNoteCutInfo;
 
                 if(goodCut) {
-                    SwingRating newSwingRating(cutInfo.swingRatingCounter);
+                    SwingRating newSwingRating(cutScoreBuffer->saberSwingRatingCounter);
                     swingRating = newSwingRating;
                 } else {
                     SwingRating newSwingRating(0.0f, 0.0f);

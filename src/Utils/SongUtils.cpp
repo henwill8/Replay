@@ -1,7 +1,25 @@
 #include "Utils/SongUtils.hpp"
 
+#include "custom-types/shared/coroutine.hpp"
+#include "questui/shared/ArrayUtil.hpp"
+#include "UnityEngine/Resources.hpp"
+
 std::string Replay::SongUtils::GetMapID() {
     return mapID;
+}
+
+custom_types::Helpers::Courotine GetBeatmapData(GlobalNamespace::IDifficultyBeatmap* difficultyBeatmap, std::string mapID) {
+    auto* model = QuestUI::ArrayUtil::First(UnityEngine::Resources::FindObjectsOfTypeAll<GlobalNamespace::BeatmapLevelsModel*>());
+
+    auto* envInfo = model->GetLevelPreviewForLevelId(mapID)->get_environmentInfo();
+
+    auto* result = difficultyBeatmap->GetBeatmapDataAsync(envInfo);
+
+    while(!result->get_IsCompleted()) co_yield nullptr;
+
+    Replay::SongUtils::beatmapData = result->get_ResultOnSuccess();
+
+    co_return;
 }
 
 void Replay::SongUtils::SetMapID(GlobalNamespace::StandardLevelDetailView* standardLevelDetailView) {
@@ -20,7 +38,6 @@ void Replay::SongUtils::SetMapID(GlobalNamespace::StandardLevelDetailView* stand
     auto* SelectedBeatmapDifficulty = standardLevelDetailView->selectedDifficultyBeatmap;
     int Difficulty = SelectedBeatmapDifficulty->get_difficulty();
 
-    auto* beatMapData = SelectedBeatmapDifficulty->get_beatmapData();
     auto* parentDifficultyBeatmapSet = SelectedBeatmapDifficulty->get_parentDifficultyBeatmapSet();
     auto* beatmapCharacteristic = parentDifficultyBeatmapSet->get_beatmapCharacteristic();
     std::string modeName = to_utf8(csstrtostr(beatmapCharacteristic->compoundIdPartName));
@@ -29,4 +46,6 @@ void Replay::SongUtils::SetMapID(GlobalNamespace::StandardLevelDetailView* stand
     if(!modeName.empty()) mapID = mapID + "_" + modeName;
 
     log("MapID is %s", mapID.c_str());
+    
+    GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(GetBeatmapData(SelectedBeatmapDifficulty, LevelID)));
 }

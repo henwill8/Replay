@@ -18,17 +18,8 @@ MAKE_HOOK_MATCH(SaberSwingRatingCounter_ProcessNewData, &SaberSwingRatingCounter
     SaberSwingRatingCounter_ProcessNewData(self, newData, prevData, prevDataAreValid);
 }
 
-MAKE_HOOK_MATCH(SaberSwingRatingCounter_Finish, &SaberSwingRatingCounter::Finish, void, SaberSwingRatingCounter* self) {    
-    SaberSwingRatingCounter_Finish(self);
-
-    if(ReplayManager::replayState == ReplayState::RECORDING) {
-        ReplayManager::recorder.noteEventRecorder.FinalizeCutEvent(self);
-    }
-}
-
 void SaberSwingRatingCounterHook(Logger& logger) {
     INSTALL_HOOK(logger, SaberSwingRatingCounter_ProcessNewData);
-    INSTALL_HOOK(logger, SaberSwingRatingCounter_Finish);
 }
 
 ReplayInstallHooks(SaberSwingRatingCounterHook);

@@ -47,7 +47,6 @@ namespace Replay {
         static inline GlobalNamespace::IBeatmapLevel* beatmapLevel;
         static inline GlobalNamespace::BeatmapDifficulty beatmapDifficulty;
         static inline GlobalNamespace::BeatmapCharacteristicSO* beatmapCharacteristic;
-
-        static inline int noteCount;
+        static inline GlobalNamespace::IReadonlyBeatmapData* beatmapData;
     };
 }

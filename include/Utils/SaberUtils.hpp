@@ -9,7 +9,6 @@
 #include "GlobalNamespace/SaberTypeObject.hpp"
 #include "GlobalNamespace/SaberType.hpp"
 #include "GlobalNamespace/SaberSwingRatingCounter.hpp"
-#include "GlobalNamespace/SaberSwingRatingCounter_Pool.hpp"
 #include "GlobalNamespace/ISaberSwingRatingCounter.hpp"
 
 namespace Replay {
@@ -23,19 +22,20 @@ namespace Replay {
 
         // Code from GameNoteController.HandleCut
         static GlobalNamespace::ISaberSwingRatingCounter* GetOrSpawnSaberSwingRatingCounter(GlobalNamespace::Saber* saber, GlobalNamespace::GameNoteController* noteController, float beforeCutRating = 0.0f, float afterCutRating = 0.0f) {
-            auto * saberSwingRatingCounter = noteController->saberSwingRatingCounterPool->Spawn();
-            // saberSwingRatingCounter->Init(saber->movementData, noteController->noteTransform, !noteController->noteData->skipBeforeCutScoring, !noteController->noteData->skipAfterCutScoring);
+            // auto * saberSwingRatingCounter = noteController->saberSwingRatingCounterPool->Spawn();
+            // // saberSwingRatingCounter->Init(saber->movementData, noteController->noteTransform, !noteController->noteData->skipBeforeCutScoring, !noteController->noteData->skipAfterCutScoring);
             
-            saberSwingRatingCounter->beforeCutRating = beforeCutRating;
-            saberSwingRatingCounter->afterCutRating = afterCutRating;
+            // saberSwingRatingCounter->beforeCutRating = beforeCutRating;
+            // saberSwingRatingCounter->afterCutRating = afterCutRating;
 
-            GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver* didFinishReceiver = reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver*>(noteController);
-            saberSwingRatingCounter->RegisterDidFinishReceiver(didFinishReceiver);
+            // GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver* didFinishReceiver = reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounterDidFinishReceiver*>(noteController);
+            // saberSwingRatingCounter->RegisterDidFinishReceiver(didFinishReceiver);
 
-            GlobalNamespace::ISaberSwingRatingCounter* swingRatingCounter = reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounter*>(saberSwingRatingCounter);
-            didFinishReceiver->HandleSaberSwingRatingCounterDidFinish(swingRatingCounter);
+            // GlobalNamespace::ISaberSwingRatingCounter* swingRatingCounter = reinterpret_cast<GlobalNamespace::ISaberSwingRatingCounter*>(saberSwingRatingCounter);
+            // didFinishReceiver->HandleSaberSwingRatingCounterDidFinish(swingRatingCounter);
 
-            return swingRatingCounter;
+            // return swingRatingCounter;
+            return nullptr;
         }
     };
 

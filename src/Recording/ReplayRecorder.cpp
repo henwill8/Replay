@@ -17,7 +17,7 @@ void Replay::ReplayRecorder::Init() {
 void Replay::ReplayRecorder::CreateClearedSpecificMetadata(GlobalNamespace::LevelCompletionResults* results, rapidjson::Document::AllocatorType& allocator) {
     Value clearedInfo(kObjectType);
 
-    clearedInfo.AddMember("RawScore", results->rawScore, allocator);
+    clearedInfo.AddMember("RawScore", results->multipliedScore, allocator);
     clearedInfo.AddMember("ModifiedScore", results->modifiedScore, allocator);
     
     metadata.AddMember("ClearedInfo", clearedInfo, allocator);

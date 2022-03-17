@@ -5,7 +5,7 @@ void Replay::NoteEventReplayer::Init() {
 }
 
 void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController* noteController) {
-    auto noteHash = Replay::ReplayUtils::GetNoteHash(noteController);
+    auto noteHash = Replay::ReplayUtils::GetNoteHash(noteController->noteData);
 
     for (auto eventIt = cutEvents.begin(); eventIt != cutEvents.end(); eventIt++) {
         auto const &noteCutEvent = *eventIt;
@@ -91,15 +91,16 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
                 NoteCutInfo noteCutInfo;
 
                 if(eventData.note->noteData->colorType == GlobalNamespace::ColorType::None) {
-                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, nullptr);
+                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo);
                 } else {
                     auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
                     GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::GetOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
 
-                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo, saberSwingRatingCounter);
+                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo);
                 }
 
-                SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));// This has decided to no longer work pog
+                // SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));// This has decided to no longer work pog
+                eventData.note->SendNoteWasCutEvent(byref(noteCutInfo));// This has decided to no longer work pog
             } else {
                 activeMissEvents[eventToRun.eventIndex].note->SendNoteWasMissedEvent();
             }

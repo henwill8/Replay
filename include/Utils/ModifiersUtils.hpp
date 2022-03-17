@@ -49,8 +49,6 @@ namespace Replay {
             }
 
             GlobalNamespace::GameplayModifiers* modifiers = GlobalNamespace::GameplayModifiers::New_ctor(
-                false,
-                false,
                 energyType,
                 std::count(strings.begin(), strings.end(), "NoFail"),
                 std::count(strings.begin(), strings.end(), "InstaFail"),
