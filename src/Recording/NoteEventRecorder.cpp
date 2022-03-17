@@ -9,7 +9,7 @@ float Replay::NoteEventRecorder::GetEventSaveTime(float songTime) {
 
         float newTime = nextafterf(songTime, songTime + 1);
 
-        // For if there are 3 or more events in a single frame (extremely unlikely)
+        // For if there are 3 or more events in a single frame (extremely unlikely except paulllssss)
         for(int i = 0; i < eventsInFrame - 2; i++) {
             newTime = nextafterf(newTime, songTime + 1);
         }
@@ -23,34 +23,21 @@ float Replay::NoteEventRecorder::GetEventSaveTime(float songTime) {
     return songTime;
 }
 
-void Replay::NoteEventRecorder::AddCutEvent(NoteController* noteController, ByRef<NoteCutInfo> noteCutInfo) {
-    if(noteCutInfo->get_allIsOK()) {
-        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), GetEventSaveTime(Replay::SongUtils::GetSongTime()), noteCutInfo.heldRef);
+void Replay::NoteEventRecorder::AddCutEvent(CutScoreBuffer* cutScoreBuffer) {
+    if(cutScoreBuffer->noteCutInfo.get_allIsOK()) {
+        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(cutScoreBuffer->noteCutInfo.noteData), GetEventSaveTime(Replay::SongUtils::GetSongTime()), cutScoreBuffer);
     } else {
-        finishedCutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), GetEventSaveTime(Replay::SongUtils::GetSongTime()), noteCutInfo.heldRef, false);
+        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(cutScoreBuffer->noteCutInfo.noteData), GetEventSaveTime(Replay::SongUtils::GetSongTime()), cutScoreBuffer, false);
     }
 }
 
-void Replay::NoteEventRecorder::FinalizeCutEvent(void* swingRatingPointer) {
-    for(auto eventIt = cutEvents.begin(); eventIt != cutEvents.end(); eventIt++) {
-        auto const &storedCutEvent = *eventIt;
-        
-        if(storedCutEvent.noteCutInfo.swingRatingCounter == swingRatingPointer) {
-            finishedCutEvents.emplace_back(storedCutEvent.noteHash, storedCutEvent.time, storedCutEvent.noteCutInfo);
-
-            cutEvents.erase(eventIt);
-
-            return;
-        }
-    }
-}
 
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
-    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController), GetEventSaveTime(Replay::SongUtils::GetSongTime()));
+    missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController->get_noteData()), GetEventSaveTime(Replay::SongUtils::GetSongTime()));
 }
 
 void Replay::NoteEventRecorder::WriteEvents(std::ofstream& output) {
-    Replay::FileUtils::WriteEvents(finishedCutEvents, Replay::NoteEventTypes::cutEventID, output);
+    Replay::FileUtils::WriteEvents(cutEvents, Replay::NoteEventTypes::cutEventID, output);
 
     Replay::FileUtils::WriteEvents(missEvents, Replay::NoteEventTypes::missEventID, output);
 }
@@ -58,9 +45,10 @@ void Replay::NoteEventRecorder::WriteEvents(std::ofstream& output) {
 float Replay::NoteEventRecorder::GetAverageCutScore() {
     float total = 0;
     int goodCuts = 0;
-    for(NoteEventTypes::NoteCutEvent event : finishedCutEvents) {
+    for(NoteEventTypes::NoteCutEvent event : cutEvents) {
         if(!event.noteCutInfo.AllIsOkay()) continue;
 
+        // May cause issues with chains
         int beforeRating = std::round(event.swingRating.beforeCutRating * 70);
         int afterRating = std::round(event.swingRating.afterCutRating * 30);
         int accuracy = std::round((1.0f - std::clamp(event.noteCutInfo.cutDistanceToCenter / 0.3f, 0.0f, 1.0f)) * 15);
