@@ -81,26 +81,14 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
             }
         }
 
+        if(eventsToRun.empty()) co_yield nullptr;
+
         // I am truly sorry to whoever reads this code next, I am just doing the first thing that comes to mind
         std::sort(eventsToRun.begin(), eventsToRun.end());
 
         for(auto& eventToRun : eventsToRun) {
-            if(eventToRun.isCutEvent) {
-                auto& eventData = activeCutEvents[eventToRun.eventIndex];
-
-                NoteCutInfo noteCutInfo;
-
-                if(eventData.note->noteData->colorType == GlobalNamespace::ColorType::None) {
-                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo);
-                } else {
-                    auto* gameNoteController = il2cpp_utils::cast<GameNoteController>(eventData.note);
-                    GlobalNamespace::ISaberSwingRatingCounter* saberSwingRatingCounter = SaberUtils::GetOrSpawnSaberSwingRatingCounter(eventData.saber, gameNoteController, eventData.event.swingRating.beforeCutRating, eventData.event.swingRating.afterCutRating);
-
-                    noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(eventData.event.noteCutInfo);
-                }
-
-                // SendNoteWasCutEvent(eventData.note, byref(noteCutInfo));// This has decided to no longer work pog
-                eventData.note->SendNoteWasCutEvent(byref(noteCutInfo));// This has decided to no longer work pog
+                GlobalNamespace::NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(activeCutEvents[eventToRun.eventIndex].event.noteCutInfo);
+                activeCutEvents[eventToRun.eventIndex].note->SendNoteWasCutEvent(byref(noteCutInfo));// This has decided to no longer work pog
             } else {
                 activeMissEvents[eventToRun.eventIndex].note->SendNoteWasMissedEvent();
             }
