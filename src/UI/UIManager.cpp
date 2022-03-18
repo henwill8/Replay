@@ -52,6 +52,8 @@ Button::ButtonClickedEvent* createReplayOnClick(std::string path, bool overwrite
 std::function<void()> getPlayButtonFunction() {
     static std::function<void()> playButtonFunction = (std::function<void()>) [] () {
         log("Play button pressed");
+        SongUtils::inSong = true;
+
         ReplayManager::replayState = ReplayState::RECORDING;
         
         SongUtils::didFail = false;

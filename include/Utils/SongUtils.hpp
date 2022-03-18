@@ -23,6 +23,7 @@ namespace Replay {
         static inline bool inSong;
 
         static float GetSongTime() {
+            log("MAKE THIS SAFE AS IT IS CRASHING")
             static auto const *timeSyncControllerClass = classof(GlobalNamespace::AudioTimeSyncController *);
             auto *timeSourceObject = reinterpret_cast<Il2CppObject *>(audioTimeSyncController);
             if (timeSourceObject->klass == timeSyncControllerClass) {

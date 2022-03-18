@@ -62,12 +62,15 @@ void SendNoteWasCutEvent(GlobalNamespace::NoteController* self, ByRef<GlobalName
 #pragma ide diagnostic ignored "EndlessLoop"
 custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
     while(SongUtils::inSong) {
+        log("DO DOODODOO");
         float songTime = Replay::SongUtils::GetSongTime();
-        
+        log("Hi");
+
         // Feel free to make this not terrible, just trying to run the events in order of time
         std::vector<EventToRun> eventsToRun;
 
         for(int i = 0; i < activeCutEvents.size(); i++) {
+            log("Adding Cut Event");
             float eventTime = activeCutEvents[i].event.time;
             if(songTime > eventTime) {
                 eventsToRun.emplace_back(eventTime, true, i);
@@ -75,20 +78,24 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
         }
 
         for(int i = 0; i < activeMissEvents.size(); i++) {
+            log("Adding Miss Event");
             float eventTime = activeMissEvents[i].event.time;
             if(songTime > eventTime) {
                 eventsToRun.emplace_back(eventTime, false, i);
             }
         }
 
+        log("is empty? %i", eventsToRun.empty());
         if(eventsToRun.empty()) co_yield nullptr;
 
         // I am truly sorry to whoever reads this code next, I am just doing the first thing that comes to mind
         std::sort(eventsToRun.begin(), eventsToRun.end());
 
         for(auto& eventToRun : eventsToRun) {
+            if(eventToRun.isCutEvent) {
                 GlobalNamespace::NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(activeCutEvents[eventToRun.eventIndex].event.noteCutInfo);
                 activeCutEvents[eventToRun.eventIndex].note->SendNoteWasCutEvent(byref(noteCutInfo));// This has decided to no longer work pog
+                log("CUTTING NOTE");
             } else {
                 activeMissEvents[eventToRun.eventIndex].note->SendNoteWasMissedEvent();
             }
