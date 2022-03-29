@@ -2,6 +2,8 @@
 #include "static-defines.hpp"
 
 #include "Utils/SongUtils.hpp"
+#include "Utils/SaberUtils.hpp"
+
 #include "GlobalNamespace/NoteController.hpp"
 #include "GlobalNamespace/NoteData.hpp"
 #include "GlobalNamespace/NoteCutInfo.hpp"
@@ -70,9 +72,9 @@ namespace Replay {
             return (int) noteDataHash(differentiatingNoteData);
         }
 
-        static GlobalNamespace::NoteCutInfo CreateNoteCutInfoFromSimple(Replay::NoteEventTypes::SimpleNoteCutInfo simpleNoteCutInfo) {
+        static GlobalNamespace::NoteCutInfo CreateNoteCutInfoFromSimple(Replay::NoteEventTypes::SimpleNoteCutInfo simpleNoteCutInfo, GlobalNamespace::NoteData* noteData) {
             return GlobalNamespace::NoteCutInfo(
-                nullptr, // Might need to get NoteData from a NoteController
+                noteData,
                 simpleNoteCutInfo.speedOK,
                 simpleNoteCutInfo.directionOK,
                 simpleNoteCutInfo.saberTypeOK,
@@ -90,7 +92,7 @@ namespace Replay {
                 UnityEngine::Quaternion::Inverse(UnityEngine::Quaternion::Euler(simpleNoteCutInfo.worldRotation)),
                 UnityEngine::Quaternion::Euler(simpleNoteCutInfo.noteRotation),
                 simpleNoteCutInfo.notePosition,
-                nullptr // Might actually need a saber movement data for some reason
+                reinterpret_cast<GlobalNamespace::ISaberMovementData*>(Replay::SaberUtils::GetSaberForType(simpleNoteCutInfo.saberType)->get_movementData())
             );
         }
     };

@@ -138,10 +138,10 @@ void Replay::UI::ReplayViewController::CreateButtons(UnityEngine::RectTransform*
         "OkButton",
         [this]() { 
             log("Replay button pressed");
-            SongUtils::inSong = true;
             ReplayManager::replayState = ReplayState::REPLAYING;
             ReplayManager::replayer = Replayer();
             ReplayManager::replayer.Init(path);
+            
             UIManager::singlePlayerFlowCoordinator->StartLevelOrShow360Prompt(nullptr, false);
         }
     )->GetComponent<UnityEngine::RectTransform*>()->set_sizeDelta(size);

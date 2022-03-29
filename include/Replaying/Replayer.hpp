@@ -8,11 +8,15 @@
 #include "Replaying/ObstacleEventReplayer.hpp"
 #include "Utils/ReplayUtils.hpp"
 
+#include "System/Collections/IEnumerator.hpp"
+#include "custom-types/shared/coroutine.hpp"
+
 using namespace Replay;
 
 namespace Replay {
     class Replayer {
     private:
+        custom_types::Helpers::Coroutine WaitForSongStartToInit();
 
     public:
         void Init(std::string_view path);

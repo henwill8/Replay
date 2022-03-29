@@ -16,12 +16,6 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
     }
 }
 
-MAKE_HOOK_MATCH(NoteController_SendNoteWasCutEvent, &NoteController::SendNoteWasCutEvent, void, NoteController* self, ByRef<NoteCutInfo> noteCutInfo) {
-    log("TEST");
-
-    NoteController_SendNoteWasCutEvent(self, noteCutInfo);
-}
-
 MAKE_HOOK_MATCH(NoteController_SendNoteWasMissedEvent, &NoteController::SendNoteWasMissedEvent, void, NoteController* self) {
     NoteController_SendNoteWasMissedEvent(self);
 
@@ -32,7 +26,6 @@ MAKE_HOOK_MATCH(NoteController_SendNoteWasMissedEvent, &NoteController::SendNote
 
 void NoteControllerHook(Logger& logger) {
     INSTALL_HOOK(logger, NoteController_Init);
-    INSTALL_HOOK(logger, NoteController_SendNoteWasCutEvent);
     INSTALL_HOOK(logger, NoteController_SendNoteWasMissedEvent);
 }
 

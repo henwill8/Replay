@@ -5,14 +5,24 @@
 
 using namespace rapidjson;
 
+custom_types::Helpers::Coroutine Replay::Replayer::WaitForSongStartToInit() {
+    while(!SongUtils::inSong) {
+        co_yield nullptr;
+    }
+    
+    noteEventReplayer.Init();
+    co_return;
+}
+
 void Replay::Replayer::Init(std::string_view path) {
     log("Setting up Replayer");
     playerReplayer = Replay::PlayerReplayer();
     noteEventReplayer = Replay::NoteEventReplayer();
-    noteEventReplayer.Init();
     obstacleEventReplayer = Replay::ObstacleEventReplayer();
     
     ReadReplayFile(path);
+
+    GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Replay::Replayer::WaitForSongStartToInit()));
 }
 
 void Replay::Replayer::ReadReplayFile(std::string_view path) {
