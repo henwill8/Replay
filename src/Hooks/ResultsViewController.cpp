@@ -25,7 +25,8 @@ MAKE_HOOK_MATCH(ResultsViewController_DidActivate, &ResultsViewController::DidAc
     UnityEngine::Transform* buttonTransform = parent->Find(newcsstr("ReplayButton"));//Replay button name is defined in two other places, make better
     
     if(buttonTransform) {
-        Replay::UI::UIManager::SetReplayButtonOnClick(buttonTransform, ReplayUtils::GetTempReplayFilePath(), true);
+        std::string path = fileexists(ReplayUtils::GetTempReplayFilePath()) ? ReplayUtils::GetTempReplayFilePath() : ReplayUtils::GetReplayFilePath(SongUtils::GetMapID());
+        Replay::UI::UIManager::SetReplayButtonOnClick(buttonTransform, path, true);
     } else {
         ((UnityEngine::RectTransform*) Replay::UI::UIManager::CreateReplayButton(parent, self->restartButton, self->restartButton, ReplayUtils::GetTempReplayFilePath(), true))->set_anchoredPosition({48, 0});
     }

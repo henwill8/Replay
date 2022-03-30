@@ -25,8 +25,9 @@ namespace Replay {
 
         float GetEventSaveTime(float songTime);
     public:
-        void AddCutEvent(CutScoreBuffer* cutScoreBuffer);
+        std::vector<std::pair<float, CutScoreBuffer*>> cutTimes;
 
+        void AddCutEvent(CutScoreBuffer* cutScoreBuffer, float time);
         void AddMissEvent(NoteController* noteController);
         
         void WriteEvents(std::ofstream& output);
