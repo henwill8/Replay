@@ -16,6 +16,14 @@ MAKE_HOOK_MATCH(NoteController_Init, &NoteController::Init, void, GlobalNamespac
     }
 }
 
+MAKE_HOOK_MATCH(NoteController_SendNoteWasCutEvent, &NoteController::SendNoteWasCutEvent, void, NoteController* self, ByRef<GlobalNamespace::NoteCutInfo> noteCutInfo) {
+    NoteController_SendNoteWasCutEvent(self, noteCutInfo);
+
+    if(ReplayManager::replayState == ReplayState::RECORDING && !noteCutInfo->get_allIsOK()) {
+        ReplayManager::recorder.noteEventRecorder.AddCutEvent(noteCutInfo.heldRef, SongUtils::GetSongTime());
+    }
+}
+
 MAKE_HOOK_MATCH(NoteController_SendNoteWasMissedEvent, &NoteController::SendNoteWasMissedEvent, void, NoteController* self) {
     NoteController_SendNoteWasMissedEvent(self);
 
@@ -26,6 +34,7 @@ MAKE_HOOK_MATCH(NoteController_SendNoteWasMissedEvent, &NoteController::SendNote
 
 void NoteControllerHook(Logger& logger) {
     INSTALL_HOOK(logger, NoteController_Init);
+    INSTALL_HOOK(logger, NoteController_SendNoteWasCutEvent);
     INSTALL_HOOK(logger, NoteController_SendNoteWasMissedEvent);
 }
 

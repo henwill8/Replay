@@ -1,6 +1,8 @@
 #include "Replaying/NoteEventReplayer.hpp"
 
 void Replay::NoteEventReplayer::Init() {
+
+
     GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Update()));
 }
 
@@ -31,7 +33,7 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
             return;
         }
     }
-    log("Could not find note!");
+    log("Could not find event for note!");
 }
 
 void Replay::NoteEventReplayer::ReadCutEvents(std::ifstream& input, int eventsLength) {

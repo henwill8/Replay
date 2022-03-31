@@ -91,20 +91,6 @@ namespace Replay {
     }
 
     namespace NoteEventTypes {
-        struct DifferentiatingNoteData {
-            float time;
-            int lineIndex;
-            int noteLineLayer;
-            int colorType;
-            int noteCutDirection;
-
-            constexpr DifferentiatingNoteData() = default;
-
-            constexpr DifferentiatingNoteData(float time, int lineIndex, int noteLineLayer, int colorType, int noteCutDirection)
-                    : time(time), lineIndex(lineIndex), noteLineLayer(noteLineLayer), colorType(colorType),
-                      noteCutDirection(noteCutDirection) {}
-        };
-
         struct SimpleNoteCutInfo {
             bool speedOK;
             bool directionOK;
@@ -171,18 +157,22 @@ namespace Replay {
 
             constexpr NoteCutEvent() = default;
 
-            NoteCutEvent(int noteHash, float time, CutScoreBuffer* cutScoreBuffer, bool goodCut = true) : noteHash(noteHash), time(time) {
+            NoteCutEvent(int noteHash, float time, CutScoreBuffer* cutScoreBuffer) : noteHash(noteHash), time(time) {
                 // I did not know a better way to make compiler happy, feel free to fix
                 SimpleNoteCutInfo newNoteCutInfo(cutScoreBuffer->noteCutInfo);
                 noteCutInfo = newNoteCutInfo;
 
-                if(goodCut) {
-                    SwingRating newSwingRating(cutScoreBuffer->saberSwingRatingCounter);
-                    swingRating = newSwingRating;
-                } else {
-                    SwingRating newSwingRating(0.0f, 0.0f);
-                    swingRating = newSwingRating;
-                }
+                SwingRating newSwingRating(cutScoreBuffer->saberSwingRatingCounter);
+                swingRating = newSwingRating;
+            }
+
+            NoteCutEvent(int noteHash, float time, NoteCutInfo badNoteCutInfo) : noteHash(noteHash), time(time) {
+                // I did not know a better way to make compiler happy, feel free to fix
+                SimpleNoteCutInfo newNoteCutInfo(badNoteCutInfo);
+                noteCutInfo = newNoteCutInfo;
+
+                SwingRating newSwingRating(0.0f, 0.0f);
+                swingRating = newSwingRating;
             }
 
             constexpr NoteCutEvent(std::ifstream& reader) {
@@ -250,16 +240,25 @@ namespace Replay {
 }
 
 template<>
-struct std::hash<Replay::NoteEventTypes::DifferentiatingNoteData>
+struct std::hash<NoteData*>
 {
-    std::size_t operator()(Replay::NoteEventTypes::DifferentiatingNoteData const& s) const noexcept
+    std::size_t operator()(NoteData* s) const noexcept
     {
-        std::size_t h1 = std::hash<float>{}(s.time);
-        std::size_t h2 = std::hash<int>{}(s.lineIndex);
-        std::size_t h3 = std::hash<int>{}(s.noteLineLayer);
-        std::size_t h4 = std::hash<int>{}(s.colorType);
-        std::size_t h5 = std::hash<int>{}(s.noteCutDirection);
+        std::size_t h1 = std::hash<float>{}(s->time);
+        std::size_t h2 = std::hash<int>{}(s->lineIndex);
+        std::size_t h3 = std::hash<int>{}(s->noteLineLayer);
+        std::size_t h4 = std::hash<int>{}(s->beforeJumpNoteLineLayer);
+        std::size_t h5 = std::hash<int>{}(s->gameplayType);
+        std::size_t h6 = std::hash<int>{}(s->scoringType);
+        std::size_t h7 = std::hash<int>{}(s->colorType);
+        std::size_t h8 = std::hash<int>{}(s->cutDirection);
+        std::size_t h9 = std::hash<float>{}(s->timeToNextColorNote);
+        std::size_t h10 = std::hash<float>{}(s->timeToPrevColorNote);
+        std::size_t h11 = std::hash<float>{}(s->flipLineIndex);
+        std::size_t h12 = std::hash<float>{}(s->flipYSide);
+        std::size_t h13 = std::hash<float>{}(s->cutDirectionAngleOffset);
+        std::size_t h14 = std::hash<float>{}(s->cutSfxVolumeMultiplier);
 
-        return h1 ^ h2 ^ h3 ^ h4 ^ h5;
+        return h1 ^ h2 ^ h3 ^ h4 ^ h5 ^ h6 ^ h7 ^ h8 ^ h9 ^ h10 ^ h11 ^ h12 ^ h13 ^ h14;
     }
 };

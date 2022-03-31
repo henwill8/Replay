@@ -28,6 +28,8 @@ namespace Replay {
         std::vector<std::pair<float, CutScoreBuffer*>> cutTimes;
 
         void AddCutEvent(CutScoreBuffer* cutScoreBuffer, float time);
+        void AddCutEvent(NoteCutInfo noteCutInfo, float time);
+
         void AddMissEvent(NoteController* noteController);
         
         void WriteEvents(std::ofstream& output);

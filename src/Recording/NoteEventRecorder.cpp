@@ -24,13 +24,12 @@ float Replay::NoteEventRecorder::GetEventSaveTime(float songTime) {
 }
 
 void Replay::NoteEventRecorder::AddCutEvent(CutScoreBuffer* cutScoreBuffer, float time) {
-    if(cutScoreBuffer->noteCutInfo.get_allIsOK()) {
-        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(cutScoreBuffer->noteCutInfo.noteData), GetEventSaveTime(time), cutScoreBuffer);
-    } else {
-        cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(cutScoreBuffer->noteCutInfo.noteData), GetEventSaveTime(time), cutScoreBuffer, false);
-    }
+    cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(cutScoreBuffer->noteCutInfo.noteData), GetEventSaveTime(time), cutScoreBuffer);
 }
 
+void Replay::NoteEventRecorder::AddCutEvent(NoteCutInfo noteCutInfo, float time) {
+    cutEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteCutInfo.noteData), GetEventSaveTime(time), noteCutInfo);
+}
 
 void Replay::NoteEventRecorder::AddMissEvent(NoteController* noteController) {
     missEvents.emplace_back(Replay::ReplayUtils::GetNoteHash(noteController->get_noteData()), GetEventSaveTime(Replay::SongUtils::GetSongTime()));

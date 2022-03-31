@@ -65,11 +65,9 @@ namespace Replay {
         }
 
         static int GetNoteHash(GlobalNamespace::NoteData* noteData) {
-            NoteEventTypes::DifferentiatingNoteData differentiatingNoteData{noteData->time, noteData->lineIndex, (int)noteData->noteLineLayer, (int)noteData->colorType, (int)noteData->cutDirection};
+            std::hash<NoteData*> noteDataHash;
 
-            std::hash<NoteEventTypes::DifferentiatingNoteData> noteDataHash;
-
-            return (int) noteDataHash(differentiatingNoteData);
+            return (int) noteDataHash(noteData);
         }
 
         static GlobalNamespace::NoteCutInfo CreateNoteCutInfoFromSimple(Replay::NoteEventTypes::SimpleNoteCutInfo simpleNoteCutInfo, GlobalNamespace::NoteData* noteData) {
