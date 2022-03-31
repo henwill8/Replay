@@ -1,8 +1,6 @@
 #include "Replaying/NoteEventReplayer.hpp"
 
 void Replay::NoteEventReplayer::Init() {
-
-
     GlobalNamespace::SharedCoroutineStarter::get_instance()->StartCoroutine(custom_types::Helpers::CoroutineHelper::New(Update()));
 }
 
@@ -13,8 +11,7 @@ void Replay::NoteEventReplayer::AddActiveEvents(GlobalNamespace::NoteController*
         auto const &noteCutEvent = *eventIt;
 
         if(noteHash == noteCutEvent.noteHash) {
-            auto saber = SaberUtils::GetSaberForType(noteCutEvent.noteCutInfo.saberType);
-            activeCutEvents.emplace_back(noteController, saber, noteCutEvent);
+            activeCutEvents.emplace_back(noteController, noteCutEvent);
 
             cutEvents.erase(eventIt);
 
@@ -90,9 +87,13 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
 
         for(auto& eventToRun : eventsToRun) {
             if(eventToRun.isCutEvent) {
-                GlobalNamespace::NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(activeCutEvents[eventToRun.eventIndex].event.noteCutInfo, activeCutEvents[eventToRun.eventIndex].note->get_noteData());
+                auto& activeCutEvent = activeCutEvents[eventToRun.eventIndex];
+
+                GlobalNamespace::NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(activeCutEvent.event.noteCutInfo, activeCutEvent.note->get_noteData());
                 
-                SendNoteWasCutEvent(activeCutEvents[eventToRun.eventIndex].note, byref(noteCutInfo));
+                if(noteCutInfo.get_allIsOK()) swingRatings.emplace_back(activeCutEvent.event.noteHash, activeCutEvent.event.swingRating);
+
+                SendNoteWasCutEvent(activeCutEvent.note, byref(noteCutInfo));
             } else {
                 activeMissEvents[eventToRun.eventIndex].note->SendNoteWasMissedEvent();
             }

@@ -29,13 +29,20 @@ using namespace Replay::NoteEventTypes;
 namespace Replay {
     struct ActiveNoteCutEvent {
         NoteController* note;
-        Saber* saber;
         NoteCutEvent event;
 
         constexpr ActiveNoteCutEvent() = default;
 
-        constexpr ActiveNoteCutEvent(NoteController *note, Saber *saber, const NoteCutEvent &event) : note(note), saber(saber),
-                                                                                            event(event) {}
+        constexpr ActiveNoteCutEvent(NoteController *note, const NoteCutEvent &event) : note(note), event(event) {}
+    };
+
+    struct SwingRatingData {
+        int noteHash;
+        SwingRating swingRating;
+
+        constexpr SwingRatingData() = default;
+
+        constexpr SwingRatingData(int noteHash, SwingRating swingRating) : noteHash(noteHash), swingRating(swingRating) {}
     };
 
     struct ActiveNoteMissEvent {
@@ -75,6 +82,8 @@ namespace Replay {
 
         std::vector<NoteCutEvent> cutEvents;
         std::vector<ActiveNoteCutEvent> activeCutEvents;
+
+        std::vector<SwingRatingData> swingRatings;
 
         std::vector<NoteMissEvent> missEvents;
         std::vector<ActiveNoteMissEvent> activeMissEvents;

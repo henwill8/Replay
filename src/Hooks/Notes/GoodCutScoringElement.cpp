@@ -16,6 +16,27 @@ MAKE_HOOK_MATCH(GoodCutScoringElement_Init, &GoodCutScoringElement::Init, void, 
     if(ReplayManager::replayState == ReplayState::REPLAYING) {
         self->cutScoreBuffer->HandleSaberSwingRatingCounterDidFinish(reinterpret_cast<ISaberSwingRatingCounter*>(self->cutScoreBuffer->saberSwingRatingCounter));
         self->set_isFinished(true);
+
+        float beforeCutScore = 0.0f;
+        float afterCutScore = 0.0f;
+
+        auto noteHash = Replay::ReplayUtils::GetNoteHash(noteCutInfo.noteData);
+
+        for (auto eventIt = ReplayManager::replayer.noteEventReplayer.swingRatings.begin(); eventIt != ReplayManager::replayer.noteEventReplayer.swingRatings.end(); eventIt++) {
+            auto const &swingRating = *eventIt;
+
+            if(noteHash == swingRating.noteHash) {
+                beforeCutScore = swingRating.swingRating.beforeCutRating;
+                afterCutScore = swingRating.swingRating.afterCutRating;
+
+                ReplayManager::replayer.noteEventReplayer.swingRatings.erase(eventIt);
+
+                break;
+            }
+        }
+
+        self->cutScoreBuffer->afterCutScore = beforeCutScore;
+        self->cutScoreBuffer->beforeCutScore = afterCutScore;
     }
 }
 

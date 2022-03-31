@@ -136,17 +136,17 @@ namespace Replay {
         };
 
         struct SwingRating {
-            float beforeCutRating;
-            float afterCutRating;
+            int beforeCutRating;
+            int afterCutRating;
 
             constexpr SwingRating() = default;
 
-            constexpr SwingRating(SaberSwingRatingCounter* swingRating) {
-                beforeCutRating = swingRating->get_beforeCutRating();
-                afterCutRating = swingRating->get_afterCutRating();
+            constexpr SwingRating(CutScoreBuffer* cutScoreBuffer) {
+                beforeCutRating = cutScoreBuffer->get_beforeCutScore();
+                afterCutRating = cutScoreBuffer->get_afterCutScore();
             }
 
-            constexpr SwingRating(float beforeCutRating, float afterCutRating) : beforeCutRating(beforeCutRating), afterCutRating(afterCutRating) {}
+            constexpr SwingRating(int beforeCutRating, int afterCutRating) : beforeCutRating(beforeCutRating), afterCutRating(afterCutRating) {}
         };
 
         struct NoteCutEvent {
@@ -162,7 +162,7 @@ namespace Replay {
                 SimpleNoteCutInfo newNoteCutInfo(cutScoreBuffer->noteCutInfo);
                 noteCutInfo = newNoteCutInfo;
 
-                SwingRating newSwingRating(cutScoreBuffer->saberSwingRatingCounter);
+                SwingRating newSwingRating(cutScoreBuffer);
                 swingRating = newSwingRating;
             }
 

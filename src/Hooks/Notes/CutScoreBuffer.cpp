@@ -30,28 +30,6 @@ MAKE_HOOK_MATCH(CutScoreBuffer_HandleSaberSwingRatingCounterDidFinish, &CutScore
     }
 }
 
-MAKE_HOOK_MATCH(CutScoreBuffer_RefreshScores, &CutScoreBuffer::RefreshScores, void, CutScoreBuffer* self) {
-    CutScoreBuffer_RefreshScores(self);
-
-    // auto noteHash = Replay::ReplayUtils::GetNoteHash(self->noteCutInfo.noteData);
-
-    // for (auto eventIt = cutEvents.begin(); eventIt != cutEvents.end(); eventIt++) {
-    //     auto const &noteCutEvent = *eventIt;
-
-    //     if(noteHash == noteCutEvent.noteHash) {
-    //         auto saber = SaberUtils::GetSaberForType(noteCutEvent.noteCutInfo.saberType);
-    //         activeCutEvents.emplace_back(noteController, saber, noteCutEvent);
-
-    //         cutEvents.erase(eventIt);
-
-    //         return;
-    //     }
-    // }
-
-    self->beforeCutScore = 70.0f;
-    self->afterCutScore = 100.0f;
-}
-
 MAKE_HOOK_MATCH(CutScoreBuffer_Init, &CutScoreBuffer::Init, bool, CutScoreBuffer* self, ByRef<GlobalNamespace::NoteCutInfo> noteCutInfo) {
     bool returnValue = CutScoreBuffer_Init(self, noteCutInfo);
     
@@ -69,7 +47,6 @@ MAKE_HOOK_MATCH(CutScoreBuffer_Init, &CutScoreBuffer::Init, bool, CutScoreBuffer
 void CutScoreBufferHook(Logger& logger) {
     INSTALL_HOOK(logger, CutScoreBuffer_HandleSaberSwingRatingCounterDidFinish);
     INSTALL_HOOK(logger, CutScoreBuffer_Init);
-    INSTALL_HOOK(logger, CutScoreBuffer_RefreshScores);
 }
 
 ReplayInstallHooks(CutScoreBufferHook);

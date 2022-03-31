@@ -1,5 +1,5 @@
 # TODO
-- Bad cuts arent replayed (or maybe not even stored??)
+- Fix obstacle interaction not working
 - Make percent in ui be greener closer to 100%
 - After watching a replay and then playing a map modifiers are still what they were in the replay
 - Replay menu in level succeed and failed screens, can choose to overwrite current replay or watch the last play (saved in temp file)
