@@ -14,8 +14,7 @@ MAKE_HOOK_MATCH(GoodCutScoringElement_Init, &GoodCutScoringElement::Init, void, 
     GoodCutScoringElement_Init(self, noteCutInfo);
 
     if(ReplayManager::replayState == ReplayState::REPLAYING) {
-        self->cutScoreBuffer->HandleSaberSwingRatingCounterDidFinish(reinterpret_cast<ISaberSwingRatingCounter*>(self->cutScoreBuffer->saberSwingRatingCounter));
-        self->set_isFinished(true);
+        self->cutScoreBuffer->saberSwingRatingCounter->Finish();
 
         float beforeCutScore = 0.0f;
         float afterCutScore = 0.0f;

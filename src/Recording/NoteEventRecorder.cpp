@@ -48,8 +48,8 @@ float Replay::NoteEventRecorder::GetAverageCutScore() {
         if(!event.noteCutInfo.AllIsOkay()) continue;
 
         // May cause issues with chains
-        int beforeRating = std::round(event.swingRating.beforeCutRating * 70);
-        int afterRating = std::round(event.swingRating.afterCutRating * 30);
+        int beforeRating = std::round(event.swingRating.beforeCutRating);
+        int afterRating = std::round(event.swingRating.afterCutRating);
         int accuracy = std::round((1.0f - std::clamp(event.noteCutInfo.cutDistanceToCenter / 0.3f, 0.0f, 1.0f)) * 15);
 
         int cutScore = beforeRating + afterRating + accuracy;

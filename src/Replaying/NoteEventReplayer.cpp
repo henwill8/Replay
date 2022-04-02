@@ -88,7 +88,7 @@ custom_types::Helpers::Coroutine Replay::NoteEventReplayer::Update() {
         for(auto& eventToRun : eventsToRun) {
             if(eventToRun.isCutEvent) {
                 auto& activeCutEvent = activeCutEvents[eventToRun.eventIndex];
-
+                
                 GlobalNamespace::NoteCutInfo noteCutInfo = ReplayUtils::CreateNoteCutInfoFromSimple(activeCutEvent.event.noteCutInfo, activeCutEvent.note->get_noteData());
                 
                 if(noteCutInfo.get_allIsOK()) swingRatings.emplace_back(activeCutEvent.event.noteHash, activeCutEvent.event.swingRating);

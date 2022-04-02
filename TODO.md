@@ -1,4 +1,5 @@
 # TODO
+- Fix score not longer replaying as the exact same (might be because of obstacles)
 - Fix obstacle interaction not working
 - Make percent in ui be greener closer to 100%
 - After watching a replay and then playing a map modifiers are still what they were in the replay
